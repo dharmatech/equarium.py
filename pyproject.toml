@@ -1,0 +1,30 @@
+[project]
+name = "equarium"
+version = "0.1.0"
+description = "Solve physics problems from core equations with SymPy: state what you know and what you want, and let the solver derive the rest."
+readme = "README.md"
+authors = [
+    { name = "Eduardo Cavazos", email = "wayo.cavazos@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "sympy>=1.14.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.14"
+typeCheckingMode = "standard"
