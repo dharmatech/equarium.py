@@ -347,7 +347,10 @@ src/equarium/
 ```
 
 The exact split can move in a checkpoint if a module turns out too
-small or creates a circular import. The layers can't move: the core
+small or creates a circular import. *(Since moved: checkpoint 001 put
+`Equation`, the origins and `eq_flat` in `equations.py` and the steps
+in `steps.py`, to avoid an import cycle, and 004 added `text.py` for
+the text helpers.)* The layers can't move: the core
 imports nothing from physics. Everything is typed, and pyright
 (standard mode) stays clean.
 

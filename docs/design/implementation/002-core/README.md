@@ -1,9 +1,9 @@
 # 002 core
 
-**Status:** Spec agreed (2026-11-07). Increments 001 to 003 (state and
-display, all at once, eliminate and isolate) are done and reviewed
-(2026-11-08). Increment 004, roots and filters, is done (2026-11-08) and
-waits for its review.
+**Status:** Spec agreed (2026-11-07). Increments 001 to 004 (state and
+display, all at once, eliminate and isolate, roots and filters) are
+done and reviewed (2026-11-08). The checkpoint for 005, units, is
+written and waits for the user's review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -24,7 +24,7 @@ spec and checkpoints.
 To implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/002-core/checkpoints/004-roots-and-filters.md`
+> Read `docs/design/implementation/002-core/checkpoints/005-units.md`
 > in `~/journal/2026-11-06-equations/equarium.py`. If you've been told
 > to read that file, it is the whole assignment.
 
@@ -37,7 +37,7 @@ From the [spec](spec.md#increments). 004 of 7 done.
 | 001 | state and display | [001](checkpoints/001-state-and-display.md) | Done, reviewed (2026-11-08) | `8137727` |
 | 002 | all at once | [002](checkpoints/002-all-at-once.md) | Done, reviewed (2026-11-08) | `dcda22a` |
 | 003 | eliminate and isolate | [003](checkpoints/003-eliminate-and-isolate.md) | Done, reviewed (2026-11-08) | `bb28627` |
-| 004 | roots and filters | [004](checkpoints/004-roots-and-filters.md) | Done (2026-11-08), waiting for review | |
-| 005 | units | | Planned | |
+| 004 | roots and filters | [004](checkpoints/004-roots-and-filters.md) | Done, reviewed (2026-11-08) | `e4d4498` |
+| 005 | units | [005](checkpoints/005-units.md) | Checkpoint written (2026-11-08), waiting for review | |
 | 006 | elimination attempts | | Planned | |
 | 007 | the old physics code on the core | | Planned (needs 001 example catalog) | |
