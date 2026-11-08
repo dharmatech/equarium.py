@@ -24,13 +24,14 @@ long enough to be compacted.
 | # | Series | Form | Status |
 |---|---|---|---|
 | 000 | [project setup](000-project-setup/README.md) | README | Done (2026-11-07) |
-| 001 | example catalog | one checkpoint | Planned |
+| 001 | [example catalog](001-example-catalog/README.md) | one checkpoint | Checkpoint written and reviewed (2026-11-08) |
 | 002 | [core](002-core/README.md) | charter, spec, checkpoints | Spec agreed (2026-11-07); 006 of 7 done (2026-11-08) |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the
   techniques used, and the alternative solving styles worth keeping.
-  This becomes the test list and the to-do list for the rebuild.
+  This becomes the test list and the to-do list for the rebuild, and
+  the input to 002's increment 007.
 - **002 core:** the problem state (equations, knowns, wants, and the
   steps that produced them), the operations on it, and the display.
   The old physics code then runs on it with no design changes, before
