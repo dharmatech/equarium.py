@@ -1,6 +1,7 @@
 # Example catalog
 
-**Status:** Written (2026-11-08), waiting for the user's review.
+**Status:** Written (2026-11-08). The user answered its seven questions
+for 007 the same day, each as recommended.
 
 Every problem the old library's `examples/up/` solves, University
 Physics 15th edition chapters 2 to 4, plus the derivations in
@@ -82,9 +83,9 @@ say "the other way round" for polar from components.
 | [Exercise 2.23](#exercise-223-stopping-distance-of-an-airbag) | Stopping distance of an airbag | 90 | 1, ran | 1.70 m | tests (written out) | `exercise_2_23.py` |
 | [Example 3.6](#example-36-an-object-projected-horizontally) | An object projected horizontally | 107 | 1, ran | 4.5 m, -1.2 m; 4.7 m; 9.0 m/s, -4.9 m/s; 10.2 m/s at -29° | not yet ported | `example_3_6.py` |
 | [Example 3.7](#example-37-height-and-range-of-a-projectile-i-a-batted-baseball) | Height and range of a projectile I: A batted baseball | 108 | 1, ran | 44.4 m, 39.6 m; 22.2 m/s, 10.0 m/s; 24.4 m/s at 24.2°; 3.02 s, 44.7 m; 6.04 s, 134 m; -29.6 m/s at -53.1° | not yet ported | `example_3_7.py` |
-| [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | not yet ported | `example_3_8.py`, if `BOOK` can hold formulas (question 2) |
+| [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | not yet ported | `example_3_8.py` |
 | [Example 3.9](#example-39-different-initial-and-final-heights) | Different initial and final heights | 109 | 2, 1 ran | -1.7 s or 0.98 s; 9.2 m | tests (written out) | `example_3_9.py` |
-| [Example 3.10](#example-310-the-zookeeper-and-the-monkey) | The zookeeper and the monkey | 110 | 2, 1 ran | a "show that": the dart hits | tests (written out) | `example_3_10.py`, if `BOOK` can hold formulas (question 2) |
+| [Example 3.10](#example-310-the-zookeeper-and-the-monkey) | The zookeeper and the monkey | 110 | 2, 1 ran | a "show that": the dart hits | tests (written out) | `example_3_10.py` |
 | [Example 3.13](#example-313-relative-velocity-on-a-straight-road) | Relative velocity on a straight road | 116 | 4, all ran | -192 km/h; +192 km/h; no change | not yet ported | `example_3_13.py` |
 | [Example 4.1](#example-41-superposition-of-forces-finding-the-net-force) | Superposition of forces: Finding the net force | 133 | 8, 5 ran | -100 N, 80 N; 128 N at 141° | tests (written out) | `example_4_1.py`, `example_4_1_step_by_step.py` |
 | [Example 4.4](#example-44-newtons-second-law-i-determining-acceleration-from-force) | Newton's second law I: Determining acceleration from force | 141 | 1, ran | 0.50 m/s² | not yet ported | `example_4_4.py` |
@@ -2090,9 +2091,9 @@ verbatim, except where the next section says otherwise.
 |---|---|---|
 | `example_3_6.py` | 3.6 v1-000 | `Answer(sol, m1.pos.x, "4.5"),  # m`<br>`Answer(sol, m1.pos.y, "-1.2"),  # m`<br>`Answer(sol, dist, "4.7"),  # m`<br>`Answer(sol, m1.vel.y, "-4.9"),  # m/s, a new want`<br>`Answer(sol, vel_mag, "10.2"),  # m/s`<br>`Answer(sol, vel_angle_deg, "-29"),  # degrees` |
 | `example_3_7.py` | 3.7 v1-000 | `Answer(sol_a, b1.pos.x, "44.4"),  # m`<br>`Answer(sol_a, b1.pos.y, "39.6"),  # m`<br>`Answer(sol_a, b1.vel.x, "22.2"),  # m/s`<br>`Answer(sol_a, b1.vel.y, "10.0"),  # m/s`<br>`Answer(sol_a, b1_vel_mag, "24.4"),  # m/s`<br>`Answer(sol_a, b1_vel_angle_deg, "24.2"),  # degrees`<br>`Answer(sol_b, b1.t, "3.02"),  # s`<br>`Answer(sol_b, b1.pos.y, "44.7"),  # m`<br>`Answer(sol_c, b1.t, "6.04"),  # s, a new want`<br>`Answer(sol_c, b1.pos.x, "134"),  # m`<br>`Answer(sol_c, b1.vel.y, "-29.6"),  # m/s`<br>`Answer(sol_c, b1_vel_angle_deg, "-53.1"),  # degrees, a new want` |
-| `example_3_8.py` | 3.8 v1-000, its bug fixed | formulas (question 2): t1, h, t2 and R as the book prints them |
+| `example_3_8.py` | 3.8 v1-000, its bug fixed | `Formula`s (question 2): t1, h, t2 and R as the book prints them, in the script's symbols:<br>`Formula(sol_top, p1.t, "p_0_v_mag*sin(p_0_v_angle)/g"),`<br>`Formula(sol_top, p1.pos.y, "p_0_v_mag**2*sin(p_0_v_angle)**2/(2*g)"),`<br>`Formula(sol_range, p1.t, "2*p_0_v_mag*sin(p_0_v_angle)/g"),`<br>`Formula(sol_range, p1.pos.x, "p_0_v_mag**2*sin(2*p_0_v_angle)/g"),` |
 | `example_3_9.py` | 3.9 v2 | `Answer(sol.where(b1.pos.x > 0), b1.pos.x, "9.2"),  # m`<br>`Answer(sol_t, b1.t, "-1.7", "0.98"),  # s, a new want` |
-| `example_3_10.py` | 3.10 v1-001 | formulas (question 2): the time `D/(d_0_v_mag*cos(d_0_v_angle))`; the show-that stays a check of what is left, as in `tests/test_rewrite.py` |
+| `example_3_10.py` | 3.10 v1-001 | a `Formula` (question 2) for the book's time, a new want:<br>`Formula(sol_t, d1.t, "D/(d_0_v_mag*cos(d_0_v_angle))"),`<br>The show-that itself stays a check of what is left, as in `tests/test_rewrite.py`. |
 | `example_3_13.py` | 3.13 001-eq | `Answer(sol, v_TY, "-192", unit=kilometer/hour),`<br>`Answer(sol, v_YT, "192", unit=kilometer/hour),` |
 
 **Chapter 4, `ch04/`:**
@@ -2198,8 +2199,8 @@ it) are already in `tests/test_strategies.py`.
 
 Bring over the two that are used, `add_both_sides` and
 `multiply_both_sides`, as plain functions on `sp.Eq` in
-`equations.py`, as the spec says, and only if kinematic-equations 003
-is ported as `table_2_5.py` (question 5). Leave `divide_both_sides`,
+`equations.py`, as the spec says, for kinematic-equations 003's port,
+`table_2_5.py` (question 5: yes). Leave `divide_both_sides`,
 `expand_lhs` and `expand_rhs`: nothing in `examples/up/` calls them.
 
 Why: a scratch try on equarium (2026-11-08) shows `eliminate` and
@@ -2224,7 +2225,7 @@ are degenerate. What it taught, recording where each equation came
 from, is equarium's origin tree, and `tests/kinematics_005.py` already
 pins its first derivation and that origin. If the user wants the
 search, it belongs to a later series, on top of `System`'s origins
-(question 7).
+(question 7: left out).
 
 ### The physics code
 
@@ -2268,15 +2269,15 @@ for the physics redesign, not 007:
 ### 007's size
 
 26 new modules, `table_2_5.py` among them, the physics code's copy,
-the two helpers, and, if question 2 is yes, a `Formula` in
-`examples/answers.py`. Too much for one checkpoint, and the open
-questions are all in chapters 3 and 4. Split it:
+the two helpers, and a `Formula` in `examples/answers.py`. Too much
+for one checkpoint, and most of the questions' changes are in chapters
+3 and 4. Split it:
 
 - **007, chapter 2:** copy the physics code, port chapter 2's 13 new
-  modules and `table_2_5.py`, and bring over the two helpers. Settled
-  except questions 5 and 6.
-- **008, chapters 3 and 4:** 12 new modules, and `Formula` if wanted.
-  Questions 1 to 4 decide it.
+  modules and `table_2_5.py`, and bring over the two helpers
+  (questions 5 and 6).
+- **008, chapters 3 and 4:** 12 new modules, and `Formula`
+  (questions 1 to 4).
 
 Two costs to plan for: `example_3_9.py` runs `eliminating()` on
 two-way polar at import, about 6 s, and `tests/test_examples.py`
@@ -2285,9 +2286,12 @@ slow. Every other port should take a second or two.
 
 ### Questions for the user
 
+The user answered all seven on 2026-11-08, each as recommended. The
+questions stay as they were asked, for the record.
+
 1. **The book's givens over the old scripts'.** 3.7, 3.9 and 4.7 use
    g = 9.81; the book uses 9.80, and 3.7's speed and height miss the
-   book's answers with 9.81. Port with the book's 9.80? *Recommended:
+   book's answers with 9.81. Port with the book's 9.80? *Recommended and chosen:
    yes.* The formulas are still compared with the old ones; only the
    numbers change.
 2. **Answers that are formulas.** 3.8's answers are formulas (t1, h,
@@ -2295,13 +2299,13 @@ slow. Every other port should take a second or two.
    fails a module whose `BOOK` is empty. Add a `Formula(solution,
    symbol, "printed")` to `examples/answers.py`, matching when the
    difference simplifies to 0, so both can be example modules?
-   *Recommended: yes.* The alternative leaves 3.8 unported and 3.10 a
+   *Recommended and chosen: yes.* The alternative leaves 3.8 unported and 3.10 a
    test only, as it is in `tests/test_rewrite.py`.
 3. **4.1's angle.** The book prints 141°, from its rounded components
    (-100 N, 80 N); unrounded, the angle is 141.59°, which `Answer`
    reads as 142. Add the book's step, the angle from the rounded R_x
    and R_y (141.34°), as a second system? Or leave the angle out of
-   `BOOK`? *Recommended: the book's step,* as Exercise 2.3's port adds
+   `BOOK`? *Recommended and chosen: the book's step,* as Exercise 2.3's port adds
    its step. Note that `tests/test_rewrite.py` checks "141.6", the old
    number, not the book's.
 4. **4.7's weight.** The book's statement says 2.45 × 10⁴ N, but its
@@ -2310,17 +2314,17 @@ slow. Every other port should take a second or two.
    and g = 9.81, and prints -7.33 m/s². Port with 2.49 × 10⁴ N and
    g = 9.80, with a comment on the book's inconsistency, and the mass
    written "2.54e3", the book's three significant figures (±5 kg)?
-   *Recommended: yes.*
+   *Recommended and chosen: yes.*
 5. **Table 2.5.** Port kinematic-equations 003 as
    `examples/up_15e/ch02/table_2_5.py`, with `add_both_sides` and
-   `multiply_both_sides` in `equations.py`? *Recommended: yes.* Without
+   `multiply_both_sides` in `equations.py`? *Recommended and chosen: yes.* Without
    it, no helper comes over.
 6. **Exercise 2.3's names.** `exercise_2_3.py` and
    `exercise_2_3_two_steps.py` (the default rule), rather than the
    spec's `exercise_2_3_one_step.py` and `exercise_2_3_two_steps.py`?
-   *Recommended: the default rule,* the same as 4.5's pair.
+   *Recommended and chosen: the default rule,* the same as 4.5's pair.
 7. **The derive-all search.** Leave 005's search out of 007, for a
-   later series if wanted? *Recommended: yes.*
+   later series if wanted? *Recommended and chosen: yes.*
 
 ### Corrections to the checkpoint
 

@@ -1,7 +1,7 @@
 # 001 example catalog
 
-**Status:** Catalog written (2026-11-08), waiting for the user's
-review.
+**Status:** Catalog written (2026-11-08), and its seven questions for
+007 answered by the user, each as recommended.
 
 Every example and exercise in the old library's `examples/up/`, in one
 file: the problem, the book's printed answers, the techniques, the old
