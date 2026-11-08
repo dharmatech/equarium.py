@@ -450,6 +450,10 @@ by_hand.show_history()          # … eliminate m_0_v_x using (9): into (3), (4)
 | 006 | elimination attempts | `eliminating`, the time on the display, the `slow` marker |
 | 007 | the old physics code on the core | `kinematics_states.py` and `newtons_laws.py` copied over, and the examples ported |
 
+*(Since split, 2026-11-08, as the catalog recommended and the user
+chose: 007 is the physics code's copy and chapter 2's ports, and a new
+008 ports chapters 3 and 4. See the note under §007.)*
+
 The charter's "branching for parts" is spread across these increments.
 The methods that branch come in 001, 2.4 (b) checks them in 002, and
 2.7's four parts in 004. **Increments 001 to 006 use only equations
@@ -638,6 +642,22 @@ Which of misc.py's equation helpers come over (`add_both_sides` and
 the others, used only by kinematic-equations 003 and 004) is decided by
 the catalog. If kept, they're plain functions on `sp.Eq` in
 `equations.py`.
+
+*(Decided 2026-11-08, after the catalog,
+[001-example-catalog/catalog.md](../001-example-catalog/catalog.md),
+whose "Recommendations for 007" and its seven answered questions now
+settle the port list, the slugs, the `BOOK`s, the expected differences
+from the old scripts, and the helpers: `add_both_sides` and
+`multiply_both_sides` come over. Two more decisions the user made:*
+
+- ***The split.** 007 copies the physics code and ports chapter 2: 13
+  new modules, `table_2_5.py`, and the two helpers. 008 ports chapters
+  3 and 4: 12 new modules, and `Formula` in `examples/answers.py`.*
+- ***Typing.** The copy, unchanged, gives 26 pyright errors. It gets
+  typing-only fixes: casts and annotations, and `newtons_laws.py`'s
+  missing `import sympy as sp`. Names, equations and behavior don't
+  change. A port narrows a field the model types as optional
+  (`edge.v_av`, `state.vel.mag`) where it uses one.)*
 
 ## How each increment lands
 
