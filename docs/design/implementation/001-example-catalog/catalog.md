@@ -70,17 +70,17 @@ say "the other way round" for polar from components.
 
 | Problem | Title | Page | Old scripts | Book's answers | In equarium | Port in 007 as |
 |---|---|---|---|---|---|---|
-| [Example 2.4](#example-24-constant-acceleration-calculations) | Constant-acceleration calculations | 78 | 3, all ran | 43 m; 23 m/s; 55 m | `example_2_4_handwritten.py`; tests | `example_2_4.py` |
-| [Example 2.5](#example-25-two-objects-with-different-accelerations) | Two objects with different accelerations | 78 | 4, all ran | 10 s; 30 m/s; 150 m | `example_2_5_handwritten.py`, `example_2_5_handwritten_step_by_step.py`; tests | `example_2_5.py`, `example_2_5_step_by_step.py` |
-| [Example 2.6](#example-26-a-freely-falling-coin) | A freely falling coin | 80 | 2, all ran | -4.9 m, -9.8 m/s; -20 m, -20 m/s; -44 m, -29 m/s | not yet ported | `example_2_6.py` |
-| [Example 2.7](#example-27-up-and-down-motion-in-free-fall) | Up-and-down motion in free fall | 81 | 1, ran | +10.1 m, +5.2 m/s; -18.4 m, -24.2 m/s; ±11.3 m/s; +11.5 m; -9.80 m/s² | tests (written out) | `example_2_7.py` |
-| [Example 2.8](#example-28-two-solutions-or-one) | Two solutions or one? | 82 | in 2.7's script | +3.36 s | tests (written out) | `example_2_8.py` |
-| [Exercise 2.1](#exercise-21-a-cars-distance-from-its-average-velocity) | A car's distance from its average velocity | 89 | 1, ran | 25.0 m | not yet ported | `exercise_2_1.py` |
-| [Exercise 2.3](#exercise-23-the-slow-trip-home) | The slow trip home | 89 | 3, all ran | 55 min | tests (written out) | `exercise_2_3_two_steps.py`, `exercise_2_3_one_step.py` |
-| [Exercise 2.5](#exercise-25-average-velocity-and-speed-of-a-walk) | Average velocity and speed of a walk | 89 | 2, all ran | 0.313 m/s; 1.56 m/s | not yet ported | `exercise_2_5.py` |
-| [Exercise 2.19](#exercise-219-an-antelopes-speed-and-acceleration) | An antelope's speed and acceleration | 90 | 1, ran | 8.33 m/s; 1.11 m/s² | not yet ported | `exercise_2_19.py` |
-| [Exercise 2.21](#exercise-221-a-fast-pitch) | A fast pitch | 90 | 2, all ran | 675 m/s²; 0.0667 s | not yet ported | `exercise_2_21.py` |
-| [Exercise 2.23](#exercise-223-stopping-distance-of-an-airbag) | Stopping distance of an airbag | 90 | 1, ran | 1.70 m | tests (written out) | `exercise_2_23.py` |
+| [Example 2.4](#example-24-constant-acceleration-calculations) | Constant-acceleration calculations | 78 | 3, all ran | 43 m; 23 m/s; 55 m | `example_2_4.py`, `example_2_4_handwritten.py`; tests | `example_2_4.py` |
+| [Example 2.5](#example-25-two-objects-with-different-accelerations) | Two objects with different accelerations | 78 | 4, all ran | 10 s; 30 m/s; 150 m | `example_2_5.py`, `example_2_5_step_by_step.py`, `example_2_5_handwritten.py`, `example_2_5_handwritten_step_by_step.py`; tests | `example_2_5.py`, `example_2_5_step_by_step.py` |
+| [Example 2.6](#example-26-a-freely-falling-coin) | A freely falling coin | 80 | 2, all ran | -4.9 m, -9.8 m/s; -20 m, -20 m/s; -44 m, -29 m/s | `example_2_6.py` | `example_2_6.py` |
+| [Example 2.7](#example-27-up-and-down-motion-in-free-fall) | Up-and-down motion in free fall | 81 | 1, ran | +10.1 m, +5.2 m/s; -18.4 m, -24.2 m/s; ±11.3 m/s; +11.5 m; -9.80 m/s² | `example_2_7.py`; tests (written out) | `example_2_7.py` |
+| [Example 2.8](#example-28-two-solutions-or-one) | Two solutions or one? | 82 | in 2.7's script | +3.36 s | `example_2_8.py`; tests (written out) | `example_2_8.py` |
+| [Exercise 2.1](#exercise-21-a-cars-distance-from-its-average-velocity) | A car's distance from its average velocity | 89 | 1, ran | 25.0 m | `exercise_2_1.py` | `exercise_2_1.py` |
+| [Exercise 2.3](#exercise-23-the-slow-trip-home) | The slow trip home | 89 | 3, all ran | 55 min | `exercise_2_3.py`, `exercise_2_3_two_steps.py`; tests (written out) | `exercise_2_3_two_steps.py`, `exercise_2_3_one_step.py` |
+| [Exercise 2.5](#exercise-25-average-velocity-and-speed-of-a-walk) | Average velocity and speed of a walk | 89 | 2, all ran | 0.313 m/s; 1.56 m/s | `exercise_2_5.py` | `exercise_2_5.py` |
+| [Exercise 2.19](#exercise-219-an-antelopes-speed-and-acceleration) | An antelope's speed and acceleration | 90 | 1, ran | 8.33 m/s; 1.11 m/s² | `exercise_2_19.py` | `exercise_2_19.py` |
+| [Exercise 2.21](#exercise-221-a-fast-pitch) | A fast pitch | 90 | 2, all ran | 675 m/s²; 0.0667 s | `exercise_2_21.py` | `exercise_2_21.py` |
+| [Exercise 2.23](#exercise-223-stopping-distance-of-an-airbag) | Stopping distance of an airbag | 90 | 1, ran | 1.70 m | `exercise_2_23.py`; tests (written out) | `exercise_2_23.py` |
 | [Example 3.6](#example-36-an-object-projected-horizontally) | An object projected horizontally | 107 | 1, ran | 4.5 m, -1.2 m; 4.7 m; 9.0 m/s, -4.9 m/s; 10.2 m/s at -29° | not yet ported | `example_3_6.py` |
 | [Example 3.7](#example-37-height-and-range-of-a-projectile-i-a-batted-baseball) | Height and range of a projectile I: A batted baseball | 108 | 1, ran | 44.4 m, 39.6 m; 22.2 m/s, 10.0 m/s; 24.4 m/s at 24.2°; 3.02 s, 44.7 m; 6.04 s, 134 m; -29.6 m/s at -53.1° | not yet ported | `example_3_7.py` |
 | [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | not yet ported | `example_3_8.py` |

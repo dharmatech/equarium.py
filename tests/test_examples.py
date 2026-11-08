@@ -36,7 +36,21 @@ def test_the_examples_are_found() -> None:
         "examples.up_15e.ch02.example_2_4_handwritten",
         "examples.up_15e.ch02.example_2_5_handwritten",
         "examples.up_15e.ch02.example_2_5_handwritten_step_by_step",
+        "examples.up_15e.ch02.example_2_4",
+        "examples.up_15e.ch02.example_2_5",
+        "examples.up_15e.ch02.example_2_5_step_by_step",
+        "examples.up_15e.ch02.example_2_6",
+        "examples.up_15e.ch02.example_2_7",
+        "examples.up_15e.ch02.example_2_8",
+        "examples.up_15e.ch02.exercise_2_1",
+        "examples.up_15e.ch02.exercise_2_3",
+        "examples.up_15e.ch02.exercise_2_3_two_steps",
+        "examples.up_15e.ch02.exercise_2_5",
+        "examples.up_15e.ch02.exercise_2_19",
+        "examples.up_15e.ch02.exercise_2_21",
+        "examples.up_15e.ch02.exercise_2_23",
     } <= set(example_modules())
+    assert "examples.up_15e.ch02.table_2_5" not in example_modules()
     assert "examples.answers" not in example_modules()
 
 

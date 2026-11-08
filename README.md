@@ -63,6 +63,14 @@ is in [examples/up_15e/ch02/](examples/up_15e/ch02/), and runs with:
 uv run python -m examples.up_15e.ch02.example_2_4_handwritten
 ```
 
+[examples/up_15e/](examples/up_15e/) holds the examples ported from
+combine-equations.py, most of them on its physics code, which equarium
+carries as `equarium.physics`, such as Example 2.4's:
+
+```bash
+uv run python -m examples.up_15e.ch02.example_2_4
+```
+
 ## Docs
 
 - [Implementation series](docs/design/implementation/README.md): one
