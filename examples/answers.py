@@ -8,8 +8,10 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 import sympy as sp
+from sympy.physics.units import Quantity
 
 from equarium import Solution, UsageError
+from equarium.solve import is_unit
 
 
 @dataclass(frozen=True, init=False)
@@ -19,22 +21,38 @@ class Answer:
     `Answer(sol_a, x1, "43")`, or `Answer(sol, v1, "-11.3", "11.3")` for a
     solution with two roots. The printed values are strings, as the book
     prints them, since the last digit sets the tolerance.
+
+    For numbers with units, `unit` is the unit the book prints them in:
+    `Answer(sol.in_units(meter, second), x1, "1.70", unit=meter)`.
     """
 
     solution: Solution
     symbol: sp.Symbol
     printed: tuple[str, ...]
+    unit: sp.Expr | None
 
-    def __init__(self, solution: Solution, symbol: sp.Symbol, *printed: str) -> None:
+    def __init__(
+        self,
+        solution: Solution,
+        symbol: sp.Symbol,
+        *printed: str,
+        unit: sp.Expr | None = None,
+    ) -> None:
         if symbol not in solution.system.wants:
             raise UsageError(f"{symbol} isn't a want of the solution", symbol=symbol)
         if not printed:
             raise UsageError(f"no printed value for {symbol}", symbol=symbol)
         for value in printed:
             _decimal(value)
+        if unit is not None and not is_unit(unit):
+            raise UsageError(
+                f"unit is a unit, such as meter or kilometer/hour, not {unit!r}",
+                symbol=symbol,
+            )
         object.__setattr__(self, "solution", solution)
         object.__setattr__(self, "symbol", symbol)
         object.__setattr__(self, "printed", printed)
+        object.__setattr__(self, "unit", unit)
 
     def mismatch(self) -> str | None:
         """None when the solution's numbers match the printed values, and
@@ -43,6 +61,12 @@ class Answer:
         They match when every root's number is real, and the numbers,
         sorted, pair one to one with the printed values, sorted, each
         within half a unit in the printed value's last digit.
+
+        With a `unit`, each number is divided by it first, without
+        simplifying, and must have no units left. So a number in
+        kilometers doesn't match `unit=meter`: convert it with
+        `Solution.in_units` first. Without a `unit`, a number with units
+        doesn't match.
         """
         printed = ", ".join(self.printed)
         if not self.solution.roots:
@@ -54,6 +78,15 @@ class Answer:
         for number in numbers:
             if number.free_symbols:
                 return f"{where}, which has free symbols"
+        if self.unit is None:
+            if any(number.has(Quantity) for number in numbers):
+                return f"{where}, which has units: give unit="
+        else:
+            # Not simplified: simplify cancels kilometer/meter.
+            numbers = [number / self.unit for number in numbers]
+            if any(number.has(Quantity) for number in numbers):
+                return f"{where}, which isn't in {self.unit}"
+        for number in numbers:
             if number.is_real is not True:
                 return f"{where}, which isn't a real number"
         if len(numbers) != len(self.printed):

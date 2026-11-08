@@ -2,8 +2,8 @@
 
 **Status:** Spec agreed (2026-11-07). Increments 001 to 004 (state and
 display, all at once, eliminate and isolate, roots and filters) are
-done and reviewed (2026-11-08). The checkpoint for 005, units, is
-written and waits for the user's review.
+done and reviewed (2026-11-08). Increment 005, units, is done
+(2026-11-08) and waits for its review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -30,7 +30,7 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 004 of 7 done.
+From the [spec](spec.md#increments). 005 of 7 done.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
@@ -38,6 +38,6 @@ From the [spec](spec.md#increments). 004 of 7 done.
 | 002 | all at once | [002](checkpoints/002-all-at-once.md) | Done, reviewed (2026-11-08) | `dcda22a` |
 | 003 | eliminate and isolate | [003](checkpoints/003-eliminate-and-isolate.md) | Done, reviewed (2026-11-08) | `bb28627` |
 | 004 | roots and filters | [004](checkpoints/004-roots-and-filters.md) | Done, reviewed (2026-11-08) | `e4d4498` |
-| 005 | units | [005](checkpoints/005-units.md) | Checkpoint written (2026-11-08), waiting for review | |
+| 005 | units | [005](checkpoints/005-units.md) | Done (2026-11-08), waiting for review | |
 | 006 | elimination attempts | | Planned | |
 | 007 | the old physics code on the core | | Planned (needs 001 example catalog) | |

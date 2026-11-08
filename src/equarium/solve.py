@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, cast
 import sympy as sp
 from sympy.core.relational import Relational
 from sympy.logic.boolalg import BooleanFalse, BooleanFunction, BooleanTrue
+from sympy.physics.units import Quantity, convert_to
 
 from equarium import display
 from equarium.analysis import analyze
@@ -98,6 +99,35 @@ class Solution:
         if not kept:
             return Solution(self.system, (), self.elapsed, f"no root satisfies {relation}")
         return Solution(self.system, kept, self.elapsed)
+
+    def in_units(self, *units: sp.Expr) -> Solution:
+        """The solution with every number converted to `units`, such as
+        `in_units(meter, second)`, by SymPy's `convert_to`.
+
+        The system, the formulas, `elapsed` and the reason stay. A number
+        with no units, or a known with no number left as a symbol, comes
+        out as it went in. A solution with no roots is returned as it is.
+        """
+        if not units:
+            raise UsageError("in_units needs units, such as in_units(meter, second)")
+        for unit in units:
+            if not is_unit(unit):
+                raise UsageError(
+                    f"in_units takes units, such as meter or kilometer/hour, not {unit!r}"
+                )
+        if not self.roots:
+            return self
+        targets = list(units)
+        roots = tuple(
+            Root(
+                formulas=root.formulas,
+                numbers=MappingProxyType(
+                    {want: _convert(number, targets) for want, number in root.numbers.items()}
+                ),
+            )
+            for root in self.roots
+        )
+        return Solution(self.system, roots, self.elapsed, self.reason)
 
     def show(self) -> None:
         print(display.render_solution(self))
@@ -187,6 +217,23 @@ def _number(formula: sp.Expr, values: Values) -> sp.Expr:
     """`sp.N` of the formula with the values substituted. A known with no
     number stays a symbol, and units stay as they come."""
     return cast(sp.Expr, sp.N(formula.subs(values)))  # sp.N is untyped
+
+
+def is_unit(expr: object) -> bool:
+    """Whether `expr` is a unit: a SymPy `Quantity` such as `meter`, or a
+    product of their powers such as `kilometer/hour` or `meter/second**2`.
+    A number, such as `3` or `3*meter`, isn't one."""
+    if not isinstance(expr, sp.Expr):
+        return False
+    for factor in sp.Mul.make_args(expr):
+        base, exponent = factor.as_base_exp()
+        if not isinstance(base, Quantity) or not exponent.is_Rational:
+            return False
+    return True
+
+
+def _convert(number: sp.Expr, units: list[sp.Expr]) -> sp.Expr:
+    return cast(sp.Expr, convert_to(number, units))  # convert_to is untyped
 
 
 def _holds(relation: sp.Basic, root: Root, values: Values) -> bool:
