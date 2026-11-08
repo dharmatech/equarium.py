@@ -1,5 +1,6 @@
 import equarium
 
 
-def test_package_imports() -> None:
-    assert equarium.__name__ == "equarium"
+def test_exports() -> None:
+    for name in equarium.__all__:
+        assert hasattr(equarium, name), name

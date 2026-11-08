@@ -1,0 +1,111 @@
+import re
+
+import sympy as sp
+
+from equarium import System
+from equarium.display import plain, render, render_history
+
+from example_2_4 import part_a, pre, t0, t1, v0, x0, x1
+
+D, g = sp.symbols("D g")
+
+PART_A = """\
+(2.2)  v_av = (-x0 + x1)/t1
+(2.7)  a = (-v0 + v1)/t1
+(2.10)  v_av = v0/2 + v1/2
+knowns: t0 = 0, x0 = 5, v0 = 15, a = 4, t1 = 2
+wants: x1, v1
+connected: v1, v_av, x1 (3 unknowns in 3 equations)
+ready: (2.7)"""
+
+PART_A_HISTORY = """\
+1. add (2.2)
+2. add (2.7)
+3. add (2.10)
+4. known t0 = 0
+5. known x0 = 5
+6. known v0 = 15
+7. known a = 4
+8. eliminate zeros t0: into (2.2), (2.7)
+9. known t1 = 2
+10. want x1, v1"""
+
+
+def uncolored(text: str) -> str:
+    return re.sub(r"\x1b\[\d+m", "", text)
+
+
+def last_step(system: System) -> str:
+    return render_history(system, symbol=plain).splitlines()[-1]
+
+
+def test_render_part_a() -> None:
+    assert render(part_a, symbol=plain) == PART_A
+
+
+def test_render_terminal() -> None:
+    rendered = render(part_a)
+    assert rendered.splitlines()[0] == (
+        "(2.2)  v_av = (-\x1b[32mx0\x1b[0m + \x1b[31mx1\x1b[0m)/\x1b[32mt1\x1b[0m"
+    )
+    assert uncolored(rendered) == PART_A
+
+
+def test_render_before_eliminate_zeros() -> None:
+    lines = render(pre, symbol=plain).splitlines()
+    assert lines[0] == "(2.2)  v_av = (-x0 + x1)/(-t0 + t1)"
+    assert lines[3] == "knowns: t0 = 0, x0 = 5, v0 = 15, a = 4"
+
+
+def test_term_order() -> None:
+    # The old display printed `m_1_t - m_0_t` once m_1_t was colored.
+    dt, m_0_t, m_1_t = sp.symbols("dt m_0_t m_1_t")
+    system = System().add(sp.Eq(dt, -m_0_t + m_1_t)).want(m_1_t)
+    assert render(system, symbol=plain).splitlines()[0] == "(1)  dt = -m_0_t + m_1_t"
+    assert uncolored(render(system).splitlines()[0]) == "(1)  dt = -m_0_t + m_1_t"
+
+
+def test_render_knowns_with_no_number() -> None:
+    assert render(System().known(D).known(g, 9.8), symbol=plain) == (
+        "knowns: D, g = 9.8\nwants: none\nconnected: none\nready: none"
+    )
+
+
+def test_render_history_part_a() -> None:
+    assert render_history(part_a, symbol=plain) == PART_A_HISTORY
+
+
+def test_render_history_uses_each_steps_roles() -> None:
+    lines = render_history(part_a).splitlines()
+    assert lines[3] == "4. known \x1b[32mt0\x1b[0m = 0"
+    assert lines[9] == "10. want \x1b[31mx1\x1b[0m, \x1b[31mv1\x1b[0m"
+    assert uncolored(render_history(part_a)) == PART_A_HISTORY
+    forgotten = System().known(t1, 2).forget(t1)
+    assert render_history(forgotten).splitlines()[-1] == "2. forget t1"
+
+
+def test_render_history_forms() -> None:
+    y0, y1 = sp.symbols("y0 y1")
+    assert last_step(System().add(sp.Eq(x1, x0), sp.Eq(v0, t1))) == "1. add (1), (2)"
+    assert last_step(System().known({D: None, g: 9.8})) == "1. known D, g = 9.8"
+    assert last_step(System().known(t1, 2).forget(t1)) == "2. forget t1"
+    assert last_step(System().want()) == "1. want none"
+    two_zeros = (
+        System()
+        .add(
+            sp.Eq(x1, x0 + v0 * (t1 - t0)),
+            sp.Eq(v0, x1 / t1),
+            sp.Eq(y1, y0 + v0 * t1),
+            sp.Eq(y0, t0),
+        )
+        .known({t0: 0, y0: 0})
+        .eliminate_zeros()
+    )
+    assert last_step(two_zeros) == "3. eliminate zeros t0, y0: into (1), (3), dropped (4)"
+    dropped = System().add(sp.Eq(t0, 0)).known(t0, 0).eliminate_zeros()
+    assert last_step(dropped) == "3. eliminate zeros t0: dropped (1)"
+    unchanged = System().add(sp.Eq(x1, x0)).known(t0, 0).eliminate_zeros()
+    assert last_step(unchanged) == "3. eliminate zeros t0: no change"
+    none = System().add(sp.Eq(x1, x0)).eliminate_zeros()
+    assert last_step(none) == "2. eliminate zeros: none"
+    assert render_history(System(), symbol=plain) == ""
