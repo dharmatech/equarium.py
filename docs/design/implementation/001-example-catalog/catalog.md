@@ -76,7 +76,7 @@ say "the other way round" for polar from components.
 | [Example 2.7](#example-27-up-and-down-motion-in-free-fall) | Up-and-down motion in free fall | 81 | 1, ran | +10.1 m, +5.2 m/s; -18.4 m, -24.2 m/s; ±11.3 m/s; +11.5 m; -9.80 m/s² | `example_2_7.py`; tests (written out) | `example_2_7.py` |
 | [Example 2.8](#example-28-two-solutions-or-one) | Two solutions or one? | 82 | in 2.7's script | +3.36 s | `example_2_8.py`; tests (written out) | `example_2_8.py` |
 | [Exercise 2.1](#exercise-21-a-cars-distance-from-its-average-velocity) | A car's distance from its average velocity | 89 | 1, ran | 25.0 m | `exercise_2_1.py` | `exercise_2_1.py` |
-| [Exercise 2.3](#exercise-23-the-slow-trip-home) | The slow trip home | 89 | 3, all ran | 55 min | `exercise_2_3.py`, `exercise_2_3_two_steps.py`; tests (written out) | `exercise_2_3_two_steps.py`, `exercise_2_3_one_step.py` |
+| [Exercise 2.3](#exercise-23-the-slow-trip-home) | The slow trip home | 89 | 3, all ran | 55 min | `exercise_2_3.py`, `exercise_2_3_two_steps.py`; tests (written out) | `exercise_2_3.py`, `exercise_2_3_two_steps.py` |
 | [Exercise 2.5](#exercise-25-average-velocity-and-speed-of-a-walk) | Average velocity and speed of a walk | 89 | 2, all ran | 0.313 m/s; 1.56 m/s | `exercise_2_5.py` | `exercise_2_5.py` |
 | [Exercise 2.19](#exercise-219-an-antelopes-speed-and-acceleration) | An antelope's speed and acceleration | 90 | 1, ran | 8.33 m/s; 1.11 m/s² | `exercise_2_19.py` | `exercise_2_19.py` |
 | [Exercise 2.21](#exercise-221-a-fast-pitch) | A fast pitch | 90 | 2, all ran | 675 m/s²; 0.0667 s | `exercise_2_21.py` | `exercise_2_21.py` |
