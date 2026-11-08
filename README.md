@@ -6,6 +6,52 @@ Start from the fundamental equations, say what you know and what you want, and l
 
 This is a rebuild of [combine-equations.py](https://github.com/dharmatech/combine-equations.py), using what that project taught.
 
+## Usage
+
+Example 2.4 of University Physics (15th ed.), with its equations written
+out: a motorcycle at 15 m/s, 5 m past a signpost at t = 0, accelerating
+at 4 m/s². Where is it, and how fast is it going, at t = 2 s?
+
+```python
+import sympy as sp
+from equarium import System
+
+x0, x1, v0, v1, t0, t1, v_av, a = sp.symbols("x0 x1 v0 v1 t0 t1 v_av a")
+
+motorcycle = (
+    System()
+    .add(sp.Eq(v_av, (x1 - x0) / (t1 - t0)), label="2.2")
+    .add(sp.Eq(a, (v1 - v0) / (t1 - t0)), label="2.7")
+    .add(sp.Eq(v_av, (v0 + v1) / 2), label="2.10")
+    .known(t0, 0)
+    .known(x0, 5)
+    .known(v0, 15)
+    .known(a, 4)
+    .eliminate_zeros()  # t0 drops out; the other knowns stay symbols
+)
+
+part_a = motorcycle.known(t1, 2).want(x1, v1)
+sol_a = part_a.solve()
+sol_a.show()
+```
+
+`show()` prints each want's formula, in terms of the knowns, then its
+number (knowns in green and wants in red, in a terminal):
+
+```
+x1 = a*t1**2/2 + t1*v0 + x0
+x1 = 43.0
+v1 = a*t1 + v0
+v1 = 23.0
+```
+
+`sol_a.number(x1)` is the number alone. The full example, with part (b),
+is in [examples/up_15e/ch02/](examples/up_15e/ch02/), and runs with:
+
+```bash
+uv run python -m examples.up_15e.ch02.example_2_4_handwritten
+```
+
 ## Docs
 
 - [Implementation series](docs/design/implementation/README.md): one

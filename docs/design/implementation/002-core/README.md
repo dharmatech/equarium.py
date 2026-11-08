@@ -1,8 +1,8 @@
 # 002 core
 
 **Status:** Spec agreed (2026-11-07). Increment 001, state and display,
-is done and reviewed (2026-11-08). The checkpoint for 002, all at once,
-is written and waits for the user's review.
+is done and reviewed (2026-11-08). Increment 002, all at once, is done
+(2026-11-08) and waits for review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -29,12 +29,12 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 001 of 7 done.
+From the [spec](spec.md#increments). 002 of 7 done.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
 | 001 | state and display | [001](checkpoints/001-state-and-display.md) | Done, reviewed (2026-11-08) | `8137727` |
-| 002 | all at once | [002](checkpoints/002-all-at-once.md) | Checkpoint written (2026-11-08), waiting for review | |
+| 002 | all at once | [002](checkpoints/002-all-at-once.md) | Done (2026-11-08), waiting for review | |
 | 003 | eliminate and isolate | | Planned | |
 | 004 | roots and filters | | Planned | |
 | 005 | units | | Planned | |

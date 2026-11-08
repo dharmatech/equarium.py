@@ -1,4 +1,4 @@
-"""Rendering systems and their histories as text.
+"""Rendering systems, their histories and solutions as text.
 
 Every symbol goes through a hook, `(symbol, role) -> str`. The printer
 calls it from `_print_Symbol`, so symbol names never change and neither
@@ -22,6 +22,7 @@ from equarium.steps import (
 )
 
 if TYPE_CHECKING:
+    from equarium.solve import Root, Solution
     from equarium.system import System
 
 type SymbolHook = Callable[[sp.Symbol, Role], str]
@@ -104,6 +105,29 @@ def render(system: System, symbol: SymbolHook = terminal) -> str:
         lines.append("connected: none")
     lines.append("ready: " + labels(analysis.ready))
     return "\n".join(lines)
+
+
+def render_solution(solution: Solution, symbol: SymbolHook = terminal) -> str:
+    """Each want's formula line, then its number line. Several roots come
+    numbered, and no roots gives the reason."""
+    if not solution.roots:
+        return f"no roots: {solution.reason}"
+    p = Printer(symbol, analyze(solution.system))
+    if len(solution.roots) == 1:
+        return "\n".join(_root_lines(solution.roots[0], p))
+    lines: list[str] = []
+    for i, root in enumerate(solution.roots, 1):
+        lines.append(f"root {i}:")
+        lines.extend("  " + line for line in _root_lines(root, p))
+    return "\n".join(lines)
+
+
+def _root_lines(root: Root, p: Printer) -> list[str]:
+    lines: list[str] = []
+    for want, formula in root.formulas.items():
+        lines.append(f"{p.doprint(want)} = {p.doprint(formula)}")
+        lines.append(f"{p.doprint(want)} = {p.doprint(root.numbers[want])}")
+    return lines
 
 
 def render_step(step: Step, p: Printer) -> str:

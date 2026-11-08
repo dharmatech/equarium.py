@@ -12,6 +12,7 @@ from sympy.core.sympify import SympifyError
 from equarium import analysis, display, rewrite
 from equarium.equations import Equation, Given
 from equarium.errors import Contradiction, UsageError
+from equarium.solve import Solution, Strategy, all_at_once, solve_with
 from equarium.steps import AddStep, ForgetStep, KnownStep, Step, WantStep
 
 type Value = sp.Expr | float
@@ -174,6 +175,10 @@ class System:
 
     def analyze(self) -> analysis.Analysis:
         return analysis.analyze(self)
+
+    def solve(self, *wants: sp.Symbol, strategy: Strategy = all_at_once) -> Solution:
+        """Solve for the wants. Wants given here replace the system's first."""
+        return solve_with(self, wants, strategy)
 
     def show(self) -> None:
         print(display.render(self))

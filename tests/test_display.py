@@ -3,7 +3,8 @@ import re
 import sympy as sp
 
 from equarium import System
-from equarium.display import plain, render, render_history
+from equarium.display import plain, render, render_history, render_solution
+from examples.up_15e.ch02.example_2_4_handwritten import sol_a
 
 from example_2_4 import part_a, pre, t0, t1, v0, x0, x1
 
@@ -109,3 +110,40 @@ def test_render_history_forms() -> None:
     none = System().add(sp.Eq(x1, x0)).eliminate_zeros()
     assert last_step(none) == "2. eliminate zeros: none"
     assert render_history(System(), symbol=plain) == ""
+
+
+# Solutions
+
+SOL_A = """\
+x1 = a*t1**2/2 + t1*v0 + x0
+x1 = 43.0
+v1 = a*t1 + v0
+v1 = 23.0"""
+
+
+def test_render_solution() -> None:
+    assert render_solution(sol_a, symbol=plain) == SOL_A
+
+
+def test_render_solution_terminal() -> None:
+    rendered = render_solution(sol_a)
+    assert rendered.startswith("\x1b[31mx1\x1b[0m = ")
+    assert "\x1b[32mt1\x1b[0m" in rendered.splitlines()[0]
+    assert uncolored(rendered) == SOL_A
+
+
+def test_render_several_roots() -> None:
+    x = sp.Symbol("x")
+    solution = System().add(sp.Eq(x**2, 4)).want(x).solve()
+    lines = render_solution(solution, symbol=plain).splitlines()
+    assert len(lines) == 6
+    assert (lines[0], lines[3]) == ("root 1:", "root 2:")
+    # Either root may come first, but each keeps its formula and number together.
+    roots = {(lines[1], lines[2]), (lines[4], lines[5])}
+    assert roots == {("  x = -2", "  x = -2.0"), ("  x = 2", "  x = 2.0")}
+
+
+def test_render_no_roots() -> None:
+    x, y = sp.symbols("x y")
+    solution = System().add(sp.Eq(x + y, 1), sp.Eq(x + y, 2)).want(x).solve()
+    assert render_solution(solution, symbol=plain) == "no roots: sp.solve found no roots"
