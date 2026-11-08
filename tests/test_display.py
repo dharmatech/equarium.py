@@ -5,8 +5,10 @@ import sympy as sp
 from equarium import System
 from equarium.display import plain, render, render_history, render_solution
 from examples.up_15e.ch02.example_2_4_handwritten import sol_a
+from examples.up_15e.ch02.example_2_5_handwritten_step_by_step import m_a, speeds
 
-from example_2_4 import part_a, pre, t0, t1, v0, x0, x1
+from example_2_4 import base, part_a, pre, t0, t1, v0, v1, x0, x1
+from kinematics_005 import derived
 
 D, g = sp.symbols("D g")
 
@@ -110,6 +112,58 @@ def test_render_history_forms() -> None:
     none = System().add(sp.Eq(x1, x0)).eliminate_zeros()
     assert last_step(none) == "2. eliminate zeros: none"
     assert render_history(System(), symbol=plain) == ""
+
+
+# Origins and the new history forms
+
+
+def test_render_origins_after_eliminating() -> None:
+    lines = render(derived, symbol=plain, origins=True).splitlines()
+    assert lines[:3] == [
+        "(2.2)  v_av_x = a_x*(x_1 - x_2)/(v_1x - v_2x)",
+        "  (2.2) ← (2.2) + (2.7), eliminate dt",
+        "(2.10)  v_av_x = v_1x/2 + v_2x/2",
+    ]
+    assert lines[3] == "knowns: none"  # nothing under (2.10)
+
+
+def test_render_origins_after_eliminating_zeros() -> None:
+    lines = render(base, symbol=plain, origins=True).splitlines()
+    assert lines[:5] == [
+        "(2.2)  v_av = (-x0 + x1)/t1",
+        "  (2.2) ← (2.2), t0 = 0",
+        "(2.7)  a = (-v0 + v1)/t1",
+        "  (2.7) ← (2.7), t0 = 0",
+        "(2.10)  v_av = v0/2 + v1/2",
+    ]
+    # The symbols go through the hook: t0 is a known.
+    assert render(base, origins=True).splitlines()[1] == "  (2.2) ← (2.2), \x1b[32mt0\x1b[0m = 0"
+
+
+def test_render_origins_after_isolating() -> None:
+    isolated = base.isolate(v1, "2.7")
+    lines = render(isolated, symbol=plain, origins=True).splitlines()
+    assert lines[2:4] == ["(2.7)  v1 = a*t1 + v0", "  (2.7) ← (2.7), isolate v1"]
+
+
+def test_render_without_origins_is_unchanged() -> None:
+    assert render(part_a, symbol=plain, origins=False) == PART_A
+    for system in (derived, base, base.isolate(v1, "2.7")):
+        with_origins = render(system, symbol=plain, origins=True).splitlines()
+        assert render(system, symbol=plain) == "\n".join(
+            line for line in with_origins if not line.startswith("  ")
+        )
+
+
+def test_render_history_eliminate_and_isolate() -> None:
+    assert last_step(derived) == "4. eliminate dt using (2.7): into (2.2)"
+    assert last_step(base.isolate(v1, "2.7")) == "9. isolate v1 in (2.7)"
+    assert last_step(speeds.eliminate(m_a)).endswith(". eliminate m_a using (2)")
+    x, y, z = sp.symbols("x y z")
+    dropped = System().add(sp.Eq(x, y), sp.Eq(x, y), sp.Eq(z, x)).eliminate(x)
+    assert last_step(dropped) == "2. eliminate x using (1): into (3), dropped (2)"
+    only_dropped = System().add(sp.Eq(x, y), sp.Eq(x, y)).eliminate(x)
+    assert last_step(only_dropped) == "2. eliminate x using (1): dropped (2)"
 
 
 # Solutions

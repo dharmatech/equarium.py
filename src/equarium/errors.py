@@ -32,3 +32,12 @@ class UsageError(EquariumError):
 
 class Contradiction(EquariumError):
     """An equation that is false, such as one that became 0 = 3."""
+
+
+class EliminationError(EquariumError):
+    """A symbol that can't be eliminated: a known, a want, or one that no
+    equation gives exactly one root for."""
+
+
+class IsolationError(EquariumError):
+    """An equation that doesn't give exactly one root for the symbol."""

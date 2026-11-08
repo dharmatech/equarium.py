@@ -8,7 +8,7 @@ from sympy.logic.boolalg import BooleanAtom
 
 from equarium.errors import UsageError
 
-type Op = Literal["eliminate zeros"]
+type Op = Literal["eliminate zeros", "eliminate", "isolate"]
 
 
 @dataclass(frozen=True)

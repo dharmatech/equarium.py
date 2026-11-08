@@ -173,6 +173,28 @@ class System:
         """Substitute the knowns that are zero now into the equations."""
         return rewrite.eliminate_zeros(self)
 
+    def eliminate(self, *syms: sp.Symbol, using: str | None = None) -> System:
+        """Eliminate each symbol in turn, one step each.
+
+        `using` names the equation to solve for the symbol, and is allowed
+        only with one symbol. Without it, the simplest root is used.
+        """
+        if not syms:
+            raise UsageError("eliminate needs at least one symbol")
+        if using is not None and len(syms) > 1:
+            raise UsageError(
+                f"using ({using}) is allowed only with one symbol, not {len(syms)}",
+                labels=(using,),
+            )
+        system = self
+        for sym in syms:
+            system = rewrite.eliminate(system, sym, using)
+        return system
+
+    def isolate(self, sym: sp.Symbol, label: str) -> System:
+        """Rewrite equation `label` as `sym = …`."""
+        return rewrite.isolate(self, sym, label)
+
     def analyze(self) -> analysis.Analysis:
         return analysis.analyze(self)
 
@@ -180,8 +202,14 @@ class System:
         """Solve for the wants. Wants given here replace the system's first."""
         return solve_with(self, wants, strategy)
 
-    def show(self) -> None:
-        print(display.render(self))
+    def show(self, origins: bool = False) -> None:
+        """Print the system. With `origins`, each derived equation's origin
+        follows it."""
+        print(display.render(self, origins=origins))
+
+    def show_history(self) -> None:
+        """Print the steps that made the system, from the first."""
+        print(display.render_history(self))
 
 
 def _number(sym: sp.Symbol, raw: object) -> sp.Expr | None:
@@ -200,6 +228,8 @@ def _number(sym: sp.Symbol, raw: object) -> sp.Expr | None:
             " a relationship between symbols is an equation",
             symbol=sym,
         )
+    if number.has(sp.nan, sp.zoo, sp.oo, -sp.oo):  # -oo isn't -1*oo
+        raise UsageError(f"the value of {sym} must be finite, not {number}", symbol=sym)
     return number
 
 

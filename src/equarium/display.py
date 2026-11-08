@@ -12,10 +12,13 @@ import sympy as sp
 from sympy.printing.str import StrPrinter
 
 from equarium.analysis import Analysis, Role, analyze
+from equarium.equations import Derived, Equation
 from equarium.steps import (
     AddStep,
+    EliminateStep,
     EliminateZerosStep,
     ForgetStep,
+    IsolateStep,
     KnownStep,
     Step,
     WantStep,
@@ -84,12 +87,21 @@ def plural(count: int, noun: str) -> str:
     return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
 
 
-def render(system: System, symbol: SymbolHook = terminal) -> str:
+def render(system: System, symbol: SymbolHook = terminal, origins: bool = False) -> str:
     """One line per equation, then the knowns, the wants, the connected
-    unknowns and the equations ready to solve."""
+    unknowns and the equations ready to solve.
+
+    With `origins`, each derived equation's line is followed by its
+    origin, indented: `  (2.2) ← (2.2) + (2.7), eliminate dt`. Only the
+    origin itself is shown, not its parents' origins.
+    """
     analysis = analyze(system)
     p = Printer(symbol, analysis)
-    lines = [f"({e.label})  {p.equation(e.eq)}" for e in system.equations]
+    lines: list[str] = []
+    for e in system.equations:
+        lines.append(f"({e.label})  {p.equation(e.eq)}")
+        if origins and isinstance(e.origin, Derived):
+            lines.append("  " + render_origin(e, e.origin, p))
     lines.append(
         "knowns: " + listing(p.known(sym, value) for sym, value in system.knowns.items())
     )
@@ -105,6 +117,22 @@ def render(system: System, symbol: SymbolHook = terminal) -> str:
         lines.append("connected: none")
     lines.append("ready: " + labels(analysis.ready))
     return "\n".join(lines)
+
+
+def render_origin(equation: Equation, origin: Derived, p: Printer) -> str:
+    """`(2.2) ← (2.2) + (2.7), eliminate dt`: the equation's label, its
+    parents' labels, and what was done."""
+    parents = " + ".join(f"({parent.label})" for parent in origin.parents)
+    match origin.op:
+        case "eliminate zeros":
+            what = f"{p.doprint(origin.symbol)} = 0"
+        case "eliminate":
+            what = f"eliminate {p.doprint(origin.symbol)}"
+        case "isolate":
+            what = f"isolate {p.doprint(origin.symbol)}"
+        case _:
+            assert_never(origin.op)
+    return f"({equation.label}) ← {parents}, {what}"
 
 
 def render_solution(solution: Solution, symbol: SymbolHook = terminal) -> str:
@@ -143,14 +171,26 @@ def render_step(step: Step, p: Printer) -> str:
         case EliminateZerosStep(zeros, rewritten, dropped):
             if not zeros:
                 return "eliminate zeros: none"
-            changes: list[str] = []
-            if rewritten:
-                changes.append("into " + labels(rewritten))
-            if dropped:
-                changes.append("dropped " + labels(dropped))
-            return f"eliminate zeros {p.symbols(zeros)}: {', '.join(changes) or 'no change'}"
+            changes = _changes(rewritten, dropped)
+            return f"eliminate zeros {p.symbols(zeros)}: {changes or 'no change'}"
+        case EliminateStep(sym, using, _, rewritten, dropped):
+            done = f"eliminate {p.doprint(sym)} using ({using})"
+            changes = _changes(rewritten, dropped)
+            return f"{done}: {changes}" if changes else done
+        case IsolateStep(sym, label):
+            return f"isolate {p.doprint(sym)} in ({label})"
         case _:
             assert_never(step)
+
+
+def _changes(rewritten: tuple[str, ...], dropped: tuple[str, ...]) -> str:
+    """`into (1), (3), dropped (4)`, or empty when nothing changed."""
+    changes: list[str] = []
+    if rewritten:
+        changes.append("into " + labels(rewritten))
+    if dropped:
+        changes.append("dropped " + labels(dropped))
+    return ", ".join(changes)
 
 
 def render_history(system: System, symbol: SymbolHook = terminal) -> str:

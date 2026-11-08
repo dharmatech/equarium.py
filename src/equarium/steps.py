@@ -38,4 +38,27 @@ class EliminateZerosStep:
     dropped: tuple[str, ...]
 
 
-type Step = AddStep | KnownStep | ForgetStep | WantStep | EliminateZerosStep
+@dataclass(frozen=True)
+class EliminateStep:
+    symbol: sp.Symbol
+    using: str  # the equation the root came from, given or chosen
+    replacement: sp.Expr  # the root substituted for the symbol
+    rewritten: tuple[str, ...]  # rewritten and still there, in equation order
+    dropped: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class IsolateStep:
+    symbol: sp.Symbol
+    label: str
+
+
+type Step = (
+    AddStep
+    | KnownStep
+    | ForgetStep
+    | WantStep
+    | EliminateZerosStep
+    | EliminateStep
+    | IsolateStep
+)

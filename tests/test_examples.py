@@ -35,6 +35,7 @@ def test_the_examples_are_found() -> None:
     assert {
         "examples.up_15e.ch02.example_2_4_handwritten",
         "examples.up_15e.ch02.example_2_5_handwritten",
+        "examples.up_15e.ch02.example_2_5_handwritten_step_by_step",
     } <= set(example_modules())
     assert "examples.answers" not in example_modules()
 
