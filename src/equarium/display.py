@@ -125,16 +125,20 @@ def render_origin(equation: Equation, origin: Derived, p: Printer) -> str:
 
 def render_solution(solution: Solution, symbol: SymbolHook = terminal) -> str:
     """Each want's formula line, then its number line. Several roots come
-    numbered, and no roots gives the reason."""
-    if not solution.roots:
-        return f"no roots: {solution.reason}"
-    p = Printer(symbol, analyze(solution.system))
-    if len(solution.roots) == 1:
-        return "\n".join(_root_lines(solution.roots[0], p))
+    numbered, and no roots gives the reason. A last line gives the time,
+    `time: 6.02 s`, when it's at least 1 s."""
     lines: list[str] = []
-    for i, root in enumerate(solution.roots, 1):
-        lines.append(f"root {i}:")
-        lines.extend("  " + line for line in _root_lines(root, p))
+    p = Printer(symbol, analyze(solution.system))
+    if not solution.roots:
+        lines.append(f"no roots: {solution.reason}")
+    elif len(solution.roots) == 1:
+        lines.extend(_root_lines(solution.roots[0], p))
+    else:
+        for i, root in enumerate(solution.roots, 1):
+            lines.append(f"root {i}:")
+            lines.extend("  " + line for line in _root_lines(root, p))
+    if solution.elapsed >= 1:
+        lines.append(f"time: {solution.elapsed:.2f} s")
     return "\n".join(lines)
 
 

@@ -75,5 +75,9 @@ uv run python -m examples.up_15e.ch02.example_2_4_handwritten
 ```bash
 uv sync
 uv run pytest
+uv run pytest -m slow
 uv run pyright
 ```
+
+`uv run pytest` skips the tests marked `slow`, those that take more than
+5 s; `uv run pytest -m slow` runs only them, a few minutes in all.

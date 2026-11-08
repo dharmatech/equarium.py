@@ -2,7 +2,7 @@ import re
 
 import sympy as sp
 
-from equarium import System
+from equarium import Solution, System
 from equarium.display import plain, render, render_history, render_solution
 from examples.up_15e.ch02.example_2_4_handwritten import sol_a
 from examples.up_15e.ch02.example_2_5_handwritten_step_by_step import m_a, speeds
@@ -201,3 +201,23 @@ def test_render_no_roots() -> None:
     x, y = sp.symbols("x y")
     solution = System().add(sp.Eq(x + y, 1), sp.Eq(x + y, 2)).want(x).solve()
     assert render_solution(solution, symbol=plain) == "no roots: sp.solve found no roots"
+
+
+# The time, from 1 s
+
+
+def test_render_solution_with_the_time() -> None:
+    slow = Solution(sol_a.system, sol_a.roots, 1.5)
+    assert render_solution(slow, symbol=plain) == SOL_A + "\ntime: 1.50 s"
+
+
+def test_render_no_roots_with_the_time() -> None:
+    slow = Solution(sol_a.system, (), 2.0, "sp.solve found no roots")
+    assert render_solution(slow, symbol=plain) == (
+        "no roots: sp.solve found no roots\ntime: 2.00 s"
+    )
+
+
+def test_render_solution_under_1_s_has_no_time() -> None:
+    assert sol_a.elapsed < 1
+    assert "time:" not in render_solution(sol_a, symbol=plain)

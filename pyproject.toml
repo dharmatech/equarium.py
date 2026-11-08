@@ -24,6 +24,8 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = "-m 'not slow'"
+markers = ["slow: takes more than 5 s; run with -m slow"]
 
 [tool.pyright]
 include = ["src", "tests", "examples"]

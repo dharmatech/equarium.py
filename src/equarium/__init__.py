@@ -9,6 +9,7 @@ from equarium.errors import (
     UsageError,
 )
 from equarium.solve import Root, Solution, all_at_once
+from equarium.strategies import eliminating
 from equarium.system import System
 
 __all__ = [
@@ -17,6 +18,7 @@ __all__ = [
     "Root",
     "eq_flat",
     "all_at_once",
+    "eliminating",
     "EquariumError",
     "UsageError",
     "Contradiction",
