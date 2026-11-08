@@ -1,7 +1,7 @@
 # 001 example catalog
 
-**Status:** Checkpoint written and reviewed (2026-11-08). The catalog
-itself isn't written yet.
+**Status:** Catalog written (2026-11-08), waiting for the user's
+review.
 
 Every example and exercise in the old library's `examples/up/`, in one
 file: the problem, the book's printed answers, the techniques, the old
@@ -47,4 +47,4 @@ don't run as they are, and a few never reached the book's answer.
 ## Files
 
 - [checkpoint.md](checkpoint.md): the assignment.
-- `catalog.md`: the catalog, once written.
+- [catalog.md](catalog.md): the catalog.
