@@ -33,6 +33,8 @@ class WantStep:
 
 @dataclass(frozen=True)
 class EliminateZerosStep:
+    # The zeros newly fixed, or that still changed an equation, in the
+    # knowns' order. The step fixes every zero, listed or not.
     zeros: tuple[sp.Symbol, ...]
     rewritten: tuple[str, ...]  # rewritten and still there, in equation order
     dropped: tuple[str, ...]

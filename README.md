@@ -45,7 +45,18 @@ v1 = a*t1 + v0
 v1 = 23.0
 ```
 
-`sol_a.number(x1)` is the number alone. The full example, with part (b),
+`sol_a.number(x1)` is the number alone.
+
+A solution can have several roots. When is the motorcycle at x = 55 m?
+The quadratic gives two times, and `where` keeps the roots for which a
+SymPy relation holds:
+
+```python
+sol = motorcycle.known(x1, 55).solve(t1)   # two roots: t1 = -10.0 and 2.5
+sol.where(t1 > 0).number(t1)               # 2.5 (s)
+```
+
+The full example, with part (b),
 is in [examples/up_15e/ch02/](examples/up_15e/ch02/), and runs with:
 
 ```bash

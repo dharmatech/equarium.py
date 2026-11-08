@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING, cast
 import sympy as sp
 from sympy.logic.boolalg import BooleanFalse, BooleanTrue
 
-from equarium.display import plural
 from equarium.equations import Derived, Equation
 from equarium.errors import Contradiction, EliminationError, IsolationError, UsageError
 from equarium.steps import EliminateStep, EliminateZerosStep, IsolateStep
 from equarium.sympy_compat import free_symbols, safe_simplify, sides
+from equarium.text import plural
 
 if TYPE_CHECKING:
     from equarium.system import System
@@ -54,7 +54,9 @@ def eliminate_zeros(system: System) -> System:
     """Substitute every known that is zero now into the equations.
 
     The zeros go in one at a time, each followed by cleanup. Every zero
-    becomes fixed, whether it occurred in an equation or not.
+    becomes fixed, whether it occurred in an equation or not. The step
+    lists the zeros that weren't fixed before it, and the fixed ones
+    that still changed an equation, such as one added since.
     """
     zeros = tuple(
         sym
@@ -65,12 +67,14 @@ def eliminate_zeros(system: System) -> System:
     equations = list(system.equations)
     rewritten: set[str] = set()
     dropped: list[str] = []
+    changed: set[sp.Symbol] = set()  # the zeros that rewrote or dropped an equation
     for zero in zeros:
         kept: list[Equation] = []
         for before in equations:
             if zero not in free_symbols(before.eq):
                 kept.append(before)
                 continue
+            changed.add(zero)
             lhs, rhs = sides(before.eq)
             after = cleanup(
                 lhs.subs(zero, sp.S.Zero), rhs.subs(zero, sp.S.Zero), before.label, zero
@@ -86,7 +90,7 @@ def eliminate_zeros(system: System) -> System:
         equations = kept
 
     step = EliminateZerosStep(
-        zeros=zeros,
+        zeros=tuple(zero for zero in zeros if zero not in system.fixed or zero in changed),
         rewritten=tuple(e.label for e in equations if e.label in rewritten),
         dropped=tuple(sorted(dropped, key=order.__getitem__)),
     )

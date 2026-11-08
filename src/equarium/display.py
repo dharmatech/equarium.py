@@ -23,6 +23,7 @@ from equarium.steps import (
     Step,
     WantStep,
 )
+from equarium.text import labels, listing, plural
 
 if TYPE_CHECKING:
     from equarium.solve import Root, Solution
@@ -72,19 +73,6 @@ class Printer(StrPrinter):
 
     def symbols(self, syms: Iterable[sp.Symbol]) -> str:
         return listing(self.doprint(sym) for sym in syms)
-
-
-def listing(items: Iterable[str]) -> str:
-    """The items joined by commas, or `none`."""
-    return ", ".join(items) or "none"
-
-
-def labels(names: Iterable[str]) -> str:
-    return listing(f"({name})" for name in names)
-
-
-def plural(count: int, noun: str) -> str:
-    return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
 
 
 def render(system: System, symbol: SymbolHook = terminal, origins: bool = False) -> str:

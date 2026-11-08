@@ -11,10 +11,14 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, cast
 
 import sympy as sp
+from sympy.core.relational import Relational
+from sympy.logic.boolalg import BooleanFalse, BooleanFunction, BooleanTrue
 
 from equarium import display
 from equarium.analysis import analyze
 from equarium.errors import UsageError
+from equarium.sympy_compat import free_symbols
+from equarium.text import listing, plural
 
 if TYPE_CHECKING:
     from equarium.system import System
@@ -41,7 +45,7 @@ class Root:
         if sym not in self.formulas:
             raise UsageError(
                 f"{sym} isn't a want; the wants are "
-                + display.listing(str(want) for want in self.formulas),
+                + listing(str(want) for want in self.formulas),
                 symbol=sym,
             )
         return sym
@@ -73,12 +77,34 @@ class Solution:
         """The number for `sym`, from the only root."""
         return self._only_root(f"number({sym})").number(sym)
 
+    def where(self, relation: sp.Basic) -> Solution:
+        """The roots for which `relation` holds, such as `t1 > 0`.
+
+        `relation` is a SymPy relation over the wants and the knowns, or
+        relations joined with `&`, `|` and `~`. Each root's numbers are
+        substituted for the wants, then the knowns' values, and the root
+        is kept when the result is `true` and dropped when it's `false`.
+        Anything else is a `UsageError`. The roots kept stay in their
+        order, and when none are, the solution has no roots and a reason.
+        """
+        if not isinstance(relation, Relational | BooleanFunction):
+            raise UsageError(
+                f"where takes a SymPy relation, such as t1 > 0, not {relation!r}"
+            )
+        if not self.roots:
+            return self
+        values = _values(self.system)
+        kept = tuple(root for root in self.roots if _holds(relation, root, values))
+        if not kept:
+            return Solution(self.system, (), self.elapsed, f"no root satisfies {relation}")
+        return Solution(self.system, kept, self.elapsed)
+
     def show(self) -> None:
         print(display.render_solution(self))
 
     def _only_root(self, call: str) -> Root:
         if len(self.roots) != 1:
-            count = display.plural(len(self.roots), "root")
+            count = plural(len(self.roots), "root")
             why = f" ({self.reason})" if self.reason is not None else ""
             raise UsageError(f"{call} needs exactly one root, and there are {count}{why}")
         return self.roots[0]
@@ -119,11 +145,23 @@ def all_at_once(system: System) -> Solution:
     for want in system.wants:
         if any(want not in found_root for found_root in found):
             return Solution(system, (), elapsed, f"sp.solve left {want} undetermined")
+    for found_root in found:
+        for want in system.wants:
+            unknowns = sorted(
+                free_symbols(found_root[want]) - system.knowns.keys(),
+                key=lambda sym: sym.name,
+            )
+            if unknowns:
+                return Solution(
+                    system,
+                    (),
+                    elapsed,
+                    f"sp.solve left {want} in terms of the"
+                    f" {'unknown' if len(unknowns) == 1 else 'unknowns'}"
+                    f" {listing(sym.name for sym in unknowns)}",
+                )
 
-    # Typed as `Expr.subs` takes them, so that it returns an `Expr`.
-    values: dict[sp.Basic | complex, sp.Expr | complex] = {
-        sym: value for sym, value in system.knowns.items() if value is not None
-    }
+    values = _values(system)
     roots = tuple(
         Root(
             formulas=MappingProxyType({want: found_root[want] for want in system.wants}),
@@ -136,9 +174,31 @@ def all_at_once(system: System) -> Solution:
     return Solution(system, roots, elapsed)
 
 
-def _number(
-    formula: sp.Expr, values: Mapping[sp.Basic | complex, sp.Expr | complex]
-) -> sp.Expr:
+# Typed as `Expr.subs` takes them, so that it returns an `Expr`.
+type Values = Mapping[sp.Basic | complex, sp.Expr | complex]
+
+
+def _values(system: System) -> Values:
+    """The knowns that have a number, with their numbers."""
+    return {sym: value for sym, value in system.knowns.items() if value is not None}
+
+
+def _number(formula: sp.Expr, values: Values) -> sp.Expr:
     """`sp.N` of the formula with the values substituted. A known with no
     number stays a symbol, and units stay as they come."""
     return cast(sp.Expr, sp.N(formula.subs(values)))  # sp.N is untyped
+
+
+def _holds(relation: sp.Basic, root: Root, values: Values) -> bool:
+    """Whether `relation` is `true` for the root's numbers and the knowns'
+    values, or `false`. Anything else is a `UsageError`."""
+    numbers: Values = {want: number for want, number in root.numbers.items()}
+    try:
+        result = relation.subs(numbers).subs(values)
+    except TypeError as e:  # a comparison with a number that isn't real
+        raise UsageError(f"{relation} doesn't reduce to true or false: {e}") from e
+    if isinstance(result, BooleanTrue):
+        return True
+    if isinstance(result, BooleanFalse):
+        return False
+    raise UsageError(f"{relation} became {result}, not true or false")
