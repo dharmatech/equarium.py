@@ -1,7 +1,6 @@
 # core 001: state and display
 
-**Status:** Written (2026-11-07), waiting for the user's review. Not
-started.
+**Status:** Done at `8137727` and reviewed (2026-11-08).
 
 If you've been told to read this file, this is the whole assignment.
 Build it, check it, commit it, report, and stop.

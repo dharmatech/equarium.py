@@ -1,7 +1,8 @@
 # 002 core
 
 **Status:** Spec agreed (2026-11-07). Increment 001, state and display,
-is done (2026-11-08) and waits for its review.
+is done and reviewed (2026-11-08). The checkpoint for 002, all at once,
+is written and waits for the user's review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -22,7 +23,7 @@ spec and checkpoints.
 To implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/002-core/checkpoints/001-state-and-display.md`
+> Read `docs/design/implementation/002-core/checkpoints/002-all-at-once.md`
 > in `~/journal/2026-11-06-equations/equarium.py`. If you've been told
 > to read that file, it is the whole assignment.
 
@@ -32,8 +33,8 @@ From the [spec](spec.md#increments). 001 of 7 done.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
-| 001 | state and display | [001](checkpoints/001-state-and-display.md) | Done (2026-11-08), waiting for review | |
-| 002 | all at once | | Planned | |
+| 001 | state and display | [001](checkpoints/001-state-and-display.md) | Done, reviewed (2026-11-08) | `8137727` |
+| 002 | all at once | [002](checkpoints/002-all-at-once.md) | Checkpoint written (2026-11-08), waiting for review | |
 | 003 | eliminate and isolate | | Planned | |
 | 004 | roots and filters | | Planned | |
 | 005 | units | | Planned | |

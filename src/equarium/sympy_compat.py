@@ -8,8 +8,9 @@ import sympy as sp
 def safe_simplify(expr: sp.Expr) -> sp.Expr:
     """`sp.simplify(expr)`, or `expr` unchanged when SymPy raises."""
     # SymPy issue 28926 (https://github.com/sympy/sympy/issues/28926):
-    # simplify can raise instead of returning a result. This is the package's only `try` around `simplify`, so it's the
-    # one place to change once the issue is fixed.
+    # simplify can raise instead of returning a result. This is the
+    # package's only `try` around `simplify`, so it's the one place to
+    # change once the issue is fixed.
     try:
         return sp.simplify(expr)
     except Exception:
