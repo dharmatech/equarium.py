@@ -1,7 +1,7 @@
 # 002 core
 
 **Status:** Spec agreed (2026-11-07). The first checkpoint, 001 state
-and display, is next.
+and display, is written and waits for the user's review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -15,24 +15,27 @@ spec and checkpoints.
 - [spec.md](spec.md): what was decided, the sketches of 2.4 and 2.5,
   and the seven increments with their checks.
 - `checkpoints/`: one per increment, written when the one before has
-  landed.
+  landed, and implemented in a fresh conversation each. The
+  conversation that manages the checkpoints reviews each commit, and
+  the user sees each review before the next checkpoint is written.
 
-To start the spec, give a new conversation this:
+To implement a checkpoint, give a new conversation this, with the
+checkpoint's file name:
 
-> Read `docs/design/implementation/002-core/charter.md` in
-> `~/journal/2026-11-06-equations/equarium.py`. If you've been told to
-> read that file, it is the whole assignment.
+> Read `docs/design/implementation/002-core/checkpoints/001-state-and-display.md`
+> in `~/journal/2026-11-06-equations/equarium.py`. If you've been told
+> to read that file, it is the whole assignment.
 
 ## Increments
 
 From the [spec](spec.md#increments). None started.
 
-| # | Increment | Status | Commit |
-|---|---|---|---|
-| 001 | state and display | Planned | |
-| 002 | all at once | Planned | |
-| 003 | eliminate and isolate | Planned | |
-| 004 | roots and filters | Planned | |
-| 005 | units | Planned | |
-| 006 | elimination attempts | Planned | |
-| 007 | the old physics code on the core | Planned (needs 001 example catalog) | |
+| # | Increment | Checkpoint | Status | Commit |
+|---|---|---|---|---|
+| 001 | state and display | [001](checkpoints/001-state-and-display.md) | Checkpoint written (2026-11-07), waiting for review | |
+| 002 | all at once | | Planned | |
+| 003 | eliminate and isolate | | Planned | |
+| 004 | roots and filters | | Planned | |
+| 005 | units | | Planned | |
+| 006 | elimination attempts | | Planned | |
+| 007 | the old physics code on the core | | Planned (needs 001 example catalog) | |
