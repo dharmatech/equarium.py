@@ -11,9 +11,11 @@ its `eq_flat` with `m01.a.y = -g`, are zero knowns here, followed by
 `eliminate_zeros()` where it called its `eliminate_zero_eqs`. Its
 `m0.vel.y = 0.0` is a value, set after that step, so it stays a symbol in
 the formulas. So is `m1.vel.x = 9.0`: the book's v_x is a given here. The
-distance, speed and angle are written by hand from the components, as in
-the old script. Its six solves, each of one want as its equations grew,
-are one here, with the velocity's y-component added.
+distance is the position's magnitude, from `m1.pos.to_polar()`, and the
+speed and direction come from `m1.vel.to_polar()` and
+`m1.vel.degrees()`. The old script wrote them by hand. Its six solves,
+each of one want as its equations grew, are one here, with the
+velocity's y-component added.
 
 One step isn't in the old script: `eliminate(m01.dt)`. After the zeros,
 equation (4) is `0 = (-m0.vel.x + m1.vel.x)/m01.dt`, with both
@@ -28,7 +30,7 @@ out. Eliminating `m01.dt` does the same here.
 
 import sympy as sp
 
-from equarium import System, eq_flat
+from equarium import System
 from equarium.physics import XY, Particle
 from examples.answers import Answer
 
@@ -37,7 +39,6 @@ m0, m1 = m.states
 m01 = m.edge(0, 1)
 
 g = sp.Symbol("g")
-dist, vel_mag, vel_angle, vel_angle_deg = sp.symbols("dist vel_mag vel_angle vel_angle_deg")
 
 cliff = (
     System()
@@ -55,36 +56,31 @@ cliff = (
 
 ride = (
     cliff
-    # The distance from the edge.
-    .add(sp.Eq(dist, sp.sqrt(m1.pos.x**2 + m1.pos.y**2)))
-    # The speed and direction.
-    .add(
-        *eq_flat(
-            vel_mag, sp.sqrt(m1.vel.x**2 + m1.vel.y**2),
-            vel_angle, sp.atan2(m1.vel.y, m1.vel.x),
-        )
-    )
-    .add(sp.Eq(vel_angle_deg, vel_angle * 180 / sp.pi))
+    .add(*m1.pos.to_polar())  # (9), (10): the distance, and the position's angle
+    .add(*m1.vel.to_polar())  # (11), (12): the speed and direction
+    .add(*m1.vel.degrees())  # (13)
 )
 
-sol = ride.solve(m1.pos.x, m1.pos.y, dist, m1.vel.y, vel_mag, vel_angle, vel_angle_deg)
-# m1.pos.x = m1.t*(m0.vel.x + m1.vel.x)/2                                        4.5
-# m1.pos.y = m1.t*(-g*m1.t + 2*m0.vel.y)/2                                       -1.225
-# dist = sqrt(m1.t**2*((m0.vel.x + m1.vel.x)**2 + (g*m1.t - 2*m0.vel.y)**2))/2   4.66
-# m1.vel.y = -g*m1.t + m0.vel.y                                                  -4.9
-# vel_mag = sqrt(m1.vel.x**2 + (g*m1.t - m0.vel.y)**2)                           10.25
-# vel_angle = atan2(-g*m1.t + m0.vel.y, m1.vel.x)                                -0.499
-# vel_angle_deg = 180*atan2(-g*m1.t + m0.vel.y, m1.vel.x)/pi                     -28.6
+sol = ride.solve(
+    m1.pos.x, m1.pos.y, m1.pos.mag, m1.vel.y, m1.vel.mag, m1.vel.angle, m1.vel.angle_deg
+)
+# m1.pos.x = m1.t*(m0.vel.x + m1.vel.x)/2                                            4.5
+# m1.pos.y = m1.t*(-g*m1.t + 2*m0.vel.y)/2                                           -1.225
+# m1.pos.mag = sqrt(m1.t**2*((m0.vel.x + m1.vel.x)**2 + (g*m1.t - 2*m0.vel.y)**2))/2   4.66
+# m1.vel.y = -g*m1.t + m0.vel.y                                                      -4.9
+# m1.vel.mag = sqrt(m1.vel.x**2 + (g*m1.t - m0.vel.y)**2)                            10.25
+# m1.vel.angle = atan2(-g*m1.t + m0.vel.y, m1.vel.x)                                 -0.499
+# m1.vel.angle_deg = 180*atan2(-g*m1.t + m0.vel.y, m1.vel.x)/pi                      -28.6
 
 # The book's v_x = 9.0 m/s is a given here, so it has no Answer.
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol, m1.pos.x, "4.5"),  # m
     Answer(sol, m1.pos.y, "-1.2"),  # m
-    Answer(sol, dist, "4.7"),  # m
+    Answer(sol, m1.pos.mag, "4.7"),  # m
     Answer(sol, m1.vel.y, "-4.9"),  # m/s, a new want
-    Answer(sol, vel_mag, "10.2"),  # m/s
-    Answer(sol, vel_angle_deg, "-29"),  # degrees
+    Answer(sol, m1.vel.mag, "10.2"),  # m/s
+    Answer(sol, m1.vel.angle_deg, "-29"),  # degrees
 ]
 
 if __name__ == "__main__":

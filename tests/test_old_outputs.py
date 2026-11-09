@@ -1,6 +1,8 @@
 """The ports against the old scripts: every formula the catalog quotes for
 a ported script's want, verbatim, and its number, by value. The physics
 layer's symbols are renamed back to the old names first, with `old_name`.
+The names a script made itself, such as 3.6's `dist`, are renamed back
+through the module's map, `SCRIPT_NAMES`.
 
 The old output is as `docs/design/implementation/001-example-catalog/catalog.md`
 quotes it, from the old scripts run on 2026-11-08. The differences that
@@ -35,7 +37,7 @@ from sympy.physics.units import Quantity, hour, kilometer, meter, newton, second
 
 from equarium import Solution, System
 from equarium.physics import Var
-from old_names import old_name, old_str
+from old_names import SCRIPT_NAMES, old_name, old_str
 from slow_examples import SLOW_EXAMPLES
 
 UNITS = {"meter": meter, "second": second, "kilometer": kilometer, "hour": hour}
@@ -362,11 +364,11 @@ def test_old_output(
 ) -> None:
     sol = getattr(importlib.import_module(f"examples.up_15e.{module}"), solution)
     assert isinstance(sol, Solution)
-    (symbol,) = [w for w in sol.system.wants if old_name(w) == want]
+    (symbol,) = [w for w in sol.system.wants if old_name(w, module) == want]
 
     # The formula, renamed back, verbatim. With several roots, SymPy's
     # order doesn't matter: the row's formula picks its root.
-    formulas = [old_str(root.formula(symbol)) for root in sol.roots]
+    formulas = [old_str(root.formula(symbol), module) for root in sol.roots]
     assert formula in formulas
     root = sol.roots[formulas.index(formula)]
     if number is None:
@@ -379,7 +381,7 @@ def test_old_output(
             sym: value for sym, value in sol.system.knowns.items() if value is not None
         }
         for name, value in OLD_GIVENS[module].items():
-            (given,) = [sym for sym in sol.system.knowns if old_name(sym) == name]
+            (given,) = [sym for sym in sol.system.knowns if old_name(sym, module) == name]
             assert given in values, f"{given} has no number in the port"
             values[given] = value
         ours = cast(sp.Expr, sp.N(root.formula(symbol).subs(values)))  # sp.N is untyped
@@ -396,7 +398,6 @@ def test_old_output(
 OLD_3_10 = ("d_0_v_mag*sin(d_0_v_angle)", "D*d_0_v_mag*sin(d_0_v_angle)/d_1_x")
 
 
-@pytest.mark.slow
 def test_3_10_show_that() -> None:
     module = importlib.import_module("examples.up_15e.ch03.examples.n10.main")
     proved = getattr(module, "proved")
@@ -463,6 +464,34 @@ def test_old_name_of_a_plain_symbol() -> None:
 def test_old_name_of_a_var_the_rule_doesnt_know(var: Var) -> None:
     with pytest.raises(ValueError, match=re.escape(var.name)):
         old_name(var)
+
+
+# The per-module map, SCRIPT_NAMES
+
+
+def test_old_name_in_its_module_is_the_scripts() -> None:
+    m1 = (Var("m", "1", "pos", "mag"), Var("m", "1", "vel", "angle_deg"))
+    assert [old_name(v, "ch03.examples.n06.main") for v in m1] == ["dist", "vel_angle_deg"]
+    R_angle_deg = Var("R", "", "angle_deg")
+    assert old_name(R_angle_deg, "ch04.examples.n01.main") == "R_angle_deg"
+    assert old_name(R_angle_deg, "ch04.examples.n01.main_step_by_step") == "R_angle_deg"
+
+
+def test_old_name_the_map_wins_over_the_rule() -> None:
+    b0_vel_mag = Var("b", "0", "vel", "mag")
+    assert old_name(b0_vel_mag, "ch03.examples.n07.main") == "b0_vel_mag"
+    assert old_name(b0_vel_mag) == "b_0_v_mag"
+    assert old_name(b0_vel_mag, "ch03.examples.n09.main") == "b_0_v_mag"
+
+
+def test_old_name_the_map_applies_in_its_module_only() -> None:
+    m1_pos_mag = Var("m", "1", "pos", "mag")
+    with pytest.raises(ValueError, match=re.escape(m1_pos_mag.name)):
+        old_name(m1_pos_mag, "ch03.examples.n08.main")
+
+
+def test_every_mapped_module_has_rows() -> None:
+    assert set(SCRIPT_NAMES) <= {row[0] for row in OLD}
 
 
 def test_old_str_prints_the_old_order() -> None:

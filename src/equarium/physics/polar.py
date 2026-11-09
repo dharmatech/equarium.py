@@ -1,9 +1,10 @@
 """A 2-axis vector's polar form, one way each: `from_polar` gives the
-components from the magnitude and the angle, and `to_polar` the magnitude
-and the angle from the components.
+components from the magnitude and the angle, `to_polar` the magnitude
+and the angle from the components, and `degrees` the angle in degrees
+from the angle in radians.
 
-Two-way polar is both, added together. The methods `v.from_polar()` and
-`v.to_polar()` call these.
+Two-way polar is `from_polar` and `to_polar`, added together. The methods
+`v.from_polar()`, `v.to_polar()` and `v.degrees()` call these.
 """
 
 from typing import TYPE_CHECKING, cast
@@ -30,3 +31,8 @@ def to_polar(v: Vector[XY]) -> list[sp.Eq]:
         cast(sp.Eq, sp.Eq(v.mag, sp.sqrt(v.x**2 + v.y**2))),
         cast(sp.Eq, sp.Eq(v.angle, sp.atan2(v.y, v.x))),
     ]
+
+
+def degrees(v: Vector[XY]) -> list[sp.Eq]:
+    """`v.angle_deg = 180*v.angle/pi`, SymPy's `deg`."""
+    return [cast(sp.Eq, sp.Eq(v.angle_deg, sp.deg(v.angle)))]

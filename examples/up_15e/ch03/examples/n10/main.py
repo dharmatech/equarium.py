@@ -8,11 +8,12 @@ monkey, provided it gets there before the monkey reaches the ground.
 
 Ported from combine-equations.py's
 `examples/up/ch3/up-example-3.10-v1-001.py`: two models, the dart's
-launch polar both ways, and 19 eliminations by hand in its order. Each
-model's zero equations are zero knowns, eliminated in its own system
-before the two meet, as in the old script. The book's d is `D`. All the
-givens are symbols: knowns with no number. The old script's g = 9.81
-was never used.
+launch polar one way, where the old script had it both ways, and 19
+eliminations by hand in its order. The dart's eliminations leave the
+same two equations as the old script's. Each model's zero equations are
+zero knowns, eliminated in its own system before the two meet, as in
+the old script. The book's d is `D`. All the givens are symbols: knowns
+with no number. The old script's g = 9.81 was never used.
 
 The old script keeps three equations, picked by index, and links them
 through new symbols `t` and `y`; here they're picked by label. What is
@@ -45,8 +46,8 @@ d01 = d.edge(0, 1)
 dart_start = (
     System()
     .add(*d.kinematics())  # (1) to (7)
-    .add(*d0.vel.from_polar(), *d0.vel.to_polar())  # (8) to (11)
-    .add(*eq_flat(d01.a.y, -g, d0.vel.x, d1.vel.x))  # (12), (13): projectile motion
+    .add(*d0.vel.from_polar())  # (8), (9)
+    .add(*eq_flat(d01.a.y, -g, d0.vel.x, d1.vel.x))  # (10), (11): projectile motion
     .known({d0.pos.x: 0, d0.pos.y: 0, d01.a.x: 0, d0.t: 0})  # from the muzzle, at t = 0
     .known(g)
     .known(d0.vel.mag)  # v0

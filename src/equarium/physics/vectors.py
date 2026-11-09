@@ -5,7 +5,7 @@ A `Vector` is a state's or an edge's, `m0.pos` or `m01.a`, or a lone
 vector, such as a force, `Vector("F1", XY)`. Vectors add, subtract and
 scale, component by component, into a `Vec`, and `.eq` makes one equation
 per axis: `R.eq(F1 + F2 + F3)`. An `XY` vector has the polar parts `mag`,
-`angle` and `angle_deg`, with `from_polar` and `to_polar`.
+`angle` and `angle_deg`, with `from_polar`, `to_polar` and `degrees`.
 """
 
 from dataclasses import dataclass
@@ -78,6 +78,10 @@ class Vector[A: Axes]:
     def to_polar(self: Vector[XY]) -> list[sp.Eq]:
         """The magnitude and the angle from the components."""
         return polar.to_polar(self)
+
+    def degrees(self: Vector[XY]) -> list[sp.Eq]:
+        """The angle in degrees from the angle in radians."""
+        return polar.degrees(self)
 
     def __add__(self, other: Vector[A] | Vec[A]) -> Vec[A]:
         return _combine(self, other, "+")

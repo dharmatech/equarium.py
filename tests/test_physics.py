@@ -174,6 +174,8 @@ def test_vector_misuses_raise() -> None:
         getattr(f, "mag")
     with pytest.raises(UsageError, match="f is in X, so it has no mag"):
         getattr(f, "from_polar")()
+    with pytest.raises(UsageError, match="f is in X, so it has no angle_deg"):
+        getattr(f, "degrees")()
     with pytest.raises(UsageError, match=re.escape("F1 + f: F1 is in XY, but f is in X")):
         _ = F1 + cast(Any, f)
     with pytest.raises(UsageError, match=re.escape("F1 - f: F1 is in XY, but f is in X")):
@@ -271,6 +273,7 @@ def test_polar_one_way_each() -> None:
         "Eq(d0.vel.mag, sqrt(d0.vel.x**2 + d0.vel.y**2))",
         "Eq(d0.vel.angle, atan2(d0.vel.y, d0.vel.x))",
     ]
+    assert [str(eq) for eq in d0.vel.degrees()] == ["Eq(d0.vel.angle_deg, 180*d0.vel.angle/pi)"]
 
 
 def test_vector_equations_renamed_back_are_the_old_copys() -> None:
@@ -319,6 +322,19 @@ def test_the_book_notation_of_the_polar_parts() -> None:
     assert [with_p.text(s) for s in symbols] == ["rP0", "vP0", "αP0", "θP0"]
 
 
+def test_the_book_notation_of_an_angle_in_degrees() -> None:
+    xy0 = Particle("m", 2, XY).states[0]
+    symbols = (xy0.vel.angle_deg, xy0.pos.angle_deg)
+    assert [BookNotation().text(s) for s in symbols] == ["α0°", "θ0°"]
+    with_p = BookNotation(owners={"m": "P"})
+    assert [with_p.text(s) for s in symbols] == ["αP0°", "θP0°"]
+    lone = (R.angle_deg, F1.angle_deg)
+    assert [BookNotation().text(s) for s in lone] == ["θR°", "θF1°"]
+    # A lone vector's name is its own: owners applies to particles.
+    with_p = BookNotation(owners={"R": "P", "F1": "P"})
+    assert [with_p.text(s) for s in lone] == ["θR°", "θF1°"]
+
+
 def test_the_book_notation_of_a_lone_vector() -> None:
     symbols = (F1.x, F1.y, F1.mag, R.angle)
     assert [BookNotation().text(s) for s in symbols] == ["F1x", "F1y", "F1", "θR"]
@@ -331,8 +347,7 @@ def test_the_book_notation_of_other_symbols_is_the_name() -> None:
     book = BookNotation()
     assert book.text(sp.Symbol("m_v")) == "m_v"
     assert book.text(Var("m", "01", "a", "mag")) == "m01.a.mag"
-    assert book.text(Var("m", "0", "vel", "angle_deg")) == "m0.vel.angle_deg"
-    assert book.text(Var("F1", "", "angle_deg")) == "F1.angle_deg"
+    assert book.text(Var("m", "01", "a", "angle_deg")) == "m01.a.angle_deg"
 
 
 def test_the_book_notation_colors_by_role() -> None:

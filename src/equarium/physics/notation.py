@@ -2,7 +2,7 @@
 
 The debug form is the symbol's name, `m0.pos.x`, with the core's default
 hook. The book's form is for reading: `x0`, `v0x`, `ax`, `Δt`, `v0`, `α0`,
-`F1x`, `θR`.
+`α0°`, `F1x`, `θR`.
 """
 
 from collections.abc import Mapping
@@ -33,10 +33,13 @@ class BookNotation:
     A state's position and velocity have polar parts: `m0.pos.mag` prints
     `r0`, `m0.vel.mag` `v0`, `m0.vel.angle` `α0` and `m0.pos.angle` `θ0`.
     A lone vector's name is its own, and `owners` doesn't apply to it:
-    `F1.x` prints `F1x`, `F1.mag` `F1` and `R.angle` `θR`.
+    `F1.x` prints `F1x`, `F1.mag` `F1` and `R.angle` `θR`. An angle in
+    degrees is its angle, then `°`: `m0.vel.angle_deg` prints `α0°`,
+    `m0.pos.angle_deg` `θ0°` and `R.angle_deg` `θR°`.
 
     A plain symbol, and a `Var` the notation doesn't know, print their
-    names: `m0.vel.angle_deg`, an edge's polar parts such as `m01.a.mag`.
+    names: an edge's polar parts, such as `m01.a.mag` and
+    `m01.a.angle_deg`.
     The book's form can be ambiguous: two owners without subscripts both
     print `x0`.
     """
@@ -57,6 +60,8 @@ class BookNotation:
                     return symbol.owner
                 case ("angle",):
                     return f"θ{symbol.owner}"
+                case ("angle_deg",):
+                    return f"θ{symbol.owner}°"
                 case _:
                     return symbol.name
         if not symbol.where.isdigit():
@@ -71,12 +76,16 @@ class BookNotation:
                     return f"r{who}{where}"
                 case ("pos", "angle"):
                     return f"θ{who}{where}"
+                case ("pos", "angle_deg"):
+                    return f"θ{who}{where}°"
                 case ("vel", axis) if axis in AXES:
                     return f"v{who}{where}{axis}"
                 case ("vel", "mag"):
                     return f"v{who}{where}"
                 case ("vel", "angle"):
                     return f"α{who}{where}"
+                case ("vel", "angle_deg"):
+                    return f"α{who}{where}°"
                 case ("t",):
                     return f"t{who}{where}"
                 case _:

@@ -22,7 +22,7 @@ import sympy as sp
 
 from equarium import System
 from examples.answers import Answer
-from examples.up_15e.ch04.examples.n01.main import F1, F2, F3, R, R_angle_deg, sol_book
+from examples.up_15e.ch04.examples.n01.main import F1, F2, F3, R, sol_book
 
 start = (
     System()
@@ -48,15 +48,15 @@ ys = xs.eliminate(F1.y, F2.y, F3.y)
 sol = ys.solve(R.x, R.y, R.mag, R.angle)
 # The same formulas as main.py's: -100.45, 79.66, 128.2 and 2.471.
 
-degrees = ys.add(sp.Eq(R_angle_deg, sp.deg(R.angle)))  # (11)
-sol_deg = degrees.solve(R_angle_deg)
-# R_angle_deg = 180*atan2(R.y's formula, R.x's)/pi   141.59
+degrees = ys.add(*R.degrees())  # (11)
+sol_deg = degrees.solve(R.angle_deg)
+# R.angle_deg = 180*atan2(R.y's formula, R.x's)/pi   141.59
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol, R.x, "-100"),  # N, a new want
     Answer(sol, R.y, "80"),  # N, a new want
     Answer(sol, R.mag, "128"),  # N
-    Answer(sol_book, R_angle_deg, "141"),  # degrees, the book's step
+    Answer(sol_book, R.angle_deg, "141"),  # degrees, the book's step
 ]
 
 STAGES: list[tuple[str, System]] = [

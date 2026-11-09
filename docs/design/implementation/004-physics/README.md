@@ -2,8 +2,8 @@
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
 Increments 001, symbols and chapter 2, and 002, chapters 3 and 4
-renamed, are done and reviewed. The rename is complete. Checkpoint 003,
-polar and degrees, is written (2026-11-09).
+renamed, are done and reviewed. The rename is complete. Increment 003,
+polar and degrees, is built and waits for review.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -34,14 +34,14 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 2 of 7 done. 001 and 002 rename
+From the [spec](spec.md#increments). 3 of 7 done. 001 and 002 rename
 only; 003 to 006 change equations; 007 removes the old copy.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
-| 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Checkpoint written (2026-11-09) | |
+| 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done (2026-11-09) | |
 | 004 | events | | Not started | |
 | 005 | the projectile setup | | Not started | |
 | 006 | Newton on the edge | | Not started | |
@@ -64,15 +64,15 @@ The spec has them all. The ones the user settled (2026-11-08):
 ## What's next
 
 Increment 003, polar and degrees, the first increment that changes
-equations. Its [checkpoint](checkpoints/003-polar-and-degrees.md) is
-written (2026-11-09). Its scratch run found that no formula changes
-once renamed back: the equations and the names change, but all 66 old
-formulas and 3.10's show-that come back verbatim. For that, 003 adds a
-per-module map to `tests/old_names.py`, for the names an old script
-made itself, such as 3.6's `dist`. The test rule for a row whose
-formula does change is designed in the checkpoint, and built by the
-first increment that needs it, likely 005. 3.9 and 3.10 leave
-`SLOW_EXAMPLES`: one way, they import in 1.7 s and 4.1 s.
+equations, is built and waits for review. Checkpoint 004, events, is
+written after it. No formula changed once renamed back: the equations
+and the names change, but all 66 old formulas and 3.10's show-that
+come back verbatim, through a per-module map in `tests/old_names.py`
+for the names an old script made itself, such as 3.6's `dist`. The
+test rule for a row whose formula does change is designed in the
+[checkpoint](checkpoints/003-polar-and-degrees.md), and built by the
+first increment that needs it, likely 005. 3.9 and 3.10 left
+`SLOW_EXAMPLES`, which is now empty.
 
 The review of 001 (2026-11-08) found nothing to fix. 294 fast tests and
 8 slow ones pass, pyright reports 0 errors, and all 66 old formulas

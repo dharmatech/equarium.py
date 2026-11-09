@@ -12,19 +12,16 @@ solved the range from the top-of-flight system, which gives half of it.
 Here the range comes from the range system. Its zero equations are zero
 knowns here, followed by `eliminate_zeros()` where it called its
 `eliminate_zero_eqs`: four in the base, `p1.vel.y` at the top and
-`p1.pos.y` back at the launch height. The launch is polar both ways,
-with `p0.vel.from_polar()` and `p0.vel.to_polar()`, on `p0.vel.mag` and
-`p0.vel.angle`. All the givens are symbols: knowns with no number. The
-old script's g = 9.81 was never used.
+`p1.pos.y` back at the launch height. The launch is polar one way,
+with `p0.vel.from_polar()`, on `p0.vel.mag` and `p0.vel.angle`. All the
+givens are symbols: knowns with no number. The old script's g = 9.81
+was never used.
 
-The old script eliminates `p0.vel.x` by hand before it solves. Here that
-isn't enough: with `p0.vel.x` eliminated through `p0.vel.x = p1.vel.x`,
-the solve still finds no roots, since the two-way equations (12) and
-(13) still hold unknowns. The old solve found its roots only because its
-`values` gave the magnitude and the angle the symbols `v0` and `a0`,
-which became two more unknowns. So this port eliminates `p0.vel.x` and
-`p0.vel.y` through the polar equations (10) and (11). That leaves (12)
-and (13) with knowns only, so the solve leaves them out.
+Each part solves all at once. The old script eliminated `p0.vel.x` by
+hand before it solved, and with the launch polar both ways this port
+eliminated `p0.vel.x` and `p0.vel.y` through the polar equations, or
+the solve found no roots: the equations back to polar still held
+unknowns. One way, neither step is needed.
 
     uv run python -m examples.up_15e.ch03.examples.n08.main
 """
@@ -47,31 +44,21 @@ launch = (
     .add(*eq_flat(p01.a.y, -g, p0.vel.x, p1.vel.x))  # (8), (9): projectile motion
     .known({p0.pos.x: 0, p0.pos.y: 0, p01.a.x: 0, p0.t: 0})  # from the origin, at t = 0
     .eliminate_zeros()
-    # Launched at speed v0 and angle α0, polar both ways: (10) to (13).
-    .add(*p0.vel.from_polar(), *p0.vel.to_polar())
+    # Launched at speed v0 and angle α0, polar one way: (10), (11).
+    .add(*p0.vel.from_polar())
     .known(g)
     .known(p0.vel.mag)  # v0
     .known(p0.vel.angle)  # α0
 )
 
 # (a) The highest point, where the vertical velocity is zero.
-top = (
-    launch.known(p1.vel.y, 0)
-    .eliminate_zeros()
-    .eliminate(p0.vel.x, using="10")  # see the docstring
-    .eliminate(p0.vel.y, using="11")
-)
+top = launch.known(p1.vel.y, 0).eliminate_zeros()
 sol_top = top.solve(p1.t, p1.pos.y)
 # p1.t = p0.vel.mag*sin(p0.vel.angle)/g
 # p1.pos.y = p0.vel.mag**2*sin(p0.vel.angle)**2/(2*g)
 
 # (b) Back at the launch height.
-back = (
-    launch.known(p1.pos.y, 0)
-    .eliminate_zeros()
-    .eliminate(p0.vel.x, using="10")
-    .eliminate(p0.vel.y, using="11")
-)
+back = launch.known(p1.pos.y, 0).eliminate_zeros()
 sol_range = back.solve(p1.t, p1.pos.x)
 # p1.t = 2*p0.vel.mag*sin(p0.vel.angle)/g
 # p1.pos.x = p0.vel.mag**2*sin(2*p0.vel.angle)/g

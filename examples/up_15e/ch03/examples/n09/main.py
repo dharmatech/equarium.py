@@ -8,20 +8,22 @@ Ported from combine-equations.py's `examples/up/ch3/up-example-3.9-v2.py`,
 with the book's g = 9.80 m/s², not the old 9.81. Its four zero
 equations, `b1.pos.y` among them (it hits the ground), are zero knowns
 here, followed by `eliminate_zeros()` where it called
-`eliminate_zero_eqs`. The launch is polar both ways, through
-`from_polar()` and `to_polar()`, so `all_at_once` finds no roots, and
-`eliminating()` solves it, as the old version 2 did. The origin is at
-the ground, not at the hand as in the book: the same answer. The time
-is added as a want, solved with x in no more time than x alone. The
-book prints both roots, -1.7 s and 0.98 s, and the negative one is the
-other root of x, -15.7 m.
+`eliminate_zero_eqs`. The launch is polar one way,
+`b0.vel.from_polar()`, so it solves all at once, in about 1.6 s. The
+old version 2 had it polar both ways, so `all_at_once` found no roots,
+and `eliminating()` solved it, in about 6 s.
+`tests/test_strategies.py` keeps that lesson, written out. The origin
+is at the ground, not at the hand as in the book: the same answer. The
+time is added as a want, solved with x in no more time than x alone.
+The book prints both roots, -1.7 s and 0.98 s, and the negative one is
+the other root of x, -15.7 m.
 
     uv run python -m examples.up_15e.ch03.examples.n09.main
 """
 
 import sympy as sp
 
-from equarium import System, eliminating, eq_flat
+from equarium import System, eq_flat
 from equarium.physics import XY, Particle
 from examples.answers import Answer
 
@@ -39,12 +41,12 @@ window = (
     .eliminate_zeros()
     .known(g, 9.80)  # m/s²
     .known(b0.pos.y, 8.0)  # m
-    .add(*b0.vel.from_polar(), *b0.vel.to_polar())  # (10) to (13)
+    .add(*b0.vel.from_polar())  # (10), (11)
     .known(b0.vel.mag, 10.0)  # m/s
     .known(b0.vel.angle, sp.N(sp.rad(-20.0)))  # degrees to radians
 )
 
-sol = window.solve(b1.pos.x, b1.t, strategy=eliminating())  # about 5 s
+sol = window.solve(b1.pos.x, b1.t)  # about 1.6 s
 # Root 1:
 # b1.pos.x = b0.vel.mag*(b0.vel.mag*sin(b0.vel.angle)
 #            - sqrt(2*g*b0.pos.y + b0.vel.mag**2*sin(b0.vel.angle)**2))*cos(b0.vel.angle)/g   -15.7
@@ -61,7 +63,5 @@ if __name__ == "__main__":
     window.show()
     print()
     sol.show()
-    print()
-    sol.system.show_history()
     print()
     sol.where(b1.pos.x > 0).show()

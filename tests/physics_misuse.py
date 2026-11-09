@@ -26,5 +26,6 @@ F1, R = Vector("F1", XY), Vector("R", XY)
 f = Vector("f", X)
 f.mag  # pyright: ignore[reportAttributeAccessIssue]
 f.from_polar()  # pyright: ignore[reportAttributeAccessIssue]
+f.degrees()  # pyright: ignore[reportAttributeAccessIssue]
 _ = F1 + f  # pyright: ignore[reportOperatorIssue]
 R.eq(f)  # pyright: ignore[reportArgumentType]
