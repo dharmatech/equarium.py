@@ -1,7 +1,8 @@
 # 004 physics
 
 **Status:** Charter and spec agreed with the user (2026-11-08). No
-increment has started. Checkpoint 001 is next.
+increment has started. Checkpoint 001 is written and waits for the
+user's review.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -22,8 +23,8 @@ of this series goes on the branch. It merges into `master` at the end,
 as version 0.2.0, when the user chooses.
 
 The spec was designed from the charter in its own conversation. To
-implement a checkpoint, once one is written, give a new conversation
-this, with the checkpoint's file name:
+implement a checkpoint, give a new conversation this, with the
+checkpoint's file name:
 
 > Read `docs/design/implementation/004-physics/checkpoints/001-symbols-and-chapter-2.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
@@ -37,7 +38,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
-| 001 | symbols and chapter 2 | | Not started | |
+| 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Checkpoint written (2026-11-08) | |
 | 002 | chapters 3 and 4, renamed | | Not started | |
 | 003 | polar and degrees | | Not started | |
 | 004 | events | | Not started | |
@@ -61,8 +62,8 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 001, symbols and chapter 2, written by the conversation
-that wrote the spec, when the user asks.
+Checkpoint 001, symbols and chapter 2, is written. A new conversation
+implements it, with the prompt above.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,
