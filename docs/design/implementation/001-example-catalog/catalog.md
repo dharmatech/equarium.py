@@ -81,16 +81,16 @@ say "the other way round" for polar from components.
 | [Exercise 2.19](#exercise-219-an-antelopes-speed-and-acceleration) | An antelope's speed and acceleration | 90 | 1, ran | 8.33 m/s; 1.11 m/s² | `exercise_2_19.py` | `exercise_2_19.py` |
 | [Exercise 2.21](#exercise-221-a-fast-pitch) | A fast pitch | 90 | 2, all ran | 675 m/s²; 0.0667 s | `exercise_2_21.py` | `exercise_2_21.py` |
 | [Exercise 2.23](#exercise-223-stopping-distance-of-an-airbag) | Stopping distance of an airbag | 90 | 1, ran | 1.70 m | `exercise_2_23.py`; tests (written out) | `exercise_2_23.py` |
-| [Example 3.6](#example-36-an-object-projected-horizontally) | An object projected horizontally | 107 | 1, ran | 4.5 m, -1.2 m; 4.7 m; 9.0 m/s, -4.9 m/s; 10.2 m/s at -29° | not yet ported | `example_3_6.py` |
-| [Example 3.7](#example-37-height-and-range-of-a-projectile-i-a-batted-baseball) | Height and range of a projectile I: A batted baseball | 108 | 1, ran | 44.4 m, 39.6 m; 22.2 m/s, 10.0 m/s; 24.4 m/s at 24.2°; 3.02 s, 44.7 m; 6.04 s, 134 m; -29.6 m/s at -53.1° | not yet ported | `example_3_7.py` |
-| [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | not yet ported | `example_3_8.py` |
-| [Example 3.9](#example-39-different-initial-and-final-heights) | Different initial and final heights | 109 | 2, 1 ran | -1.7 s or 0.98 s; 9.2 m | tests (written out) | `example_3_9.py` |
-| [Example 3.10](#example-310-the-zookeeper-and-the-monkey) | The zookeeper and the monkey | 110 | 2, 1 ran | a "show that": the dart hits | tests (written out) | `example_3_10.py` |
-| [Example 3.13](#example-313-relative-velocity-on-a-straight-road) | Relative velocity on a straight road | 116 | 4, all ran | -192 km/h; +192 km/h; no change | not yet ported | `example_3_13.py` |
-| [Example 4.1](#example-41-superposition-of-forces-finding-the-net-force) | Superposition of forces: Finding the net force | 133 | 8, 5 ran | -100 N, 80 N; 128 N at 141° | tests (written out) | `example_4_1.py`, `example_4_1_step_by_step.py` |
-| [Example 4.4](#example-44-newtons-second-law-i-determining-acceleration-from-force) | Newton's second law I: Determining acceleration from force | 141 | 1, ran | 0.50 m/s² | not yet ported | `example_4_4.py` |
-| [Example 4.5](#example-45-newtons-second-law-ii-determining-force-from-acceleration) | Newton's second law II: Determining force from acceleration | 141 | 3, all ran | -2.0 m/s²; ΣF_x = -0.90 N, f = 0.90 N | not yet ported | `example_4_5.py`, `example_4_5_two_steps.py` |
-| [Example 4.7](#example-47-mass-and-weight) | Mass and weight | 145 | 1, ran | 2540 kg; -7.20 m/s² | not yet ported | `example_4_7.py` |
+| [Example 3.6](#example-36-an-object-projected-horizontally) | An object projected horizontally | 107 | 1, ran | 4.5 m, -1.2 m; 4.7 m; 9.0 m/s, -4.9 m/s; 10.2 m/s at -29° | `example_3_6.py` | `example_3_6.py` |
+| [Example 3.7](#example-37-height-and-range-of-a-projectile-i-a-batted-baseball) | Height and range of a projectile I: A batted baseball | 108 | 1, ran | 44.4 m, 39.6 m; 22.2 m/s, 10.0 m/s; 24.4 m/s at 24.2°; 3.02 s, 44.7 m; 6.04 s, 134 m; -29.6 m/s at -53.1° | `example_3_7.py` | `example_3_7.py` |
+| [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | `example_3_8.py` | `example_3_8.py` |
+| [Example 3.9](#example-39-different-initial-and-final-heights) | Different initial and final heights | 109 | 2, 1 ran | -1.7 s or 0.98 s; 9.2 m | `example_3_9.py`; tests (written out) | `example_3_9.py` |
+| [Example 3.10](#example-310-the-zookeeper-and-the-monkey) | The zookeeper and the monkey | 110 | 2, 1 ran | a "show that": the dart hits | `example_3_10.py`; tests (written out) | `example_3_10.py` |
+| [Example 3.13](#example-313-relative-velocity-on-a-straight-road) | Relative velocity on a straight road | 116 | 4, all ran | -192 km/h; +192 km/h; no change | `example_3_13.py` | `example_3_13.py` |
+| [Example 4.1](#example-41-superposition-of-forces-finding-the-net-force) | Superposition of forces: Finding the net force | 133 | 8, 5 ran | -100 N, 80 N; 128 N at 141° | `example_4_1.py`, `example_4_1_step_by_step.py`; tests (written out) | `example_4_1.py`, `example_4_1_step_by_step.py` |
+| [Example 4.4](#example-44-newtons-second-law-i-determining-acceleration-from-force) | Newton's second law I: Determining acceleration from force | 141 | 1, ran | 0.50 m/s² | `example_4_4.py` | `example_4_4.py` |
+| [Example 4.5](#example-45-newtons-second-law-ii-determining-force-from-acceleration) | Newton's second law II: Determining force from acceleration | 141 | 3, all ran | -2.0 m/s²; ΣF_x = -0.90 N, f = 0.90 N | `example_4_5.py`, `example_4_5_two_steps.py` | `example_4_5.py`, `example_4_5_two_steps.py` |
+| [Example 4.7](#example-47-mass-and-weight) | Mass and weight | 145 | 1, ran | 2540 kg; -7.20 m/s² | `example_4_7.py` | `example_4_7.py` |
 
 ## Example 2.4: Constant-acceleration calculations
 

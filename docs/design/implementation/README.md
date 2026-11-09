@@ -25,7 +25,7 @@ long enough to be compacted.
 |---|---|---|---|
 | 000 | [project setup](000-project-setup/README.md) | README | Done (2026-11-07) |
 | 001 | [example catalog](001-example-catalog/README.md) | one checkpoint | Catalog written (2026-11-08), its questions answered |
-| 002 | [core](002-core/README.md) | charter, spec, checkpoints | Spec agreed (2026-11-07); 007 of 8 done and reviewed (2026-11-08); 008 next |
+| 002 | [core](002-core/README.md) | charter, spec, checkpoints | Spec agreed (2026-11-07); 8 of 8 done (2026-11-08), 008 waiting for review |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the

@@ -1,15 +1,25 @@
-"""The chapter 2 ports against the old scripts: every formula the catalog
-quotes for a ported script's want, verbatim, and its number, by value.
+"""The ports against the old scripts: every formula the catalog quotes for
+a ported script's want, verbatim, and its number, by value.
 
 The old output is as `docs/design/implementation/001-example-catalog/catalog.md`
-quotes it, from the old scripts run on 2026-11-08. Two differences are
-expected, as checkpoint 007 lists:
+quotes it, from the old scripts run on 2026-11-08. The differences that
+checkpoints 007 and 008 list are expected:
 
 - the old scripts printed `formula.subs(values)`, so an exact number
   printed as `43`, where equarium's number is `sp.N` of it, `43.0000000000000`.
   So the numbers compare by value, within 1e-9 relative;
-- the additions (2.6's velocities at 2.0 s and 3.0 s, 2.3's `longer`) have
-  no old output. Their `BOOK`s check them.
+- the additions (2.6's velocities at 2.0 s and 3.0 s, 2.3's `longer`, the
+  new wants of chapters 3 and 4, 4.1's book step, 4.5's second step) have
+  no old output. Their `BOOK`s check them;
+- 3.7, 3.9 and 4.7 use the book's givens. For their rows, the number is
+  the port's formula with the old givens, `OLD_GIVENS`, in place of the
+  port's, so every other given is still checked against the old script's;
+- 3.8's range isn't a row: the old line is a bug, and the `BOOK`'s
+  `Formula` checks the fixed one. 3.8 printed no numbers;
+- displayed equations keep equarium's sides. 3.10's show-that, the old
+  last line, has its sides the other way round, and its test says so.
+
+The slow modules are imported only inside their tests.
 """
 
 import importlib
@@ -19,55 +29,76 @@ from typing import cast
 import pytest
 import sympy as sp
 from sympy.parsing.sympy_parser import parse_expr
-from sympy.physics.units import Quantity, hour, kilometer, meter, second
+from sympy.physics.units import Quantity, hour, kilometer, meter, newton, second
 
-from equarium import Solution
+from equarium import Solution, System
+from slow_examples import SLOW_EXAMPLES
 
 UNITS = {"meter": meter, "second": second, "kilometer": kilometer, "hour": hour}
 
+# 4.1's |R| and angle, which two of its scripts print.
+R_MAG_4_1 = (
+    "sqrt(F1_mag**2 + 2*F1_mag*F2_mag*cos(F1_angle - F2_angle)"
+    " + 2*F1_mag*F3_mag*cos(F1_angle - F3_angle) + F2_mag**2"
+    " + 2*F2_mag*F3_mag*cos(F2_angle - F3_angle) + F3_mag**2)"
+)
+R_ANGLE_4_1 = (
+    "atan2(F1_mag*sin(F1_angle) + F2_mag*sin(F2_angle) + F3_mag*sin(F3_angle),"
+    " F1_mag*cos(F1_angle) + F2_mag*cos(F2_angle) + F3_mag*cos(F3_angle))"
+)
+
+# The old givens that differ from the port's, which uses the book's:
+# a known's name and the old script's value.
+OLD_GIVENS: dict[str, dict[str, sp.Expr | float]] = {
+    "ch03.example_3_7": {"g": 9.81},
+    "ch03.example_3_9": {"g": 9.81},
+    "ch04.example_4_7": {"w": 2.45e4 * newton, "g": 9.81 * meter / second**2},
+}
+
 # (module, solution, want, the old formula, the old number), as printed.
-OLD: list[tuple[str, str, str, str, str]] = [
+# The module is under `examples.up_15e`.
+OLD: list[tuple[str, str, str, str, str | None]] = [
     # Example 2.4, v4-001
-    ("example_2_4", "sol_a", "m_1_x", "a_x_m_0_1*m_1_t**2/2 + m_0_v_x*m_1_t + m_0_x", "43"),
-    ("example_2_4", "sol_a", "m_1_v_x", "a_x_m_0_1*m_1_t + m_0_v_x", "23"),
+    ("ch02.example_2_4", "sol_a", "m_1_x", "a_x_m_0_1*m_1_t**2/2 + m_0_v_x*m_1_t + m_0_x", "43"),
+    ("ch02.example_2_4", "sol_a", "m_1_v_x", "a_x_m_0_1*m_1_t + m_0_v_x", "23"),
     (
-        "example_2_4",
+        "ch02.example_2_4",
         "sol_b",
         "m_1_x",
         "(2*a_x_m_0_1*m_0_x - m_0_v_x**2 + m_1_v_x**2)/(2*a_x_m_0_1)",
         "55",
     ),
     # Example 2.5, v4-000
-    ("example_2_5", "sol", "t_01", "2*m_v/a_x_p_0_1", "10"),
-    ("example_2_5", "sol", "p_1_v_x", "2*m_v", "30"),
-    ("example_2_5", "sol", "dist", "2*m_v**2/a_x_p_0_1", "150"),
+    ("ch02.example_2_5", "sol", "t_01", "2*m_v/a_x_p_0_1", "10"),
+    ("ch02.example_2_5", "sol", "p_1_v_x", "2*m_v", "30"),
+    ("ch02.example_2_5", "sol", "dist", "2*m_v**2/a_x_p_0_1", "150"),
     # Example 2.5, v4-002
-    ("example_2_5_step_by_step", "sol", "t_01", "2*m_v/a_x_p_0_1", "10"),
-    ("example_2_5_step_by_step", "sol", "p_1_v_x", "2*m_v", "30"),
-    ("example_2_5_step_by_step", "sol", "dist", "2*m_v**2/a_x_p_0_1", "150"),
+    ("ch02.example_2_5_step_by_step", "sol", "t_01", "2*m_v/a_x_p_0_1", "10"),
+    ("ch02.example_2_5_step_by_step", "sol", "p_1_v_x", "2*m_v", "30"),
+    ("ch02.example_2_5_step_by_step", "sol", "dist", "2*m_v**2/a_x_p_0_1", "150"),
     # Example 2.6, v2-000
-    ("example_2_6", "sol_1", "c_1_y", "a_y_c_0_1*c_1_t**2/2", "-4.90000000000000"),
-    ("example_2_6", "sol_1", "c_1_v_y", "a_y_c_0_1*c_1_t", "-9.80000000000000"),
-    ("example_2_6", "sol_2", "c_1_y", "a_y_c_0_1*c_1_t**2/2", "-19.6000000000000"),
-    ("example_2_6", "sol_3", "c_1_y", "a_y_c_0_1*c_1_t**2/2", "-44.1000000000000"),
+    ("ch02.example_2_6", "sol_1", "c_1_y", "a_y_c_0_1*c_1_t**2/2", "-4.90000000000000"),
+    ("ch02.example_2_6", "sol_1", "c_1_v_y", "a_y_c_0_1*c_1_t", "-9.80000000000000"),
+    ("ch02.example_2_6", "sol_2", "c_1_y", "a_y_c_0_1*c_1_t**2/2", "-19.6000000000000"),
+    ("ch02.example_2_6", "sol_3", "c_1_y", "a_y_c_0_1*c_1_t**2/2", "-44.1000000000000"),
     # Example 2.7, v1-000
-    ("example_2_7", "sol_a1", "b_1_y", "b_1_t*(a_y_b_0_1*b_1_t + 2*b_0_v_y)/2", "10.1000000000000"),
-    ("example_2_7", "sol_a1", "b_1_v_y", "a_y_b_0_1*b_1_t + b_0_v_y", "5.20000000000000"),
-    ("example_2_7", "sol_a4", "b_1_y", "b_1_t*(a_y_b_0_1*b_1_t + 2*b_0_v_y)/2", "-18.4000000000000"),
-    ("example_2_7", "sol_a4", "b_1_v_y", "a_y_b_0_1*b_1_t + b_0_v_y", "-24.2000000000000"),
-    ("example_2_7", "sol_b", "b_1_v_y", "-sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2)", "-11.2694276695846"),
-    ("example_2_7", "sol_b", "b_1_v_y", "sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2)", "11.2694276695846"),
-    ("example_2_7", "sol_c", "b_1_y", "(-b_0_v_y**2 + b_1_v_y**2)/(2*a_y_b_0_1)", "11.4795918367347"),
+    ("ch02.example_2_7", "sol_a1", "b_1_y", "b_1_t*(a_y_b_0_1*b_1_t + 2*b_0_v_y)/2", "10.1000000000000"),
+    ("ch02.example_2_7", "sol_a1", "b_1_v_y", "a_y_b_0_1*b_1_t + b_0_v_y", "5.20000000000000"),
+    ("ch02.example_2_7", "sol_a4", "b_1_y", "b_1_t*(a_y_b_0_1*b_1_t + 2*b_0_v_y)/2", "-18.4000000000000"),
+    ("ch02.example_2_7", "sol_a4", "b_1_v_y", "a_y_b_0_1*b_1_t + b_0_v_y", "-24.2000000000000"),
+    ("ch02.example_2_7", "sol_b", "b_1_v_y", "-sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2)", "-11.2694276695846"),
+    ("ch02.example_2_7", "sol_b", "b_1_v_y", "sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2)", "11.2694276695846"),
+    ("ch02.example_2_7", "sol_c", "b_1_y", "(-b_0_v_y**2 + b_1_v_y**2)/(2*a_y_b_0_1)", "11.4795918367347"),
     # Example 2.8, the end of 2.7's v1-000
     (
-        "example_2_8",
+        "ch02.example_2_8",
         "sol",
         "b_1_t",
         "(-b_0_v_y - sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2))/a_y_b_0_1",
         "3.36451028118484",
     ),
     (
-        "example_2_8",
+        "ch02.example_2_8",
         "sol",
         "b_1_t",
         "(-b_0_v_y + sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2))/a_y_b_0_1",
@@ -75,7 +106,7 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.1, 000
     (
-        "exercise_2_1",
+        "ch02.exercise_2_1",
         "sol",
         "c_1_x",
         "-c_0_t*v_av_x_c_0_1 + c_0_x + c_1_t*v_av_x_c_0_1",
@@ -83,7 +114,7 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.3, 002
     (
-        "exercise_2_3",
+        "ch02.exercise_2_3",
         "sol",
         "cb_1_t",
         "(-ca_0_t*v_av_x_ca_0_1 + ca_0_x + ca_1_t*v_av_x_ca_0_1 + cb_0_t*v_av_x_cb_0_1"
@@ -92,14 +123,14 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.3, 000
     (
-        "exercise_2_3_two_steps",
+        "ch02.exercise_2_3_two_steps",
         "distance",
         "ca_1_x",
         "-ca_0_t*v_av_x_ca_0_1 + ca_0_x + ca_1_t*v_av_x_ca_0_1",
         "192.5*kilometer",
     ),
     (
-        "exercise_2_3_two_steps",
+        "ch02.exercise_2_3_two_steps",
         "slow",
         "cb_1_t",
         "(cb_0_t*v_av_x_cb_0_1 - cb_0_x + cb_1_x)/v_av_x_cb_0_1",
@@ -107,14 +138,14 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.5, 001
     (
-        "exercise_2_5",
+        "ch02.exercise_2_5",
         "sol",
         "avg_vel_02",
         "(dx_p_0_1 + dx_p_1_2)/(dt_p_0_1 + dt_p_1_2)",
         "0.3125*meter/second",
     ),
     (
-        "exercise_2_5",
+        "ch02.exercise_2_5",
         "sol",
         "avg_speed_02",
         "(Abs(dx_p_0_1) + Abs(dx_p_1_2))/(dt_p_0_1 + dt_p_1_2)",
@@ -122,14 +153,14 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.19, 000
     (
-        "exercise_2_19",
+        "ch02.exercise_2_19",
         "sol_a",
         "o_0_v_x",
         "(-dt_o_0_1*o_1_v_x - 2*o_0_x + 2*o_1_x)/dt_o_0_1",
         "8.33333333333333*meter/second",
     ),
     (
-        "exercise_2_19",
+        "ch02.exercise_2_19",
         "sol_b",
         "a_x_o_0_1",
         "(2*dt_o_0_1*o_1_v_x + 2*o_0_x - 2*o_1_x)/dt_o_0_1**2",
@@ -137,14 +168,14 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.21, 000
     (
-        "exercise_2_21",
+        "ch02.exercise_2_21",
         "sol_a",
         "a_x_b_0_1",
         "(b_0_v_x - b_1_v_x)*(b_0_v_x + b_1_v_x)/(2*(b_0_x - b_1_x))",
         "675.0*meter/second**2",
     ),
     (
-        "exercise_2_21",
+        "ch02.exercise_2_21",
         "sol_b",
         "dt_b_0_1",
         "2*(-b_0_x + b_1_x)/(b_0_v_x + b_1_v_x)",
@@ -152,22 +183,180 @@ OLD: list[tuple[str, str, str, str, str]] = [
     ),
     # Exercise 2.23, 000
     (
-        "exercise_2_23",
+        "ch02.exercise_2_23",
         "sol",
         "b_1_x",
         "(2*a_x_b_0_1*b_0_x - b_0_v_x**2 + b_1_v_x**2)/(2*a_x_b_0_1)",
         "22.05*kilometer**2*second**2/(hour**2*meter)",
     ),
+    # Example 3.6, v1-000
+    ("ch03.example_3_6", "sol", "m_1_x", "m_1_t*(m_0_v_x + m_1_v_x)/2", "4.50000000000000"),
+    ("ch03.example_3_6", "sol", "m_1_y", "m_1_t*(-g*m_1_t + 2*m_0_v_y)/2", "-1.22500000000000"),
+    (
+        "ch03.example_3_6",
+        "sol",
+        "dist",
+        "sqrt(m_1_t**2*((m_0_v_x + m_1_v_x)**2 + (g*m_1_t - 2*m_0_v_y)**2))/2",
+        "4.66375653309647",
+    ),
+    (
+        "ch03.example_3_6",
+        "sol",
+        "vel_mag",
+        "sqrt(m_1_v_x**2 + (g*m_1_t - m_0_v_y)**2)",
+        "10.2474387043788",
+    ),
+    (
+        "ch03.example_3_6",
+        "sol",
+        "vel_angle",
+        "atan2(-g*m_1_t + m_0_v_y, m_1_v_x)",
+        "-0.498567905638218",
+    ),
+    (
+        "ch03.example_3_6",
+        "sol",
+        "vel_angle_deg",
+        "180*atan2(-g*m_1_t + m_0_v_y, m_1_v_x)/pi",
+        "-28.5658367937466",
+    ),
+    # Example 3.7, v1-000, with the old g
+    (
+        "ch03.example_3_7",
+        "sol_a",
+        "b_1_x",
+        "b0_vel_mag*b_1_t*cos(b0_vel_angle)",
+        "44.4310966741154",
+    ),
+    (
+        "ch03.example_3_7",
+        "sol_a",
+        "b_1_y",
+        "b_1_t*(2*b0_vel_mag*sin(b0_vel_angle) - b_1_t*g)/2",
+        "39.5566647280447",
+    ),
+    ("ch03.example_3_7", "sol_a", "b_1_v_x", "b0_vel_mag*cos(b0_vel_angle)", "22.2155483370577"),
+    (
+        "ch03.example_3_7",
+        "sol_a",
+        "b_1_v_y",
+        "b0_vel_mag*sin(b0_vel_angle) - b_1_t*g",
+        "9.96833236402236",
+    ),
+    (
+        "ch03.example_3_7",
+        "sol_a",
+        "b1_vel_mag",
+        "sqrt(b0_vel_mag**2 - 2*b0_vel_mag*b_1_t*g*sin(b0_vel_angle) + b_1_t**2*g**2)",
+        "24.3495018026193",
+    ),
+    (
+        "ch03.example_3_7",
+        "sol_a_radians",
+        "b1_vel_angle",
+        "atan2(b0_vel_mag*sin(b0_vel_angle) - b_1_t*g, b0_vel_mag*cos(b0_vel_angle))",
+        "0.421780406158419",
+    ),
+    (
+        "ch03.example_3_7",
+        "sol_a",
+        "b1_vel_angle_deg",
+        "180*atan2(b0_vel_mag*sin(b0_vel_angle) - b_1_t*g, b0_vel_mag*cos(b0_vel_angle))/pi",
+        "24.1662371541911",
+    ),
+    ("ch03.example_3_7", "sol_b", "b_1_t", "b0_vel_mag*sin(b0_vel_angle)/g", "3.01613989439575"),
+    (
+        "ch03.example_3_7",
+        "sol_b",
+        "b_1_y",
+        "b0_vel_mag**2*sin(b0_vel_angle)**2/(2*g)",
+        "44.6212748258844",
+    ),
+    (
+        "ch03.example_3_7",
+        "sol_c",
+        "b_1_x",
+        "b0_vel_mag**2*sin(2*b0_vel_angle)/g",
+        "134.010403230554",
+    ),
+    ("ch03.example_3_7", "sol_c", "b_1_v_x", "b0_vel_mag*cos(b0_vel_angle)", "22.2155483370577"),
+    ("ch03.example_3_7", "sol_c", "b_1_v_y", "-b0_vel_mag*sin(b0_vel_angle)", "-29.5883323640224"),
+    # Example 3.8, v1-000, formulas only. Its range is the old bug: not a row.
+    ("ch03.example_3_8", "sol_top", "p_1_y", "p_0_v_mag**2*sin(p_0_v_angle)**2/(2*g)", None),
+    # Example 3.9, v2, with the old g
+    (
+        "ch03.example_3_9",
+        "sol",
+        "b_1_x",
+        "b_0_v_mag*(b_0_v_mag*sin(b_0_v_angle) - sqrt(b_0_v_mag**2*sin(b_0_v_angle)**2"
+        " + 2*b_0_y*g))*cos(b_0_v_angle)/g",
+        "-15.7161745661753",
+    ),
+    (
+        "ch03.example_3_9",
+        "sol",
+        "b_1_x",
+        "b_0_v_mag*(b_0_v_mag*sin(b_0_v_angle) + sqrt(b_0_v_mag**2*sin(b_0_v_angle)**2"
+        " + 2*b_0_y*g))*cos(b_0_v_angle)/g",
+        "9.16380341748480",
+    ),
+    # Example 3.13, 001-eq
+    ("ch03.example_3_13", "sol", "v_TY", "v_TE - v_YE", "-192.0*kilometer/hour"),
+    ("ch03.example_3_13", "sol", "v_YT", "-v_TE + v_YE", "192.0*kilometer/hour"),
+    # Example 4.1, v1-007
+    ("ch04.example_4_1", "sol", "R_mag", R_MAG_4_1, "128.204889993952"),
+    ("ch04.example_4_1", "sol", "R_angle", R_ANGLE_4_1, "2.47114041353915"),
+    ("ch04.example_4_1", "sol", "R_angle_deg", f"180*{R_ANGLE_4_1}/pi", "141.585916280006"),
+    # Example 4.1, v1-006
+    ("ch04.example_4_1_step_by_step", "sol", "R_mag", R_MAG_4_1, "128.204889993952"),
+    ("ch04.example_4_1_step_by_step", "sol", "R_angle", R_ANGLE_4_1, "2.47114041353915"),
+    (
+        "ch04.example_4_1_step_by_step",
+        "sol_deg",
+        "R_angle_deg",
+        f"180*{R_ANGLE_4_1}/pi",
+        "141.585916280006",
+    ),
+    # Example 4.4, 000
+    ("ch04.example_4_4", "sol", "a_x", "(F_x + n_x + w_x)/m", "0.500000000000000"),
+    # Example 4.5, 001
+    (
+        "ch04.example_4_5",
+        "sol",
+        "f_x",
+        "(b_0_v_x**2*m/2 - b_0_x*n_x - b_0_x*w_x - b_1_v_x**2*m/2 + b_1_x*n_x + b_1_x*w_x)"
+        "/(b_0_x - b_1_x)",
+        "-0.900000000000000",
+    ),
+    # Example 4.5, 000, its first step
+    (
+        "ch04.example_4_5_two_steps",
+        "sol_1",
+        "a_x_b_0_1",
+        "(b_0_v_x - b_1_v_x)*(b_0_v_x + b_1_v_x)/(2*(b_0_x - b_1_x))",
+        "-2.00000000000000",
+    ),
+    # Example 4.7, 000, with the old weight and g
+    ("ch04.example_4_7", "sol", "a_x", "F_x*g/w", "-7.3274693877551*meter/second**2"),
 ]
 
 
 def test_every_quoted_formula_has_a_row() -> None:
-    assert len(OLD) == 33
+    assert len(OLD) == 66
 
 
-@pytest.mark.parametrize(("module", "solution", "want", "formula", "number"), OLD)
-def test_old_output(module: str, solution: str, want: str, formula: str, number: str) -> None:
-    sol = getattr(importlib.import_module(f"examples.up_15e.ch02.{module}"), solution)
+def slow_if(module: str) -> list[pytest.MarkDecorator]:
+    return [pytest.mark.slow] if f"examples.up_15e.{module}" in SLOW_EXAMPLES else []
+
+
+@pytest.mark.parametrize(
+    ("module", "solution", "want", "formula", "number"),
+    [pytest.param(*row, marks=slow_if(row[0])) for row in OLD],
+)
+def test_old_output(
+    module: str, solution: str, want: str, formula: str, number: str | None
+) -> None:
+    sol = getattr(importlib.import_module(f"examples.up_15e.{module}"), solution)
     assert isinstance(sol, Solution)
     (symbol,) = [w for w in sol.system.wants if w.name == want]
 
@@ -176,10 +365,48 @@ def test_old_output(module: str, solution: str, want: str, formula: str, number:
     formulas = [str(root.formula(symbol)) for root in sol.roots]
     assert formula in formulas
     root = sol.roots[formulas.index(formula)]
+    if number is None:
+        return
 
-    # The number, by value, in the old number's unit.
+    # The number, with the old givens where the port uses the book's.
+    ours = root.number(symbol)
+    if module in OLD_GIVENS:
+        values: dict[sp.Basic | complex, sp.Expr | complex] = {
+            sym: value for sym, value in sol.system.knowns.items() if value is not None
+        }
+        for name, value in OLD_GIVENS[module].items():
+            (given,) = [sym for sym in sol.system.knowns if sym.name == name]
+            assert given in values, f"{given} has no number in the port"
+            values[given] = value
+        ours = cast(sp.Expr, sp.N(root.formula(symbol).subs(values)))  # sp.N is untyped
+
+    # By value, in the old number's unit.
     old = cast(sp.Expr, parse_expr(number, local_dict=UNITS))
     old_value, unit = old.as_coeff_Mul()
-    ours = root.number(symbol) / unit
+    ours = ours / unit
     assert not ours.has(Quantity), f"{root.number(symbol)} isn't in {unit}"
     assert math.isclose(float(ours), float(old_value), rel_tol=1e-9)
+
+
+# 3.10 v1-001's last line, the stated condition.
+OLD_3_10 = ("d_0_v_mag*sin(d_0_v_angle)", "D*d_0_v_mag*sin(d_0_v_angle)/d_1_x")
+
+
+@pytest.mark.slow
+def test_3_10_show_that() -> None:
+    module = importlib.import_module("examples.up_15e.ch03.example_3_10")
+    proved = getattr(module, "proved")
+    reached = getattr(module, "reached")
+    assert isinstance(proved, System) and isinstance(reached, System)
+
+    # One equation is left, the old last line with its sides swapped.
+    (equation,) = proved.equations
+    lhs, rhs = equation.eq.lhs, equation.eq.rhs
+    assert (str(rhs), str(lhs)) == OLD_3_10
+
+    # It holds exactly when the dart reaches x = D.
+    d_1_x, D = sp.symbols("d_1_x D")
+    assert equation.eq.subs(d_1_x, D) is sp.true
+
+    # With d1.pos.x = D added, nothing is left.
+    assert reached.equations == ()

@@ -1,10 +1,10 @@
 # 002 core
 
-**Status:** Spec agreed (2026-11-07). Increments 001 to 007 are done
-and reviewed (2026-11-08). 007 was split in two after series 001's
-catalog: 007 was the physics code and chapter 2. 008, chapters 3 and
-4, is the last increment: its checkpoint is written and waits for the
-user's review.
+**Status:** Spec agreed (2026-11-07). Increments 001 to 008 are done
+(2026-11-08), and 001 to 007 are reviewed. 007 was split in two after
+series 001's catalog: 007 was the physics code and chapter 2. 008,
+chapters 3 and 4, is the last increment: it is done and waits for
+review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -31,7 +31,7 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments), with 007 split in two (2026-11-08). 007 of 8 done.
+From the [spec](spec.md#increments), with 007 split in two (2026-11-08). 8 of 8 done.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
@@ -42,4 +42,4 @@ From the [spec](spec.md#increments), with 007 split in two (2026-11-08). 007 of 
 | 005 | units | [005](checkpoints/005-units.md) | Done, reviewed (2026-11-08) | `8f1a98d` |
 | 006 | elimination attempts | [006](checkpoints/006-elimination-attempts.md) | Done, reviewed (2026-11-08) | `9ec5d88` |
 | 007 | the old physics code on the core, chapter 2 | [007](checkpoints/007-physics-code-and-chapter-2.md) | Done, reviewed (2026-11-08) | `ec3cef8` |
-| 008 | chapters 3 and 4 on the core | [008](checkpoints/008-chapters-3-and-4.md) | Checkpoint written (2026-11-08), waiting for review | |
+| 008 | chapters 3 and 4 on the core | [008](checkpoints/008-chapters-3-and-4.md) | Done (2026-11-08), waiting for review | |

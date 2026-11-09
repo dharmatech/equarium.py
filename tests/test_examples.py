@@ -6,10 +6,11 @@ import sympy as sp
 
 import examples
 from equarium import System, UsageError
-from examples.answers import Answer
+from examples.answers import Answer, Formula
 from examples.up_15e.ch02.example_2_4_handwritten import sol_a, v1, x1
+from slow_examples import SLOW_EXAMPLES
 
-x, D = sp.symbols("x D")
+x, D, a = sp.symbols("x D a")
 
 
 def example_modules() -> list[str]:
@@ -21,12 +22,18 @@ def example_modules() -> list[str]:
     )
 
 
-@pytest.mark.parametrize("name", example_modules())
+@pytest.mark.parametrize(
+    "name",
+    [
+        pytest.param(name, marks=[pytest.mark.slow] if name in SLOW_EXAMPLES else [])
+        for name in example_modules()
+    ],
+)
 def test_book(name: str) -> None:
     module = importlib.import_module(name)
     book = getattr(module, "BOOK", None)
     assert book, f"{name} has no BOOK, or an empty one"
-    assert all(isinstance(answer, Answer) for answer in book)
+    assert all(isinstance(answer, Answer | Formula) for answer in book)
     mismatches = [message for answer in book if (message := answer.mismatch()) is not None]
     assert not mismatches, "\n".join(mismatches)
 
@@ -49,7 +56,20 @@ def test_the_examples_are_found() -> None:
         "examples.up_15e.ch02.exercise_2_19",
         "examples.up_15e.ch02.exercise_2_21",
         "examples.up_15e.ch02.exercise_2_23",
+        "examples.up_15e.ch03.example_3_6",
+        "examples.up_15e.ch03.example_3_7",
+        "examples.up_15e.ch03.example_3_8",
+        "examples.up_15e.ch03.example_3_9",
+        "examples.up_15e.ch03.example_3_10",
+        "examples.up_15e.ch03.example_3_13",
+        "examples.up_15e.ch04.example_4_1",
+        "examples.up_15e.ch04.example_4_1_step_by_step",
+        "examples.up_15e.ch04.example_4_4",
+        "examples.up_15e.ch04.example_4_5",
+        "examples.up_15e.ch04.example_4_5_two_steps",
+        "examples.up_15e.ch04.example_4_7",
     } <= set(example_modules())
+    assert SLOW_EXAMPLES <= set(example_modules())
     assert "examples.up_15e.ch02.table_2_5" not in example_modules()
     assert "examples.answers" not in example_modules()
 
@@ -125,3 +145,59 @@ def test_misuse() -> None:
         Answer(sol_a, x1, "forty")
     with pytest.raises(UsageError):
         Answer(sol_a, x1, "NaN")
+
+
+# Formula
+
+# x = 2*sin(a)*cos(a), with a known and no number.
+double = System().add(sp.Eq(x, 2 * sp.sin(a) * sp.cos(a))).known(a).want(x).solve()
+
+
+def test_formula_matches() -> None:
+    assert str(double.formula(x)) == "2*sin(a)*cos(a)"
+    assert Formula(double, x, "2*sin(a)*cos(a)").mismatch() is None  # verbatim
+    assert Formula(double, x, "sin(2*a)").mismatch() is None  # equivalent
+
+
+def test_formula_differs() -> None:
+    message = Formula(double, x, "cos(2*a)").mismatch()
+    assert message is not None
+    assert "x" in message and "cos(2*a)" in message and "2*sin(a)*cos(a)" in message
+
+
+def test_formula_several_roots() -> None:
+    solution = System().add(sp.Eq(x**2, a)).known(a).want(x).solve()
+    message = Formula(solution, x, "sqrt(a)").mismatch()
+    assert message is not None
+    assert "2 roots" in message and "-sqrt(a)" in message
+
+
+def test_formula_no_roots() -> None:
+    solution = System().add(sp.Eq(x + D, 1), sp.Eq(x + D, 2)).want(x).solve()
+    message = Formula(solution, x, "1 - D").mismatch()
+    assert message is not None
+    assert "no roots" in message
+
+
+def test_formula_a_printed_symbol_not_in_the_formula() -> None:
+    solution = System().add(sp.Eq(x, 2 * a)).known(a).known(D).want(x).solve()
+    message = Formula(solution, x, "2*a*D").mismatch()
+    assert message is not None
+    assert "has no D" in message
+
+
+def test_formula_misuse() -> None:
+    with pytest.raises(UsageError):
+        Formula(double, a, "a")  # a known, not a want
+    with pytest.raises(UsageError):
+        Formula(double, x, "sin(2*b)")  # b isn't a symbol of the solution
+    with pytest.raises(UsageError):
+        Formula(double, x, "sinn(2*a)")  # nor is sinn a SymPy function
+    with pytest.raises(UsageError):
+        Formula(double, x, 'sin(2*a) + Symbol("q")')  # nor a symbol it makes
+    with pytest.raises(UsageError):
+        Formula(double, x, "sin(2*a")  # doesn't parse
+    with pytest.raises(UsageError):
+        Formula(double, x, "sin(2*a) +")
+    with pytest.raises(UsageError):
+        Formula(double, x, "a > 0")  # not an expression
