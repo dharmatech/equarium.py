@@ -14,12 +14,18 @@ per axis: `R.eq(F1 + F2 + F3)`, `(F + n + w).eq(a * m)`. An `XY` vector
 has polar parts, `mag`, `angle` and `angle_deg`, and `from_polar()`,
 `to_polar()` and `degrees()` write its polar equations, one way each.
 
+An `Event` is two or more states at the same time and place,
+`Event("meet", m1, p1)`, with its own time and position, `meet.t` and
+`meet.pos`. `meet.equations()` writes the links, and `hit.equations(Y)`
+links the positions on y only.
+
 The old physics code from combine-equations.py, `kinematics_states` and
 `newtons_laws`, stays here until increment 007 of the 004 series. No
 example uses it any more: only `tests/test_physics.py` does, to compare.
 """
 
 from equarium.physics.axes import XY, X, Y
+from equarium.physics.events import Event
 from equarium.physics.notation import BookNotation
 from equarium.physics.particles import Edge, Particle, State
 from equarium.physics.symbols import Var
@@ -28,6 +34,7 @@ from equarium.physics.vectors import Vec, Vector
 __all__ = [
     "BookNotation",
     "Edge",
+    "Event",
     "Particle",
     "State",
     "Var",

@@ -7,10 +7,13 @@ who starts after him from rest at that moment, with a constant 3.0 m/s².
 officer going, and (c) how far has each traveled?
 
 Ported from combine-equations.py's
-`examples/up/ch2/up-example-2.5/up-example-2.5-v4-000-ks.py`, with its
-links as it writes them. Its five zero equations, which `sp.solve` took
-with the rest, are zero knowns here, followed by `eliminate_zeros()`
-before the solve. Its three solves are one here, with three wants.
+`examples/up/ch2/up-example-2.5/up-example-2.5-v4-000-ks.py`. The
+meeting is an event, `Event("meet", m1, p1)`, whose four links are (11)
+to (14): each state's time, then its position, equal to the event's.
+The old script wrote them itself, through `t_01` and `dist`, positions
+first. Its five zero equations, which `sp.solve` took with the rest,
+are zero knowns here, followed by `eliminate_zeros()` before the solve.
+Its three solves are one here, with three wants.
 
     uv run python -m examples.up_15e.ch02.examples.n05.main
 """
@@ -19,7 +22,7 @@ import sympy as sp
 
 from equarium import System
 from equarium.display import render, render_solution
-from equarium.physics import BookNotation, Particle, X
+from equarium.physics import BookNotation, Event, Particle, X
 from examples.answers import Answer
 
 m = Particle("m", 2, X)  # the motorist
@@ -28,8 +31,9 @@ m0, m1 = m.states
 p0, p1 = p.states
 m01 = m.edge(0, 1)
 p01 = p.edge(0, 1)
+meet = Event("meet", m1, p1)  # the same time and place
 
-m_v, dist, t_01 = sp.symbols("m_v dist t_01")
+m_v = sp.Symbol("m_v")
 
 setup = (
     System()
@@ -41,22 +45,21 @@ setup = (
     # The officer starts from rest at the sign, and both start there at t = 0.
     .known({p0.vel.x: 0, p0.pos.x: 0, m0.pos.x: 0, m0.t: 0, p0.t: 0})
     .known(p01.a.x, 3)  # m/s²
-    # They meet at the same place and time: (11) to (14).
-    .add(sp.Eq(dist, m1.pos.x), sp.Eq(dist, p1.pos.x))
-    .add(sp.Eq(t_01, m1.t), sp.Eq(t_01, p1.t))
-    .want(t_01, p1.vel.x, dist)
+    # They meet at the same time and place: (11) to (14).
+    .add(*meet.equations())
+    .want(meet.t, p1.vel.x, meet.pos.x)
 )
 
 chase = setup.eliminate_zeros()
 sol = chase.solve()
-# t_01 = 2*m_v/p01.a.x        10
-# p1.vel.x = 2*m_v             30
-# dist = 2*m_v**2/p01.a.x      150
+# meet.t = 2*m_v/p01.a.x          10
+# p1.vel.x = 2*m_v                 30
+# meet.pos.x = 2*m_v**2/p01.a.x    150
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
-    Answer(sol, t_01, "10"),  # s
+    Answer(sol, meet.t, "10"),  # s
     Answer(sol, p1.vel.x, "30"),  # m/s
-    Answer(sol, dist, "150"),  # m
+    Answer(sol, meet.pos.x, "150"),  # m
 ]
 
 if __name__ == "__main__":

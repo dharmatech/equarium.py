@@ -18,8 +18,9 @@ symbol they miss is loud: a position's or an edge's polar parts, any
 `SCRIPT_NAMES` is a per-module map for the names an old script made
 itself, which a reshape turned into `Var`s: 3.6's `dist` is
 `m1.pos.mag` now. In its module, the map wins over the rules: 3.7's
-`b0.vel.mag` is `b0_vel_mag`, where the rule says `b_0_v_mag`. Increment
-004 adds 2.5's `meet.t`, and 006 4.5's `b.mass`.
+`b0.vel.mag` is `b0_vel_mag`, where the rule says `b_0_v_mag`. 2.5's
+`meet.t` and `meet.pos.x` are its `t_01` and `dist`. Increment 006 adds
+4.5's `b.mass`.
 """
 
 from collections.abc import Mapping
@@ -33,6 +34,14 @@ AXES = ("x", "y")
 # The names an old script made itself, by module under `examples.up_15e`,
 # as `OLD` names it, and keyed by the `Var`, since a name can print alike.
 SCRIPT_NAMES: Mapping[str, Mapping[Var, str]] = {
+    "ch02.examples.n05.main": {
+        Var("meet", "", "t"): "t_01",
+        Var("meet", "", "pos", "x"): "dist",
+    },
+    "ch02.examples.n05.main_step_by_step": {
+        Var("meet", "", "t"): "t_01",
+        Var("meet", "", "pos", "x"): "dist",
+    },
     "ch03.examples.n06.main": {
         Var("m", "1", "pos", "mag"): "dist",
         Var("m", "1", "vel", "mag"): "vel_mag",

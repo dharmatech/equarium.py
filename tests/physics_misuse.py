@@ -8,7 +8,7 @@ so a misuse pyright stops flagging fails it too. Later increments add the
 misuses their features can have.
 """
 
-from equarium.physics import XY, Particle, Vector, X, Y
+from equarium.physics import XY, Event, Particle, Vector, X, Y
 
 # An axis that the model doesn't have.
 m = Particle("m", 2, X)
@@ -29,3 +29,10 @@ f.from_polar()  # pyright: ignore[reportAttributeAccessIssue]
 f.degrees()  # pyright: ignore[reportAttributeAccessIssue]
 _ = F1 + f  # pyright: ignore[reportOperatorIssue]
 R.eq(f)  # pyright: ignore[reportArgumentType]
+
+# An event over states of different dimensions, and an axis it doesn't have.
+p1 = Particle("p", 2, X).states[1]
+d1 = Particle("d", 2, XY).states[1]
+meet = Event("meet", m1, p1)
+meet.pos.y  # pyright: ignore[reportAttributeAccessIssue]
+Event("hit", m1, d1)  # pyright: ignore[reportArgumentType]

@@ -1,7 +1,7 @@
 """The physics layer: `Var`'s identity, the names, the misuses, the
-kinematics equations, vectors and their equations, polar, and the book's
-notation. Also the old physics code's copy, until increment 007 deletes
-it, and the layers."""
+kinematics equations, vectors and their equations, polar, events and
+their links, and the book's notation. Also the old physics code's copy,
+until increment 007 deletes it, and the layers."""
 
 import pickle
 import re
@@ -15,7 +15,19 @@ import sympy as sp
 from equarium import UsageError
 from equarium.analysis import Role
 from equarium.display import GREEN, RED, RESET, render_solution
-from equarium.physics import XY, BookNotation, Edge, Particle, State, Var, Vec, Vector, X, Y
+from equarium.physics import (
+    XY,
+    BookNotation,
+    Edge,
+    Event,
+    Particle,
+    State,
+    Var,
+    Vec,
+    Vector,
+    X,
+    Y,
+)
 from equarium.physics.kinematics_states import (
     kinematics_fundamental,
     magnitude_and_angle_equations,
@@ -24,6 +36,7 @@ from equarium.physics.kinematics_states import (
 )
 from equarium.physics.newtons_laws import newtons_second_law, superposition_equations
 from examples.up_15e.ch02.examples.n04.main import sol_a
+from examples.up_15e.ch02.examples.n05.main import sol as sol_2_5
 from old_names import old_str
 
 m = Particle("m", 2, X)
@@ -31,7 +44,12 @@ m0, m1 = m.states
 m01 = m.edge(0, 1)
 
 F1, F2, F3, R = Vector("F1", XY), Vector("F2", XY), Vector("F3", XY), Vector("R", XY)
-d0 = Particle("d", 2, XY).states[0]
+d0, d1 = Particle("d", 2, XY).states
+
+# 2.5's meeting, in X, and 3.10's hit, in XY.
+p1 = Particle("p", 2, X).states[1]
+meet = Event("meet", m1, p1)
+hit = Event("hit", d1, Particle("m", 2, XY).states[1])
 
 
 # Var's identity
@@ -295,6 +313,63 @@ def test_vector_equations_renamed_back_are_the_old_copys() -> None:
     assert new == old
 
 
+# Events
+
+
+def test_an_events_symbols() -> None:
+    assert [s.name for s in (meet.t, meet.pos.x)] == ["meet.t", "meet.pos.x"]
+    assert meet.t == Var("meet", "", "t")
+    assert meet.pos == Vector("meet", X, "", ("pos",))
+    assert meet.axes is X
+    again = Event("meet", m1, p1)
+    assert again == meet and hash(again) == hash(meet)
+    assert again.t == meet.t and again.pos.x == meet.pos.x
+
+
+def test_an_events_equations() -> None:
+    assert [str(eq) for eq in meet.equations()] == [
+        "Eq(m1.t, meet.t)",
+        "Eq(p1.t, meet.t)",
+        "Eq(m1.pos.x, meet.pos.x)",
+        "Eq(p1.pos.x, meet.pos.x)",
+    ]
+
+
+def test_an_events_equations_on_the_axes_chosen() -> None:
+    assert [str(eq) for eq in hit.equations(Y)] == [
+        "Eq(d1.t, hit.t)",
+        "Eq(m1.t, hit.t)",
+        "Eq(d1.pos.y, hit.pos.y)",
+        "Eq(m1.pos.y, hit.pos.y)",
+    ]
+    assert [str(eq) for eq in hit.equations(X)[2:]] == [
+        "Eq(d1.pos.x, hit.pos.x)",
+        "Eq(m1.pos.x, hit.pos.x)",
+    ]
+    # All the axes by default: the time, then x, then y.
+    assert hit.equations() == hit.equations(X) + hit.equations(Y)[2:]
+    assert hit.equations(XY) == hit.equations()
+
+
+def test_event_misuses_raise() -> None:
+    # The mixed axes with a state cast to Any, so pyright doesn't see the
+    # misuse here. It doesn't check `axes=` against the event's.
+    for name in ("e2", "m.x", ""):
+        message = (
+            f"an event's name is a Python identifier that doesn't end in a digit, not {name!r}"
+        )
+        with pytest.raises(UsageError, match=re.escape(message)):
+            Event(name, m1, p1)
+    with pytest.raises(UsageError, match="meet needs two or more states, not 1"):
+        Event("meet", m1)
+    with pytest.raises(UsageError, match="hit: m1 is in X, but d1 is in XY"):
+        Event("hit", m1, cast(Any, d1))
+    with pytest.raises(UsageError, match="meet has a state twice"):
+        Event("meet", m1, p1, m1)
+    with pytest.raises(UsageError, match="meet is in X, so it has no y"):
+        meet.equations(Y)
+
+
 # BookNotation
 
 
@@ -343,6 +418,15 @@ def test_the_book_notation_of_a_lone_vector() -> None:
     assert [with_p.text(s) for s in symbols] == ["F1x", "F1y", "F1", "θR"]
 
 
+def test_the_book_notation_of_an_event() -> None:
+    symbols = (meet.t, meet.pos.x, hit.pos.y)
+    assert [BookNotation().text(s) for s in symbols] == ["t", "x", "y"]
+    # The book's plain t, x and y: owners applies to particles.
+    with_p = BookNotation(owners={"meet": "P", "hit": "P"})
+    assert [with_p.text(s) for s in symbols] == ["t", "x", "y"]
+    assert BookNotation().text(hit.pos.mag) == "hit.pos.mag"
+
+
 def test_the_book_notation_of_other_symbols_is_the_name() -> None:
     book = BookNotation()
     assert book.text(sp.Symbol("m_v")) == "m_v"
@@ -369,6 +453,8 @@ def test_the_book_notation_of_2_5_with_owners() -> None:
     p = Particle("p", 2, X)
     assert book.text(p.edge(0, 1).a.x) == "aPx"
     assert book.text(p.states[1].vel.x) == "vP1x"
+    printed = render_solution(sol_2_5, symbol=BookNotation(owners=book.owners, color=False))
+    assert printed.startswith("t = 2*m_v/aPx\n")
 
 
 # The old copy, and the layers

@@ -1,8 +1,8 @@
 """The ports against the old scripts: every formula the catalog quotes for
 a ported script's want, verbatim, and its number, by value. The physics
 layer's symbols are renamed back to the old names first, with `old_name`.
-The names a script made itself, such as 3.6's `dist`, are renamed back
-through the module's map, `SCRIPT_NAMES`.
+The names a script made itself, such as 3.6's `dist` and 2.5's `t_01`,
+are renamed back through the module's map, `SCRIPT_NAMES`.
 
 The old output is as `docs/design/implementation/001-example-catalog/catalog.md`
 quotes it, from the old scripts run on 2026-11-08. The differences that
@@ -458,6 +458,8 @@ def test_old_name_of_a_plain_symbol() -> None:
         Var("m", "0", "vel", "angle_deg"),
         Var("F1", "", "angle_deg"),
         Var("b", "", "mass"),
+        Var("meet", "", "t"),  # an event's, without a module
+        Var("meet", "", "pos", "x"),
     ],
     ids=str,
 )
@@ -475,6 +477,9 @@ def test_old_name_in_its_module_is_the_scripts() -> None:
     R_angle_deg = Var("R", "", "angle_deg")
     assert old_name(R_angle_deg, "ch04.examples.n01.main") == "R_angle_deg"
     assert old_name(R_angle_deg, "ch04.examples.n01.main_step_by_step") == "R_angle_deg"
+    meet = (Var("meet", "", "t"), Var("meet", "", "pos", "x"))
+    for module in ("ch02.examples.n05.main", "ch02.examples.n05.main_step_by_step"):
+        assert [old_name(v, module) for v in meet] == ["t_01", "dist"]
 
 
 def test_old_name_the_map_wins_over_the_rule() -> None:
