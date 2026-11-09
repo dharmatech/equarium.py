@@ -67,3 +67,9 @@ Found along the way, for a later series:
 own. `example_3_10.py` is now `examples/up_15e/ch03/examples/n10/main.py`,
 and [003's README](../003-example-layout/README.md) maps every old name
 to its new one.)*
+
+*(2026-11-08: the physics redesign is series 004,
+[004-physics](../004-physics/README.md), on the branch
+`2026-11-08-physics-redesign`, from the tag `v0.1.0`. Both findings
+above are in its charter. The core doesn't change in 004, so
+`clear_zero_denominators` waits for a later series.)*
