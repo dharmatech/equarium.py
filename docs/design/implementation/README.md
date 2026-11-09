@@ -25,7 +25,7 @@ long enough to be compacted.
 |---|---|---|---|
 | 000 | [project setup](000-project-setup/README.md) | README | Done (2026-11-07) |
 | 001 | [example catalog](001-example-catalog/README.md) | one checkpoint | Catalog written (2026-11-08), its questions answered |
-| 002 | [core](002-core/README.md) | charter, spec, checkpoints | Spec agreed (2026-11-07); 8 of 8 done (2026-11-08), 008 waiting for review |
+| 002 | [core](002-core/README.md) | charter, spec, checkpoints | Done (2026-11-08): 8 of 8 increments reviewed |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the
@@ -35,4 +35,7 @@ long enough to be compacted.
 - **002 core:** the problem state (equations, knowns, wants, and the
   steps that produced them), the operations on it, and the display.
   The old physics code then runs on it with no design changes, before
-  any physics redesign. It doesn't shape the core.
+  any physics redesign. It doesn't shape the core. Done: the old
+  physics code runs on the core, and the catalog's examples are ported
+  under `examples/up_15e/`. The physics redesign would be the next
+  series.

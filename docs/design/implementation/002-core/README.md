@@ -1,10 +1,12 @@
 # 002 core
 
-**Status:** Spec agreed (2026-11-07). Increments 001 to 008 are done
-(2026-11-08), and 001 to 007 are reviewed. 007 was split in two after
-series 001's catalog: 007 was the physics code and chapter 2. 008,
-chapters 3 and 4, is the last increment: it is done and waits for
-review.
+**Status:** Done (2026-11-08). The spec was agreed on 2026-11-07, and
+all eight increments are done and reviewed. 007 was split in two after
+series 001's catalog: 007 was the physics code and chapter 2, and 008
+chapters 3 and 4. The old physics code runs on the core, and the 29
+modules of the catalog's port list are ported, each example with its
+book's answers. What comes next is the user's call: see "What's next"
+below.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -23,7 +25,7 @@ spec and checkpoints.
   the user sees each review before the next checkpoint is written.
 
 To implement a checkpoint, give a new conversation this, with the
-checkpoint's file name:
+checkpoint's file name (the last one was 008, and the series is done):
 
 > Read `docs/design/implementation/002-core/checkpoints/008-chapters-3-and-4.md`
 > in `~/journal/2026-11-06-equations/equarium.py`. If you've been told
@@ -42,4 +44,21 @@ From the [spec](spec.md#increments), with 007 split in two (2026-11-08). 8 of 8 
 | 005 | units | [005](checkpoints/005-units.md) | Done, reviewed (2026-11-08) | `8f1a98d` |
 | 006 | elimination attempts | [006](checkpoints/006-elimination-attempts.md) | Done, reviewed (2026-11-08) | `9ec5d88` |
 | 007 | the old physics code on the core, chapter 2 | [007](checkpoints/007-physics-code-and-chapter-2.md) | Done, reviewed (2026-11-08) | `ec3cef8` |
-| 008 | chapters 3 and 4 on the core | [008](checkpoints/008-chapters-3-and-4.md) | Done (2026-11-08), waiting for review | |
+| 008 | chapters 3 and 4 on the core | [008](checkpoints/008-chapters-3-and-4.md) | Done, reviewed (2026-11-08) | `0c3b62e` |
+
+## What's next
+
+The series is done. The agreed order's next step is redesigning the
+physics layer, as a new series, when the user chooses. The catalog's
+"The physics code" lists what the ported examples need that the old
+physics code doesn't have.
+
+Found along the way, for a later series:
+
+- **`clear_zero_denominators`.** The core still leaves it out. Example
+  3.6 needs it or a by-hand `eliminate(m01.dt)`, and its port does the
+  latter (the spec's note dated 2026-11-08).
+- **Two-way polar is slow.** `example_3_10.py` imports in about 9 s,
+  most of it the dart's two-way polar substitutions, and
+  `example_3_9.py` in about 6 s. Both are marked slow, through
+  `tests/slow_examples.py`.
