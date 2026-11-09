@@ -2,9 +2,9 @@
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
 Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
-and 003, polar and degrees, are done and reviewed. The rename is
-complete, and polar is one way everywhere. Increment 004, events, is
-built and waits for review.
+003, polar and degrees, and 004, events, are done and reviewed. The
+rename is complete, polar is one way everywhere, and 2.5 and 3.10 link
+through events. Checkpoint 005, the projectile setup, is next.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -43,7 +43,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
-| 004 | events | [004](checkpoints/004-events.md) | Done (2026-11-09) | |
+| 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
 | 005 | the projectile setup | | Not started | |
 | 006 | Newton on the edge | | Not started | |
 | 007 | the end | | Not started | |
@@ -64,9 +64,17 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Increment 004, events, is built and waits for review: `Event`, for 2.5
-(both) and 3.10, after its [checkpoint](checkpoints/004-events.md).
-Checkpoint 005, the projectile setup, is written after it. No formula
+Checkpoint 005, the projectile setup: `Setup` and `Edge.projectile(g)`,
+for 3.6 to 3.10, from the [spec](spec.md#increments). It is the first
+increment whose formulas change, renamed back: 3.6 drops its by-hand
+`eliminate(m01.dt)`, and v1x stops being a given, so the book's
+v_x = 9.0 m/s becomes an `Answer`. So it builds the `RESHAPED` table
+that [checkpoint 003](checkpoints/003-polar-and-degrees.md) designs
+under "A row whose formula changes", and lists and pins every formula
+that changes. The user will read it closely before it is built.
+
+Increment 004, events, is done and reviewed: `Event`, for 2.5 (both)
+and 3.10, after its [checkpoint](checkpoints/004-events.md). No formula
 changed once renamed back: 2.5's links come time first, with the state
 on the left, and 3.10's `agree` gains one link, but every solution,
 all 66 old formulas and 3.10's show-that come back verbatim, with
@@ -107,14 +115,24 @@ any more. Two notes for later:
 
 The review of 003 (2026-11-09) found nothing to fix. 325 fast tests
 pass in 41 s and the 3 slow ones in 5 min 14 s, pyright reports 0
-errors, and all 66 old formulas and
-3.10's show-that come back verbatim, renamed back through
-`SCRIPT_NAMES`. The examples follow the checkpoint's sketches: only
+errors, and all 66 old formulas and 3.10's show-that come back
+verbatim, renamed back through `SCRIPT_NAMES`. The examples follow the checkpoint's sketches: only
 3.6, 3.7 and 4.1 call `to_polar()`, and the steps the spec keeps stay,
 3.6's `eliminate(m01.dt)`, 3.7's `eliminate(b1.vel.angle)` and 3.10's
 19 eliminations. One note for later: 3.6's `m1.pos.to_polar()` adds
 the position's angle, an equation and an unknown no want needs. It is
 harmless: no formula moved, and 3.6 still imports in 0.47 s.
+
+The review of 004 (2026-11-09) found nothing to fix. 332 fast tests
+pass in 41 s and the 3 slow ones in 5 min 15 s, pyright reports 0
+errors, and all 66 old formulas and 3.10's show-that come back
+verbatim, with 2.5's `meet.t` and `meet.pos.x` renamed back through
+`SCRIPT_NAMES`. `Event`, its messages, its book notation and the three
+modules follow the checkpoint's sketches line for line. The event's
+rows in `BookNotation` come before the lone vector's, as the review of
+002 asked. 2.5 step by step still eliminates the same six links and
+leaves (11) and (12). 3.10's 19 eliminations stay in order, with
+`hit.pos.y` and `hit.t` for `y` and `t`.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,

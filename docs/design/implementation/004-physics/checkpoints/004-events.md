@@ -1,6 +1,6 @@
 # physics 004: events
 
-**Status:** Checkpoint written (2026-11-09).
+**Status:** Done at `e0c0b68` and reviewed (2026-11-09).
 
 If you've been told to read this file, this is the whole assignment.
 Build it, check it, commit it, report, and stop.
