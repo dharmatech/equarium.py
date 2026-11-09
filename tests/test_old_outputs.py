@@ -1,5 +1,6 @@
 """The ports against the old scripts: every formula the catalog quotes for
-a ported script's want, verbatim, and its number, by value.
+a ported script's want, verbatim, and its number, by value. The physics
+layer's symbols are renamed back to the old names first, with `old_name`.
 
 The old output is as `docs/design/implementation/001-example-catalog/catalog.md`
 quotes it, from the old scripts run on 2026-11-08. The differences that
@@ -32,6 +33,8 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy.physics.units import Quantity, hour, kilometer, meter, newton, second
 
 from equarium import Solution, System
+from equarium.physics import Var
+from old_names import old_name, old_str
 from slow_examples import SLOW_EXAMPLES
 
 UNITS = {"meter": meter, "second": second, "kilometer": kilometer, "hour": hour}
@@ -358,11 +361,11 @@ def test_old_output(
 ) -> None:
     sol = getattr(importlib.import_module(f"examples.up_15e.{module}"), solution)
     assert isinstance(sol, Solution)
-    (symbol,) = [w for w in sol.system.wants if w.name == want]
+    (symbol,) = [w for w in sol.system.wants if old_name(w) == want]
 
-    # The formula, verbatim. With several roots, SymPy's order doesn't
-    # matter: the row's formula picks its root.
-    formulas = [str(root.formula(symbol)) for root in sol.roots]
+    # The formula, renamed back, verbatim. With several roots, SymPy's
+    # order doesn't matter: the row's formula picks its root.
+    formulas = [old_str(root.formula(symbol)) for root in sol.roots]
     assert formula in formulas
     root = sol.roots[formulas.index(formula)]
     if number is None:
@@ -375,7 +378,7 @@ def test_old_output(
             sym: value for sym, value in sol.system.knowns.items() if value is not None
         }
         for name, value in OLD_GIVENS[module].items():
-            (given,) = [sym for sym in sol.system.knowns if sym.name == name]
+            (given,) = [sym for sym in sol.system.knowns if old_name(sym) == name]
             assert given in values, f"{given} has no number in the port"
             values[given] = value
         ours = cast(sp.Expr, sp.N(root.formula(symbol).subs(values)))  # sp.N is untyped
@@ -410,3 +413,39 @@ def test_3_10_show_that() -> None:
 
     # With d1.pos.x = D added, nothing is left.
     assert reached.equations == ()
+
+
+# old_name, the old rule
+
+
+def test_old_name_of_a_state() -> None:
+    assert old_name(Var("m", "0", "pos", "x")) == "m_0_x"
+    assert old_name(Var("m", "0", "vel", "x")) == "m_0_v_x"
+    assert old_name(Var("m", "0", "t")) == "m_0_t"
+
+
+def test_old_name_of_an_edge() -> None:
+    assert old_name(Var("m", "01", "dt")) == "dt_m_0_1"
+    assert old_name(Var("m", "01", "a", "x")) == "a_x_m_0_1"
+    assert old_name(Var("m", "01", "v_av", "x")) == "v_av_x_m_0_1"
+
+
+def test_old_name_of_a_plain_symbol() -> None:
+    assert old_name(sp.Symbol("m_v")) == "m_v"
+
+
+def test_old_name_of_a_var_the_rule_doesnt_know() -> None:
+    with pytest.raises(ValueError, match="F1.x"):
+        old_name(Var("F1", "", "x"))
+
+
+def test_old_str_prints_the_old_order() -> None:
+    m0_x, m0_v_x, m1_t, m01_a_x = (
+        Var("m", "0", "pos", "x"),
+        Var("m", "0", "vel", "x"),
+        Var("m", "1", "t"),
+        Var("m", "01", "a", "x"),
+    )
+    formula = m0_x + m0_v_x * m1_t + m01_a_x * m1_t**2 / 2
+    assert str(formula) == "m0.pos.x + m0.vel.x*m1.t + m01.a.x*m1.t**2/2"
+    assert old_str(formula) == "a_x_m_0_1*m_1_t**2/2 + m_0_v_x*m_1_t + m_0_x"

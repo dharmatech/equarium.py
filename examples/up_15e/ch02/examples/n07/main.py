@@ -18,16 +18,16 @@ stays a symbol in the formula, as in the old script.
 """
 
 from equarium import System
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, Y
 from examples.answers import Answer
 
-b = make_states_model("b", 2)  # the ball
+b = Particle("b", 2, Y)  # the ball
 b0, b1 = b.states
-b01 = b.edges[0]
+b01 = b.edge(0, 1)
 
 ball = (
     System()
-    .add(*kinematics_fundamental(b, axes=["y"]))
+    .add(*b.kinematics())
     .known({b0.t: 0, b0.pos.y: 0})  # thrown at t = 0, from the railing
     .eliminate_zeros()
     .known(b0.vel.y, 15.0)  # m/s
@@ -36,18 +36,18 @@ ball = (
 
 # (a) Position and velocity at 1.00 s and 4.00 s.
 sol_a1 = ball.known(b1.t, 1.0).solve(b1.pos.y, b1.vel.y)  # s
-# b_1_y = b_1_t*(a_y_b_0_1*b_1_t + 2*b_0_v_y)/2   10.1
-# b_1_v_y = a_y_b_0_1*b_1_t + b_0_v_y             5.2
+# b1.pos.y = b1.t*(2*b0.vel.y + b01.a.y*b1.t)/2   10.1
+# b1.vel.y = b0.vel.y + b01.a.y*b1.t               5.2
 sol_a4 = ball.known(b1.t, 4.0).solve(b1.pos.y, b1.vel.y)  # s; -18.4 and -24.2
 
 # (b) The velocity 5.00 m above the railing: two roots.
 sol_b = ball.known(b1.pos.y, 5.0).solve(b1.vel.y)  # m
-# b_1_v_y = -sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2)   -11.3
-# b_1_v_y = sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2)    11.3
+# b1.vel.y = -sqrt(b0.vel.y**2 + 2*b01.a.y*b1.pos.y)   -11.3
+# b1.vel.y = sqrt(b0.vel.y**2 + 2*b01.a.y*b1.pos.y)    11.3
 
 # (c) The maximum height, where the velocity is zero.
 sol_c = ball.known(b1.vel.y, 0.0).solve(b1.pos.y)  # m/s
-# b_1_y = (-b_0_v_y**2 + b_1_v_y**2)/(2*a_y_b_0_1)   11.5
+# b1.pos.y = (-b0.vel.y**2 + b1.vel.y**2)/(2*b01.a.y)   11.5
 
 # (d) The acceleration is constant, so at the top it is still -9.80 m/s².
 # It's a known, not a want, so it has no Answer.

@@ -1,8 +1,7 @@
 # 004 physics
 
-**Status:** Charter and spec agreed with the user (2026-11-08). No
-increment has started. Checkpoint 001 is written and waits for the
-user's review.
+**Status:** Charter and spec agreed with the user (2026-11-08).
+Increment 001, symbols and chapter 2, is built and waits for review.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -33,12 +32,12 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 0 of 7 done. 001 and 002 rename
+From the [spec](spec.md#increments). 1 of 7 done. 001 and 002 rename
 only; 003 to 006 change equations; 007 removes the old copy.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
-| 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Checkpoint written (2026-11-08) | |
+| 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done (2026-11-08) | |
 | 002 | chapters 3 and 4, renamed | | Not started | |
 | 003 | polar and degrees | | Not started | |
 | 004 | events | | Not started | |
@@ -62,8 +61,8 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 001, symbols and chapter 2, is written. A new conversation
-implements it, with the prompt above.
+Increment 001, symbols and chapter 2, is built and waits for review.
+Checkpoint 002, chapters 3 and 4 renamed, is written after it.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,

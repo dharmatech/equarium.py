@@ -19,22 +19,22 @@ solves are one here, with three wants.
 import sympy as sp
 
 from equarium import System, eq_flat
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, X
 from examples.answers import Answer
 
-m = make_states_model("m", 2, include_v_av=True)  # the motorist
-p = make_states_model("p", 2, include_v_av=True)  # the police officer
+m = Particle("m", 2, X)  # the motorist
+p = Particle("p", 2, X)  # the police officer
 m0, m1 = m.states
 p0, p1 = p.states
-m01 = m.edges[0]
-p01 = p.edges[0]
+m01 = m.edge(0, 1)
+p01 = p.edge(0, 1)
 
 m_v, dist, t_01 = sp.symbols("m_v dist t_01")
 
 start = (
     System()
-    .add(*kinematics_fundamental(m, axes=("x",), include_dt_defs=True))  # (1) to (4)
-    .add(*kinematics_fundamental(p, axes=("x",), include_dt_defs=True))  # (5) to (8)
+    .add(*m.kinematics())  # (1) to (4)
+    .add(*p.kinematics())  # (5) to (8)
 )
 
 links = (
@@ -53,19 +53,19 @@ zeros = links.eliminate_zeros()  # as the old eliminate_zero_eqs
 linked = zeros.eliminate(m0.vel.x, m1.vel.x, m1.pos.x, p1.pos.x, m1.t, p1.t)
 # The eight equations the old script solves, each in the shape its
 # eliminations leave here:
-# (2)  v_av_x_m_0_1 = dist/dt_m_0_1
-# (3)  a_x_m_0_1 = 0
-# (4)  v_av_x_m_0_1 = m_v
-# (6)  v_av_x_p_0_1 = dist/dt_p_0_1
-# (7)  a_x_p_0_1 = p_1_v_x/dt_p_0_1
-# (8)  v_av_x_p_0_1 = p_1_v_x/2
-# (13) t_01 = dt_m_0_1
-# (14) t_01 = dt_p_0_1
+# (2)  m01.v_av.x = dist/m01.dt
+# (3)  m01.a.x = 0
+# (4)  m01.v_av.x = m_v
+# (6)  p01.v_av.x = dist/p01.dt
+# (7)  p01.a.x = p1.vel.x/p01.dt
+# (8)  p01.v_av.x = p1.vel.x/2
+# (13) t_01 = m01.dt
+# (14) t_01 = p01.dt
 
 sol = linked.want(t_01, p1.vel.x, dist).solve()
-# t_01 = 2*m_v/a_x_p_0_1        10
-# p_1_v_x = 2*m_v               30
-# dist = 2*m_v**2/a_x_p_0_1     150
+# t_01 = 2*m_v/p01.a.x        10
+# p1.vel.x = 2*m_v             30
+# dist = 2*m_v**2/p01.a.x      150
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol, t_01, "10"),  # s

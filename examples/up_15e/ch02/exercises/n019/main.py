@@ -14,16 +14,16 @@ value, so it's a zero known here, never eliminated.
 from sympy.physics.units import meter, second
 
 from equarium import System
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, X
 from examples.answers import Answer
 
-o = make_states_model("o", 2)  # the antelope
+o = Particle("o", 2, X)  # the antelope
 o0, o1 = o.states
-o01 = o.edges[0]
+o01 = o.edge(0, 1)
 
 antelope = (
     System()
-    .add(*kinematics_fundamental(o, axes=["x"]))
+    .add(*o.kinematics())
     .known(o0.pos.x, 0 * meter)
     .known(o1.pos.x, 70.0 * meter)
     .known(o01.dt, 6.00 * second)
@@ -32,11 +32,11 @@ antelope = (
 
 # (a) Its speed at the first point.
 sol_a = antelope.solve(o0.vel.x)
-# o_0_v_x = (-dt_o_0_1*o_1_v_x - 2*o_0_x + 2*o_1_x)/dt_o_0_1   8.33*meter/second
+# o0.vel.x = (-2*o0.pos.x - o01.dt*o1.vel.x + 2*o1.pos.x)/o01.dt   8.33*meter/second
 
 # (b) Its acceleration.
 sol_b = antelope.solve(o01.a.x)
-# a_x_o_0_1 = (2*dt_o_0_1*o_1_v_x + 2*o_0_x - 2*o_1_x)/dt_o_0_1**2   1.11*meter/second**2
+# o01.a.x = (2*o0.pos.x + 2*o01.dt*o1.vel.x - 2*o1.pos.x)/o01.dt**2   1.11*meter/second**2
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol_a, o0.vel.x, "8.33", unit=meter/second),
