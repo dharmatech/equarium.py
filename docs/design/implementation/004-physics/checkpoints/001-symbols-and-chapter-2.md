@@ -1,6 +1,6 @@
 # physics 001: symbols and chapter 2
 
-**Status:** Written (2026-11-08). Not started.
+**Status:** Done at `6bf4296` and reviewed (2026-11-08).
 
 If you've been told to read this file, this is the whole assignment.
 Build it, check it, commit it, report, and stop.
