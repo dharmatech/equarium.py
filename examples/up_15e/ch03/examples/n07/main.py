@@ -9,10 +9,12 @@ range R, and its velocity just before it lands.
 Ported from combine-equations.py's
 `examples/up/ch3/up-example-3.7-v1-000.py`, with the book's
 g = 9.80 m/s², not the old 9.81: with 9.81 the speed at 2.00 s and the
-height miss the book's answers. Its four zero equations are zero knowns
-here, followed by `eliminate_zeros()` where it called its
-`eliminate_zero_eqs`. (b)'s `b1.vel.y = 0` and (c)'s `b1.pos.y = 0` are
-equations it added to a copy, so here each is a zero known on its
+height miss the book's answers. Projectile motion is the projectile
+setup, `b01.projectile(g)`, which is the old script's `b01.a.y = -g` and
+`b0.vel.x = b1.vel.x`, with its zero `b01.a.x`. Its four zero equations
+are zero knowns here, followed by `eliminate_zeros()` where it called
+its `eliminate_zero_eqs`. (b)'s `b1.vel.y = 0` and (c)'s `b1.pos.y = 0`
+are equations it added to a copy, so here each is a zero known on its
 branch, eliminated there. The launch is `b0.vel.from_polar()`, and the
 speed and direction at 2.00 s are `b1.vel.to_polar()` and
 `b1.vel.degrees()`. The old script wrote them in its own symbols.
@@ -30,7 +32,7 @@ angle are added as wants.
 
 import sympy as sp
 
-from equarium import System, eq_flat
+from equarium import System
 from equarium.physics import XY, Particle
 from examples.answers import Answer
 
@@ -40,11 +42,14 @@ b01 = b.edge(0, 1)
 
 g = sp.Symbol("g")
 
+motion = b01.projectile(g)
+
 launch = (
     System()
     .add(*b.kinematics())  # (1) to (7)
-    .add(*eq_flat(b01.a.y, -g, b0.vel.x, b1.vel.x))  # (8), (9): projectile motion
-    .known({b0.pos.x: 0, b0.pos.y: 0, b01.a.x: 0, b0.t: 0})  # from the ground, at t = 0
+    .add(*motion.equations)  # (8), (9): projectile motion
+    .known(motion.knowns)  # b01.a.x = 0
+    .known({b0.pos.x: 0, b0.pos.y: 0, b0.t: 0})  # from the ground, at t = 0
     .eliminate_zeros()
     .known(g, 9.80)  # m/s²
     .add(*b0.vel.from_polar())  # (10), (11): the launch

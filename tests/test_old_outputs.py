@@ -20,7 +20,10 @@ checkpoints 007 and 008 list are expected:
 - 3.8's range isn't a row: the old line is a bug, and the `BOOK`'s
   `Formula` checks the fixed one. 3.8 printed no numbers;
 - displayed equations keep equarium's sides. 3.10's show-that, the old
-  last line, has its sides the other way round, and its test says so.
+  last line, has its sides the other way round, and its test says so;
+- 3.6's five rows that the projectile setup changed, in increment 005 of
+  the 004 series. The port derives v1x, which the old script gave.
+  `RESHAPED` has their new formulas, and the numbers are the old ones.
 
 The slow modules are imported only inside their tests.
 """
@@ -346,9 +349,46 @@ OLD: list[tuple[str, str, str, str, str | None]] = [
     ("ch04.examples.n07.main", "sol", "a_x", "F_x*g/w", "-7.3274693877551*meter/second**2"),
 ]
 
+# The rows a reshape changed: (module, solution, the old formula) to the
+# new formula, in the new names. The row keeps the old formula as the
+# record.
+#
+# Increment 005 of the 004 series, the projectile setup: 3.6's v1x isn't
+# a given any more. The setup's `m0.vel.x = m1.vel.x` gives it, so each
+# formula has `m0.vel.x` where the old one had `m1.vel.x`.
+N06 = "ch03.examples.n06.main"
+RESHAPED: dict[tuple[str, str, str], str] = {
+    (N06, "sol", "m_1_t*(m_0_v_x + m_1_v_x)/2"): "m0.vel.x*m1.t",
+    (
+        N06,
+        "sol",
+        "sqrt(m_1_t**2*((m_0_v_x + m_1_v_x)**2 + (g*m_1_t - 2*m_0_v_y)**2))/2",
+    ): "sqrt(m1.t**2*(4*m0.vel.x**2 + (g*m1.t - 2*m0.vel.y)**2))/2",
+    (
+        N06,
+        "sol",
+        "sqrt(m_1_v_x**2 + (g*m_1_t - m_0_v_y)**2)",
+    ): "sqrt(m0.vel.x**2 + (g*m1.t - m0.vel.y)**2)",
+    (
+        N06,
+        "sol",
+        "atan2(-g*m_1_t + m_0_v_y, m_1_v_x)",
+    ): "atan2(-g*m1.t + m0.vel.y, m0.vel.x)",
+    (
+        N06,
+        "sol",
+        "180*atan2(-g*m_1_t + m_0_v_y, m_1_v_x)/pi",
+    ): "180*atan2(-g*m1.t + m0.vel.y, m0.vel.x)/pi",
+}
+
 
 def test_every_quoted_formula_has_a_row() -> None:
     assert len(OLD) == 66
+
+
+def test_every_reshaped_formula_is_a_row() -> None:
+    assert set(RESHAPED) <= {(module, solution, formula) for module, solution, _, formula, _ in OLD}
+    assert len(RESHAPED) == 5
 
 
 def slow_if(module: str) -> list[pytest.MarkDecorator]:
@@ -366,11 +406,18 @@ def test_old_output(
     assert isinstance(sol, Solution)
     (symbol,) = [w for w in sol.system.wants if old_name(w, module) == want]
 
-    # The formula, renamed back, verbatim. With several roots, SymPy's
-    # order doesn't matter: the row's formula picks its root.
-    formulas = [old_str(root.formula(symbol), module) for root in sol.roots]
-    assert formula in formulas
-    root = sol.roots[formulas.index(formula)]
+    # The formula, verbatim: renamed back, or, for a row a reshape
+    # changed, the new one, in the new names. With several roots, SymPy's
+    # order doesn't matter: the formula picks its root.
+    new = RESHAPED.get((module, solution, formula))
+    if new is None:
+        formulas = [old_str(root.formula(symbol), module) for root in sol.roots]
+        expected = formula
+    else:
+        formulas = [str(root.formula(symbol)) for root in sol.roots]
+        expected = new
+    assert expected in formulas
+    root = sol.roots[formulas.index(expected)]
     if number is None:
         return
 
@@ -392,6 +439,28 @@ def test_old_output(
     ours = ours / unit
     assert not ours.has(Quantity), f"{root.number(symbol)} isn't in {unit}"
     assert math.isclose(float(ours), float(old_value), rel_tol=1e-9)
+
+
+def test_3_6_given_v1x_again_is_the_old_output() -> None:
+    # The reshaped rows moved because 3.6's givens changed. With
+    # m1.vel.x given again, as in the old script, the solve needs the
+    # port's old by-hand step, and then every old row comes back verbatim.
+    module = importlib.import_module(f"examples.up_15e.{N06}")
+    ride, sol = getattr(module, "ride"), getattr(module, "sol")
+    assert isinstance(ride, System) and isinstance(sol, Solution)
+    m1_vel_x, m01_dt = Var("m", "1", "vel", "x"), Var("m", "01", "dt")
+    wants = [w for w in sol.system.wants if w != m1_vel_x]
+    given = ride.known(m1_vel_x, 9.0)
+    assert given.solve(*wants).roots == ()  # 0 = (-m0.vel.x + m1.vel.x)/m01.dt
+
+    old = given.eliminate(m01_dt).solve(*wants)
+    rows = [row for row in OLD if row[0] == N06]
+    assert len(rows) == 6
+    for _, _, want, formula, number in rows:
+        (symbol,) = [w for w in wants if old_name(w, N06) == want]
+        assert old_str(old.formula(symbol), N06) == formula
+        assert number is not None
+        assert math.isclose(float(old.number(symbol)), float(number), rel_tol=1e-9)
 
 
 # 3.10 v1-001's last line, the stated condition.

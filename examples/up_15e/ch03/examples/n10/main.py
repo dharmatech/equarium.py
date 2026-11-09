@@ -8,12 +8,18 @@ monkey, provided it gets there before the monkey reaches the ground.
 
 Ported from combine-equations.py's
 `examples/up/ch3/up-example-3.10-v1-001.py`: two models, the dart's
-launch polar one way, where the old script had it both ways, and 19
-eliminations by hand in its order. The dart's eliminations leave the
-same two equations as the old script's. Each model's zero equations are
-zero knowns, eliminated in its own system before the two meet, as in
-the old script. The book's d is `D`. All the givens are symbols: knowns
-with no number. The old script's g = 9.81 was never used.
+launch polar one way, where the old script had it both ways, and its 19
+eliminations by hand, in its order, with one more before the monkey's.
+Each model's projectile motion is the projectile setup,
+`d01.projectile(g)` and `m01.projectile(g)`. The monkey starts at rest,
+so the setup's `m0.vel.x = m1.vel.x` makes `m1.vel.x` zero, where the
+old script gave that zero. Eliminating `m1.vel.x` first leaves the
+monkey's equations as the old script's were. The dart's eliminations
+leave the same two equations as the old script's. Each model's zero
+equations are zero knowns, eliminated in its own system before the two
+meet, as in the old script. The book's d is `D`. All the givens are
+symbols: knowns with no number. The old script's g = 9.81 was never
+used.
 
 The old script keeps three equations, picked by index, and links them
 through new symbols `t` and `y`. Here they're picked by label, and
@@ -44,12 +50,15 @@ d = Particle("d", 2, XY)
 d0, d1 = d.states
 d01 = d.edge(0, 1)
 
+flight = d01.projectile(g)
+
 dart_start = (
     System()
     .add(*d.kinematics())  # (1) to (7)
     .add(*d0.vel.from_polar())  # (8), (9)
-    .add(*eq_flat(d01.a.y, -g, d0.vel.x, d1.vel.x))  # (10), (11): projectile motion
-    .known({d0.pos.x: 0, d0.pos.y: 0, d01.a.x: 0, d0.t: 0})  # from the muzzle, at t = 0
+    .add(*flight.equations)  # (10), (11): projectile motion
+    .known(flight.knowns)  # d01.a.x = 0
+    .known({d0.pos.x: 0, d0.pos.y: 0, d0.t: 0})  # from the muzzle, at t = 0
     .known(g)
     .known(d0.vel.mag)  # v0
     .known(d0.vel.angle)  # α0
@@ -67,17 +76,23 @@ m = Particle("m", 2, XY)
 m0, m1 = m.states
 m01 = m.edge(0, 1)
 
+fall = m01.projectile(g)
+
 monkey_start = (
     System()
     .add(*m.kinematics())  # (1) to (7)
-    .add(*eq_flat(m0.pos.x, D, m0.pos.y, D * sp.tan(d0.vel.angle), m01.a.y, -g))  # (8) to (10)
+    .add(*eq_flat(m0.pos.x, D, m0.pos.y, D * sp.tan(d0.vel.angle)))  # (8), (9)
+    .add(*fall.equations)  # (10), (11): projectile motion
     .known(D)
     .known(g)
     .known(d0.vel.angle)
-    .known({m01.a.x: 0, m0.t: 0, m0.vel.x: 0, m0.vel.y: 0, m1.vel.x: 0})  # it lets go at t = 0
+    .known(fall.knowns)  # m01.a.x = 0
+    .known({m0.t: 0, m0.vel.x: 0, m0.vel.y: 0})  # it lets go at t = 0, from rest
     .eliminate_zeros()
 )
-monkey = monkey_start.eliminate(m0.pos.y, m01.dt, m01.v_av.y, m1.vel.y, m01.a.y)
+# First `m1.vel.x`, which (4) and (11) make zero: the old script gave that
+# zero. Then the old script's five.
+monkey = monkey_start.eliminate(m1.vel.x, m0.pos.y, m01.dt, m01.v_av.y, m1.vel.y, m01.a.y)
 # The one the old script keeps:
 # (9)  g*m1.t**2/2 + m1.pos.y = D*tan(d0.vel.angle)
 # and its x equations, which it drops:

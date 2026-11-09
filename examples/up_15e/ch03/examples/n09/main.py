@@ -5,9 +5,11 @@ A ball is thrown from a window 8.0 m above the ground at 10.0 m/s,
 window, horizontally, does it land?
 
 Ported from combine-equations.py's `examples/up/ch3/up-example-3.9-v2.py`,
-with the book's g = 9.80 m/s², not the old 9.81. Its four zero
-equations, `b1.pos.y` among them (it hits the ground), are zero knowns
-here, followed by `eliminate_zeros()` where it called
+with the book's g = 9.80 m/s², not the old 9.81. Projectile motion is
+the projectile setup, `b01.projectile(g)`, which is the old script's
+`b01.a.y = -g` and `b0.vel.x = b1.vel.x`, with its zero `b01.a.x`. Its
+four zero equations, `b1.pos.y` among them (it hits the ground), are
+zero knowns here, followed by `eliminate_zeros()` where it called
 `eliminate_zero_eqs`. The launch is polar one way,
 `b0.vel.from_polar()`, so it solves all at once, in about 1.6 s. The
 old version 2 had it polar both ways, so `all_at_once` found no roots,
@@ -23,7 +25,7 @@ the other root of x, -15.7 m.
 
 import sympy as sp
 
-from equarium import System, eq_flat
+from equarium import System
 from equarium.physics import XY, Particle
 from examples.answers import Answer
 
@@ -33,11 +35,14 @@ b01 = b.edge(0, 1)
 
 g = sp.Symbol("g")
 
+flight = b01.projectile(g)
+
 window = (
     System()
     .add(*b.kinematics())  # (1) to (7)
-    .add(*eq_flat(b01.a.y, -g, b0.vel.x, b1.vel.x))  # (8), (9): projectile motion
-    .known({b0.pos.x: 0, b01.a.x: 0, b0.t: 0, b1.pos.y: 0})  # b1.pos.y: it hits the ground
+    .add(*flight.equations)  # (8), (9): projectile motion
+    .known(flight.knowns)  # b01.a.x = 0
+    .known({b0.pos.x: 0, b0.t: 0, b1.pos.y: 0})  # b1.pos.y: it hits the ground
     .eliminate_zeros()
     .known(g, 9.80)  # m/s²
     .known(b0.pos.y, 8.0)  # m

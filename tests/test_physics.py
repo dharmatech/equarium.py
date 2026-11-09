@@ -1,7 +1,7 @@
 """The physics layer: `Var`'s identity, the names, the misuses, the
 kinematics equations, vectors and their equations, polar, events and
-their links, and the book's notation. Also the old physics code's copy,
-until increment 007 deletes it, and the layers."""
+their links, the projectile setup, and the book's notation. Also the old
+physics code's copy, until increment 007 deletes it, and the layers."""
 
 import pickle
 import re
@@ -12,7 +12,7 @@ from typing import Any, cast
 import pytest
 import sympy as sp
 
-from equarium import UsageError
+from equarium import System, UsageError
 from equarium.analysis import Role
 from equarium.display import GREEN, RED, RESET, render_solution
 from equarium.physics import (
@@ -21,6 +21,7 @@ from equarium.physics import (
     Edge,
     Event,
     Particle,
+    Setup,
     State,
     Var,
     Vec,
@@ -368,6 +369,51 @@ def test_event_misuses_raise() -> None:
         Event("meet", m1, p1, m1)
     with pytest.raises(UsageError, match="meet is in X, so it has no y"):
         meet.equations(Y)
+
+
+# The projectile setup
+
+
+def test_the_projectile_setup() -> None:
+    g = sp.Symbol("g")
+    d01 = Particle("d", 2, XY).edge(0, 1)
+    flight = d01.projectile(g)
+    assert isinstance(flight, Setup)
+    assert [str(eq) for eq in flight.equations] == ["Eq(d01.a.y, -g)", "Eq(d0.vel.x, d1.vel.x)"]
+    assert flight.knowns == {d01.a.x: 0}
+    equations, knowns = flight  # a named tuple
+    assert (equations, knowns) == (flight.equations, flight.knowns)
+    assert d01.projectile(g) == flight
+
+
+def test_the_projectile_setup_of_a_later_edge() -> None:
+    g = sp.Symbol("g")
+    p12 = Particle("p", 3, XY).edge(1, 2)
+    flight = p12.projectile(g)
+    assert [str(eq) for eq in flight.equations] == ["Eq(p12.a.y, -g)", "Eq(p1.vel.x, p2.vel.x)"]
+    assert flight.knowns == {p12.a.x: 0}
+
+
+def test_the_projectile_setup_goes_into_a_system() -> None:
+    g = sp.Symbol("g")
+    d = Particle("d", 2, XY)
+    d01 = d.edge(0, 1)
+    flight = d01.projectile(g)
+    system = System().add(*d.kinematics()).add(*flight.equations).known(flight.knowns)
+    assert [e.label for e in system.equations[-2:]] == ["8", "9"]
+    assert dict(system.knowns) == {d01.a.x: 0}
+    # The zero goes into (4): 0 = (v1x - v0x)/Δt.
+    assert str(system.eliminate_zeros().equation("4").eq) == "Eq(0, (-d0.vel.x + d1.vel.x)/d01.dt)"
+
+
+def test_the_projectile_setup_needs_xy() -> None:
+    # Through getattr, so pyright doesn't see the misuse here.
+    g = sp.Symbol("g")
+    with pytest.raises(UsageError, match="m01 is in X, so it has no projectile setup"):
+        getattr(m01, "projectile")(g)
+    b01 = Particle("b", 2, Y).edge(0, 1)
+    with pytest.raises(UsageError, match="b01 is in Y, so it has no projectile setup"):
+        getattr(b01, "projectile")(g)
 
 
 # BookNotation

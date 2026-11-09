@@ -11,8 +11,9 @@ from dataclasses import dataclass
 import sympy as sp
 
 from equarium.errors import UsageError
-from equarium.physics.axes import Axes
+from equarium.physics.axes import XY, Axes
 from equarium.physics.kinematics import kinematics_equations
+from equarium.physics.projectile import Setup, projectile_setup
 from equarium.physics.symbols import Var
 from equarium.physics.vectors import Vector
 
@@ -49,7 +50,8 @@ class State[A: Axes]:
 @dataclass(frozen=True)
 class Edge[A: Axes]:
     """The interval between two consecutive states: its time, average
-    velocity and acceleration, `m01.dt`, `m01.v_av` and `m01.a`."""
+    velocity and acceleration, `m01.dt`, `m01.v_av` and `m01.a`. An `XY`
+    edge also has the projectile setup, `m01.projectile(g)`."""
 
     start: State[A]
     end: State[A]
@@ -78,6 +80,11 @@ class Edge[A: Axes]:
     @property
     def v_av(self) -> Vector[A]:
         return Vector(self.owner, self.axes, self.where, ("v_av",))
+
+    def projectile(self: Edge[XY], g: sp.Expr) -> Setup:
+        """The projectile setup: `a.y = -g` and `v0x = v1x`, with `a.x`
+        known zero."""
+        return projectile_setup(self, g)
 
 
 @dataclass(frozen=True, init=False)

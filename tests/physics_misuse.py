@@ -8,6 +8,8 @@ so a misuse pyright stops flagging fails it too. Later increments add the
 misuses their features can have.
 """
 
+import sympy as sp
+
 from equarium.physics import XY, Event, Particle, Vector, X, Y
 
 # An axis that the model doesn't have.
@@ -36,3 +38,8 @@ d1 = Particle("d", 2, XY).states[1]
 meet = Event("meet", m1, p1)
 meet.pos.y  # pyright: ignore[reportAttributeAccessIssue]
 Event("hit", m1, d1)  # pyright: ignore[reportArgumentType]
+
+# The projectile setup on an edge that isn't in XY.
+g = sp.Symbol("g")
+m01.projectile(g)  # pyright: ignore[reportAttributeAccessIssue]
+b.edge(0, 1).projectile(g)  # pyright: ignore[reportAttributeAccessIssue]

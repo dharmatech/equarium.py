@@ -9,13 +9,15 @@ gives the greatest R?
 Ported from combine-equations.py's
 `examples/up/ch3/up-example-3.8-v1-000.py`, with its bug fixed: it
 solved the range from the top-of-flight system, which gives half of it.
-Here the range comes from the range system. Its zero equations are zero
-knowns here, followed by `eliminate_zeros()` where it called its
-`eliminate_zero_eqs`: four in the base, `p1.vel.y` at the top and
-`p1.pos.y` back at the launch height. The launch is polar one way,
-with `p0.vel.from_polar()`, on `p0.vel.mag` and `p0.vel.angle`. All the
-givens are symbols: knowns with no number. The old script's g = 9.81
-was never used.
+Here the range comes from the range system. Projectile motion is the
+projectile setup, `p01.projectile(g)`, which is the old script's
+`p01.a.y = -g` and `p0.vel.x = p1.vel.x`, with its zero `p01.a.x`. Its
+zero equations are zero knowns here, followed by `eliminate_zeros()`
+where it called its `eliminate_zero_eqs`: four in the base, `p1.vel.y`
+at the top and `p1.pos.y` back at the launch height. The launch is
+polar one way, with `p0.vel.from_polar()`, on `p0.vel.mag` and
+`p0.vel.angle`. All the givens are symbols: knowns with no number. The
+old script's g = 9.81 was never used.
 
 Each part solves all at once. The old script eliminated `p0.vel.x` by
 hand before it solved, and with the launch polar both ways this port
@@ -28,7 +30,7 @@ unknowns. One way, neither step is needed.
 
 import sympy as sp
 
-from equarium import System, eq_flat
+from equarium import System
 from equarium.physics import XY, Particle
 from examples.answers import Formula
 
@@ -38,11 +40,14 @@ p01 = p.edge(0, 1)
 
 g = sp.Symbol("g")
 
+flight = p01.projectile(g)
+
 launch = (
     System()
     .add(*p.kinematics())  # (1) to (7)
-    .add(*eq_flat(p01.a.y, -g, p0.vel.x, p1.vel.x))  # (8), (9): projectile motion
-    .known({p0.pos.x: 0, p0.pos.y: 0, p01.a.x: 0, p0.t: 0})  # from the origin, at t = 0
+    .add(*flight.equations)  # (8), (9): projectile motion
+    .known(flight.knowns)  # p01.a.x = 0
+    .known({p0.pos.x: 0, p0.pos.y: 0, p0.t: 0})  # from the origin, at t = 0
     .eliminate_zeros()
     # Launched at speed v0 and angle α0, polar one way: (10), (11).
     .add(*p0.vel.from_polar())

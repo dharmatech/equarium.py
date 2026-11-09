@@ -19,6 +19,12 @@ An `Event` is two or more states at the same time and place,
 `meet.pos`. `meet.equations()` writes the links, and `hit.equations(Y)`
 links the positions on y only.
 
+An `XY` edge has the projectile setup, `d01.projectile(g)`: a `Setup` of
+equations, `d01.a.y = -g` and `d0.vel.x = d1.vel.x`, and knowns,
+`d01.a.x` zero. The example adds both,
+`.add(*flight.equations).known(flight.knowns)`, and sets its own origin
+and clock.
+
 The old physics code from combine-equations.py, `kinematics_states` and
 `newtons_laws`, stays here until increment 007 of the 004 series. No
 example uses it any more: only `tests/test_physics.py` does, to compare.
@@ -28,6 +34,7 @@ from equarium.physics.axes import XY, X, Y
 from equarium.physics.events import Event
 from equarium.physics.notation import BookNotation
 from equarium.physics.particles import Edge, Particle, State
+from equarium.physics.projectile import Setup
 from equarium.physics.symbols import Var
 from equarium.physics.vectors import Vec, Vector
 
@@ -36,6 +43,7 @@ __all__ = [
     "Edge",
     "Event",
     "Particle",
+    "Setup",
     "State",
     "Var",
     "Vec",

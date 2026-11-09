@@ -4,8 +4,8 @@
 Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
 003, polar and degrees, and 004, events, are done and reviewed. The
 rename is complete, polar is one way everywhere, and 2.5 and 3.10 link
-through events. Checkpoint 005, the projectile setup, is written
-(2026-11-09).
+through events. Increment 005, the projectile setup, is built and waits
+for review.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -36,7 +36,7 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 4 of 7 done. 001 and 002 rename
+From the [spec](spec.md#increments). 5 of 7 done. 001 and 002 rename
 only; 003 to 006 change equations; 007 removes the old copy.
 
 | # | Increment | Checkpoint | Status | Commit |
@@ -45,7 +45,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
-| 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Checkpoint written (2026-11-09) | |
+| 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done (2026-11-09) | |
 | 006 | Newton on the edge | | Not started | |
 | 007 | the end | | Not started | |
 
@@ -65,27 +65,26 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Increment 005, the projectile setup: `Setup` and `Edge.projectile(g)`,
-for 3.6 to 3.10. Its [checkpoint](checkpoints/005-projectile-setup.md)
-is written (2026-11-09), and the user reads it before it is built. It
-is the first increment whose formulas change, renamed back. Its scratch
-run found five, all rows of 3.6, all for one reason: `m1.vel.x` stops
-being a given, the setup's `m0.vel.x = m1.vel.x` gives it, and each
-formula has `m0.vel.x` in its place. The numbers don't change. The
-checkpoint lists each row under "The formulas that change", and builds
-the `RESHAPED` table that
-[checkpoint 003](checkpoints/003-polar-and-degrees.md) designs, to pin
-them. What else it changes:
+Increment 005, the projectile setup, is built and waits for review:
+`Setup` and `Edge.projectile(g)`, for 3.6 to 3.10, after its
+[checkpoint](checkpoints/005-projectile-setup.md). It is the first
+increment whose formulas change, renamed back. Five moved, the five the
+checkpoint lists under "The formulas that change", all rows of 3.6, all
+for one reason: `m1.vel.x` isn't a given any more, the setup's
+`m0.vel.x = m1.vel.x` gives it, and each formula has `m0.vel.x` in its
+place. The numbers don't change. The `RESHAPED` table that
+[checkpoint 003](checkpoints/003-polar-and-degrees.md) designs is built,
+in `tests/test_old_outputs.py`, and pins them. What else changed:
 
-- **3.6's `BOOK` gains one `Answer`,** the book's v_x = 9.0 m/s, which
-  was a given. No other `BOOK` changes.
-- **3.6's by-hand `eliminate(m01.dt)` goes,** so it imports in 1.9 s,
+- **3.6's `BOOK` gained one `Answer`,** the book's v_x = 9.0 m/s, which
+  was a given. No other `BOOK` changed.
+- **3.6's by-hand `eliminate(m01.dt)` went,** so it imports in 1.9 s,
   where it took 0.5 s. No module crosses 5 s.
 - **3.7, 3.8 and 3.9 keep the same equations,** so the other 61 rows
-  and 3.10's show-that come out as they do today.
-- **3.10's monkey fits the setup with one more by-hand elimination,**
+  and 3.10's show-that come out as before.
+- **3.10's monkey uses the setup, with one more by-hand elimination,**
   `m1.vel.x`, which was a zero known. That makes 20, where the old
-  script had 19. The checkpoint says how to leave the monkey as it is
+  script had 19. The checkpoint says how to leave the monkey as it was
   instead.
 - **A new test gives `m1.vel.x` again,** with the old by-hand step, and
   gets all six old rows of 3.6 back verbatim. So the old formulas stay
