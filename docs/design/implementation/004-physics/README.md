@@ -2,10 +2,10 @@
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
 Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
-003, polar and degrees, and 004, events, are done and reviewed. The
-rename is complete, polar is one way everywhere, and 2.5 and 3.10 link
-through events. Increment 005, the projectile setup, is built and waits
-for review.
+003, polar and degrees, 004, events, and 005, the projectile setup, are
+done and reviewed. The rename is complete, polar is one way everywhere,
+2.5 and 3.10 link through events, and 3.6 to 3.10 use the projectile
+setup. Checkpoint 006, Newton on the edge, is next.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -45,7 +45,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
-| 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done (2026-11-09) | |
+| 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done, reviewed (2026-11-09) | `f505be6` |
 | 006 | Newton on the edge | | Not started | |
 | 007 | the end | | Not started | |
 
@@ -65,8 +65,18 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Increment 005, the projectile setup, is built and waits for review:
-`Setup` and `Edge.projectile(g)`, for 3.6 to 3.10, after its
+Checkpoint 006, Newton on the edge: `Particle.mass` and
+`Edge.newton(*forces)`, in `newton.py`, for 4.4 and 4.5 (both), from
+the [spec](spec.md#increments). 4.4's box gets `box01.newton(F, n, w)`,
+with `box01.a.y` known zero, and its own `a` and `m` go. 4.5's bottle
+gets `b01.newton(n, w, f)` in `X`, and its link `a.x = b01.a.x` goes.
+4.5's f_x must stay the old formula, renamed back with `b.mass` → `m`.
+Any other formula that moves is listed and pinned in `RESHAPED`, as
+005's were, and raises its guard's count from 5. The user will read it
+closely before it is built.
+
+Increment 005, the projectile setup, is done and reviewed: `Setup` and
+`Edge.projectile(g)`, for 3.6 to 3.10, after its
 [checkpoint](checkpoints/005-projectile-setup.md). It is the first
 increment whose formulas change, renamed back. Five moved, the five the
 checkpoint lists under "The formulas that change", all rows of 3.6, all
@@ -151,6 +161,21 @@ rows in `BookNotation` come before the lone vector's, as the review of
 002 asked. 2.5 step by step still eliminates the same six links and
 leaves (11) and (12). 3.10's 19 eliminations stay in order, with
 `hit.pos.y` and `hit.t` for `y` and `t`.
+
+The review of 005 (2026-11-09) found nothing to fix. 338 fast tests
+pass in 44 s and the 3 slow ones in 5 min 13 s, and pyright reports 0
+errors. `projectile.py`, `Edge.projectile`, the five modules and the
+tests follow the checkpoint's code line for line. With `RESHAPED`, all
+66 rows pass. Without it, exactly its five rows fail, the five of 3.6
+the checkpoint lists, and each new formula's number is the old row's.
+The new test gives `m1.vel.x` again and gets all six old rows of 3.6
+back verbatim. 3.10's show-that and every `BOOK` pass, and the only
+`BOOK` line that changed is 3.6's `Answer(sol, m1.vel.x, "9.0")`.
+3.10's monkey has one more elimination, first: its history reads
+`eliminate m1.vel.x using (4): into (6), dropped (11)`, the old
+script's five follow, and the monkey keeps (2), (6), (8) and (9). The
+grep for projectile lines of their own finds nothing, and `projectile(`
+is called six times.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,
