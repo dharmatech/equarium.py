@@ -1,7 +1,8 @@
 # 004 physics
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
-Increment 001, symbols and chapter 2, is done and reviewed.
+Increment 001, symbols and chapter 2, is done and reviewed. Checkpoint
+002, chapters 3 and 4 renamed, is written.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -25,7 +26,7 @@ The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/004-physics/checkpoints/001-symbols-and-chapter-2.md`
+> Read `docs/design/implementation/004-physics/checkpoints/002-chapters-3-and-4-renamed.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
 > `2026-11-08-physics-redesign`. If you've been told to read that
 > file, it is the whole assignment.
@@ -38,7 +39,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
-| 002 | chapters 3 and 4, renamed | | Not started | |
+| 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Checkpoint written (2026-11-08) | |
 | 003 | polar and degrees | | Not started | |
 | 004 | events | | Not started | |
 | 005 | the projectile setup | | Not started | |
@@ -61,7 +62,8 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 002, chapters 3 and 4 renamed.
+Implement [checkpoint 002](checkpoints/002-chapters-3-and-4-renamed.md),
+chapters 3 and 4 renamed, in a new conversation, with the prompt above.
 
 The review of 001 (2026-11-08) found nothing to fix. 294 fast tests and
 8 slow ones pass, pyright reports 0 errors, and all 66 old formulas
