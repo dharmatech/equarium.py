@@ -1,9 +1,10 @@
 # 004 physics
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
-Increments 001, symbols and chapter 2, and 002, chapters 3 and 4
-renamed, are done and reviewed. The rename is complete. Increment 003,
-polar and degrees, is built and waits for review.
+Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
+and 003, polar and degrees, are done and reviewed. The rename is
+complete, and polar is one way everywhere. Checkpoint 004, events, is
+next.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -41,7 +42,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 |---|---|---|---|---|
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
-| 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done (2026-11-09) | |
+| 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
 | 004 | events | | Not started | |
 | 005 | the projectile setup | | Not started | |
 | 006 | Newton on the edge | | Not started | |
@@ -63,16 +64,20 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
+Checkpoint 004, events: `Event`, for 2.5 (both) and 3.10, from the
+[spec](spec.md#increments). It is the first `Var` with an empty `where`
+that isn't a lone vector's, so `BookNotation` and `old_name` need its
+rows before their lone-vector branch (see the review of 002).
+
 Increment 003, polar and degrees, the first increment that changes
-equations, is built and waits for review. Checkpoint 004, events, is
-written after it. No formula changed once renamed back: the equations
-and the names change, but all 66 old formulas and 3.10's show-that
-come back verbatim, through a per-module map in `tests/old_names.py`
-for the names an old script made itself, such as 3.6's `dist`. The
-test rule for a row whose formula does change is designed in the
-[checkpoint](checkpoints/003-polar-and-degrees.md), and built by the
-first increment that needs it, likely 005. 3.9 and 3.10 left
-`SLOW_EXAMPLES`, which is now empty.
+equations, is done and reviewed. No formula changed once renamed back:
+the equations and the names change, but all 66 old formulas and 3.10's
+show-that come back verbatim, through a per-module map in
+`tests/old_names.py` for the names an old script made itself, such as
+3.6's `dist`. The test rule for a row whose formula does change is
+designed in the [checkpoint](checkpoints/003-polar-and-degrees.md), and
+built by the first increment that needs it, likely 005. 3.9 and 3.10
+left `SLOW_EXAMPLES`, which is now empty.
 
 The review of 001 (2026-11-08) found nothing to fix. 294 fast tests and
 8 slow ones pass, pyright reports 0 errors, and all 66 old formulas
@@ -91,6 +96,17 @@ any more. Two notes for later:
 - `BookNotation` treats a `Var` with an empty `where` as a lone
   vector's. Events (`meet.t`, 004) and the mass (`b.mass`, 006) have an
   empty `where` too, so their rows go before that branch.
+
+The review of 003 (2026-11-09) found nothing to fix. 325 fast tests
+pass in 41 s and the 3 slow ones in 5 min 14 s, pyright reports 0
+errors, and all 66 old formulas and
+3.10's show-that come back verbatim, renamed back through
+`SCRIPT_NAMES`. The examples follow the checkpoint's sketches: only
+3.6, 3.7 and 4.1 call `to_polar()`, and the steps the spec keeps stay,
+3.6's `eliminate(m01.dt)`, 3.7's `eliminate(b1.vel.angle)` and 3.10's
+19 eliminations. One note for later: 3.6's `m1.pos.to_polar()` adds
+the position's angle, an equation and an unknown no want needs. It is
+harmless: no formula moved, and 3.6 still imports in 0.47 s.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,

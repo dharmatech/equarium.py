@@ -1,6 +1,6 @@
 # physics 003: polar and degrees
 
-**Status:** Checkpoint written (2026-11-09).
+**Status:** Done at `4d84e67` and reviewed (2026-11-09).
 
 If you've been told to read this file, this is the whole assignment.
 Build it, check it, commit it, report, and stop.
