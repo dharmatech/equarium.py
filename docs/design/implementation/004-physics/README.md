@@ -5,7 +5,7 @@ Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
 003, polar and degrees, 004, events, and 005, the projectile setup, are
 done and reviewed. The rename is complete, polar is one way everywhere,
 2.5 and 3.10 link through events, and 3.6 to 3.10 use the projectile
-setup. Checkpoint 006, Newton on the edge, is next.
+setup. Checkpoint 006, Newton on the edge, is written (2026-11-09).
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -29,7 +29,7 @@ The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/004-physics/checkpoints/005-projectile-setup.md`
+> Read `docs/design/implementation/004-physics/checkpoints/006-newton-on-the-edge.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
 > `2026-11-08-physics-redesign`. If you've been told to read that
 > file, it is the whole assignment.
@@ -46,7 +46,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
 | 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done, reviewed (2026-11-09) | `f505be6` |
-| 006 | Newton on the edge | | Not started | |
+| 006 | Newton on the edge | [006](checkpoints/006-newton-on-the-edge.md) | Checkpoint written (2026-11-09) | |
 | 007 | the end | | Not started | |
 
 ## Decisions
@@ -65,15 +65,35 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 006, Newton on the edge: `Particle.mass` and
-`Edge.newton(*forces)`, in `newton.py`, for 4.4 and 4.5 (both), from
-the [spec](spec.md#increments). 4.4's box gets `box01.newton(F, n, w)`,
-with `box01.a.y` known zero, and its own `a` and `m` go. 4.5's bottle
-gets `b01.newton(n, w, f)` in `X`, and its link `a.x = b01.a.x` goes.
-4.5's f_x must stay the old formula, renamed back with `b.mass` → `m`.
-Any other formula that moves is listed and pinned in `RESHAPED`, as
-005's were, and raises its guard's count from 5. The user will read it
-closely before it is built.
+Increment 006, Newton on the edge: `Particle.mass` and
+`Edge.newton(*forces)`, in `newton.py`, for 4.4 and 4.5 (both). Its
+[checkpoint](checkpoints/006-newton-on-the-edge.md) is written
+(2026-11-09), and the user reads it before it is built. It is the last
+reshape. Its scratch run found no row whose formula changes: all 66
+come out verbatim, renamed back, with their numbers. So `RESHAPED`
+keeps its five entries, and its guard's count stays 5. What it changes:
+
+- **Three names in `SCRIPT_NAMES`,** which two rows need: 4.4's
+  `box.mass` → `m` and `box01.a.x` → `a_x`, and 4.5's `b.mass` → `m`.
+  With them, 4.5's f_x is the old formula, verbatim, and -0.9. Without
+  them, exactly those two rows fail.
+- **4.4's box is a particle,** `Particle("box", 2, XY)`, with
+  `box01.newton(F, n, w)` and `box01.a.y` known zero. Its own `a` and
+  `m` go. Its two equations and its formula are the same, renamed back.
+  Its system is named `push`, since the particle takes the name `box`.
+- **4.5 has five equations, where it had seven.** Its forces move to
+  `X`, with `b01.newton(n, w, f)`. The y equation and the link
+  `a.x = b01.a.x` go, with its own `a` and `m`.
+- **One formula that isn't a row changes its names:** step 2 of 4.5 in
+  two steps is `f.x = b.mass*b01.a.x - n.x - w.x`, where it was
+  `f.x = m*a.x - n.x - w.x`. Step 2 knows `b01.a.x`, the symbol step 1
+  solves for. A new test pins it.
+- **No `BOOK` value changes.** 4.4's `Answer` names `box01.a.x`, where
+  it named `a.x`.
+- **`vectors.py`'s `_describe` becomes `describe`,** a rename, since
+  `newton.py` uses it for its messages. The checkpoint says how to
+  leave `vectors.py` as it is instead.
+- **The import times don't change:** 0.02 s, 0.21 s and 0.14 s.
 
 Increment 005, the projectile setup, is done and reviewed: `Setup` and
 `Edge.projectile(g)`, for 3.6 to 3.10, after its
