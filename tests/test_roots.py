@@ -11,7 +11,7 @@ from equarium import Solution, System, UsageError, eq_flat
 from equarium.display import plain, render_history
 from equarium.steps import EliminateZerosStep
 from examples.answers import Answer
-from examples.up_15e.ch02 import example_2_5_handwritten_step_by_step as ex_2_5_steps
+from examples.up_15e.ch02.examples.n05 import main_handwritten_step_by_step as ex_2_5_steps
 
 import example_2_4
 

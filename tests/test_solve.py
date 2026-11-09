@@ -6,8 +6,8 @@ import sympy as sp
 
 from equarium import Solution, System, UsageError, all_at_once
 from equarium.steps import WantStep
-from examples.up_15e.ch02 import example_2_5_handwritten as ex_2_5
-from examples.up_15e.ch02.example_2_4_handwritten import (
+from examples.up_15e.ch02.examples.n05 import main_handwritten as ex_2_5
+from examples.up_15e.ch02.examples.n04.main_handwritten import (
     a,
     motorcycle,
     part_a,

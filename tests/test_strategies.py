@@ -11,7 +11,7 @@ from equarium import System, UsageError, all_at_once, eliminating, eq_flat
 from equarium.display import plain, render_history, render_solution
 from equarium.steps import EliminateStep
 from examples.answers import Answer
-from examples.up_15e.ch02.example_2_4_handwritten import part_a, sol_a, v1, x1
+from examples.up_15e.ch02.examples.n04.main_handwritten import part_a, sol_a, v1, x1
 
 
 def matches(*answers: Answer) -> None:

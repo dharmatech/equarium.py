@@ -329,6 +329,15 @@ different steps, as the charter asks.
   `examples/` whose name starts with `example_` or `exercise_`, imports
   it, and checks its `BOOK`. A module without a `BOOK` fails the test.
 
+*(Since moved, 2026-11-08: series 003,
+[003-example-layout](../003-example-layout/README.md), put each problem
+in a folder of its own, by the user's choice. Example 2.4 is now
+`examples/up_15e/ch02/examples/n04/`, with `main.py` and
+`main_handwritten.py`, and Exercise 2.3 is `ch02/exercises/n003/`. A
+version's slug follows `main_`. `tests/test_examples.py` finds every
+module in a chapter's `examples/` or `exercises/` folder, by place, not
+by name.)*
+
 ### The package
 
 ```

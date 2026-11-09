@@ -14,8 +14,8 @@ from equarium.equations import Derived, Given
 from equarium.steps import EliminateStep, IsolateStep
 from equarium.sympy_compat import free_symbols, safe_simplify
 from examples.answers import Answer
-from examples.up_15e.ch02 import example_2_5_handwritten as ex_2_5
-from examples.up_15e.ch02 import example_2_5_handwritten_step_by_step as ex_2_5_steps
+from examples.up_15e.ch02.examples.n05 import main_handwritten as ex_2_5
+from examples.up_15e.ch02.examples.n05 import main_handwritten_step_by_step as ex_2_5_steps
 
 from example_2_4 import base, part_a, v1, x0, x1
 from kinematics_005 import a_x, derived, dt, kinematics, v_1x, v_2x, v_av_x, x_1, x_2

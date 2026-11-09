@@ -70,27 +70,27 @@ say "the other way round" for polar from components.
 
 | Problem | Title | Page | Old scripts | Book's answers | In equarium | Port in 007 as |
 |---|---|---|---|---|---|---|
-| [Example 2.4](#example-24-constant-acceleration-calculations) | Constant-acceleration calculations | 78 | 3, all ran | 43 m; 23 m/s; 55 m | `example_2_4.py`, `example_2_4_handwritten.py`; tests | `example_2_4.py` |
-| [Example 2.5](#example-25-two-objects-with-different-accelerations) | Two objects with different accelerations | 78 | 4, all ran | 10 s; 30 m/s; 150 m | `example_2_5.py`, `example_2_5_step_by_step.py`, `example_2_5_handwritten.py`, `example_2_5_handwritten_step_by_step.py`; tests | `example_2_5.py`, `example_2_5_step_by_step.py` |
-| [Example 2.6](#example-26-a-freely-falling-coin) | A freely falling coin | 80 | 2, all ran | -4.9 m, -9.8 m/s; -20 m, -20 m/s; -44 m, -29 m/s | `example_2_6.py` | `example_2_6.py` |
-| [Example 2.7](#example-27-up-and-down-motion-in-free-fall) | Up-and-down motion in free fall | 81 | 1, ran | +10.1 m, +5.2 m/s; -18.4 m, -24.2 m/s; ±11.3 m/s; +11.5 m; -9.80 m/s² | `example_2_7.py`; tests (written out) | `example_2_7.py` |
-| [Example 2.8](#example-28-two-solutions-or-one) | Two solutions or one? | 82 | in 2.7's script | +3.36 s | `example_2_8.py`; tests (written out) | `example_2_8.py` |
-| [Exercise 2.1](#exercise-21-a-cars-distance-from-its-average-velocity) | A car's distance from its average velocity | 89 | 1, ran | 25.0 m | `exercise_2_1.py` | `exercise_2_1.py` |
-| [Exercise 2.3](#exercise-23-the-slow-trip-home) | The slow trip home | 89 | 3, all ran | 55 min | `exercise_2_3.py`, `exercise_2_3_two_steps.py`; tests (written out) | `exercise_2_3.py`, `exercise_2_3_two_steps.py` |
-| [Exercise 2.5](#exercise-25-average-velocity-and-speed-of-a-walk) | Average velocity and speed of a walk | 89 | 2, all ran | 0.313 m/s; 1.56 m/s | `exercise_2_5.py` | `exercise_2_5.py` |
-| [Exercise 2.19](#exercise-219-an-antelopes-speed-and-acceleration) | An antelope's speed and acceleration | 90 | 1, ran | 8.33 m/s; 1.11 m/s² | `exercise_2_19.py` | `exercise_2_19.py` |
-| [Exercise 2.21](#exercise-221-a-fast-pitch) | A fast pitch | 90 | 2, all ran | 675 m/s²; 0.0667 s | `exercise_2_21.py` | `exercise_2_21.py` |
-| [Exercise 2.23](#exercise-223-stopping-distance-of-an-airbag) | Stopping distance of an airbag | 90 | 1, ran | 1.70 m | `exercise_2_23.py`; tests (written out) | `exercise_2_23.py` |
-| [Example 3.6](#example-36-an-object-projected-horizontally) | An object projected horizontally | 107 | 1, ran | 4.5 m, -1.2 m; 4.7 m; 9.0 m/s, -4.9 m/s; 10.2 m/s at -29° | `example_3_6.py` | `example_3_6.py` |
-| [Example 3.7](#example-37-height-and-range-of-a-projectile-i-a-batted-baseball) | Height and range of a projectile I: A batted baseball | 108 | 1, ran | 44.4 m, 39.6 m; 22.2 m/s, 10.0 m/s; 24.4 m/s at 24.2°; 3.02 s, 44.7 m; 6.04 s, 134 m; -29.6 m/s at -53.1° | `example_3_7.py` | `example_3_7.py` |
-| [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | `example_3_8.py` | `example_3_8.py` |
-| [Example 3.9](#example-39-different-initial-and-final-heights) | Different initial and final heights | 109 | 2, 1 ran | -1.7 s or 0.98 s; 9.2 m | `example_3_9.py`; tests (written out) | `example_3_9.py` |
-| [Example 3.10](#example-310-the-zookeeper-and-the-monkey) | The zookeeper and the monkey | 110 | 2, 1 ran | a "show that": the dart hits | `example_3_10.py`; tests (written out) | `example_3_10.py` |
-| [Example 3.13](#example-313-relative-velocity-on-a-straight-road) | Relative velocity on a straight road | 116 | 4, all ran | -192 km/h; +192 km/h; no change | `example_3_13.py` | `example_3_13.py` |
-| [Example 4.1](#example-41-superposition-of-forces-finding-the-net-force) | Superposition of forces: Finding the net force | 133 | 8, 5 ran | -100 N, 80 N; 128 N at 141° | `example_4_1.py`, `example_4_1_step_by_step.py`; tests (written out) | `example_4_1.py`, `example_4_1_step_by_step.py` |
-| [Example 4.4](#example-44-newtons-second-law-i-determining-acceleration-from-force) | Newton's second law I: Determining acceleration from force | 141 | 1, ran | 0.50 m/s² | `example_4_4.py` | `example_4_4.py` |
-| [Example 4.5](#example-45-newtons-second-law-ii-determining-force-from-acceleration) | Newton's second law II: Determining force from acceleration | 141 | 3, all ran | -2.0 m/s²; ΣF_x = -0.90 N, f = 0.90 N | `example_4_5.py`, `example_4_5_two_steps.py` | `example_4_5.py`, `example_4_5_two_steps.py` |
-| [Example 4.7](#example-47-mass-and-weight) | Mass and weight | 145 | 1, ran | 2540 kg; -7.20 m/s² | `example_4_7.py` | `example_4_7.py` |
+| [Example 2.4](#example-24-constant-acceleration-calculations) | Constant-acceleration calculations | 78 | 3, all ran | 43 m; 23 m/s; 55 m | `ch02/examples/n04/`: `main.py`, `main_handwritten.py`; tests | `example_2_4.py` |
+| [Example 2.5](#example-25-two-objects-with-different-accelerations) | Two objects with different accelerations | 78 | 4, all ran | 10 s; 30 m/s; 150 m | `ch02/examples/n05/`: `main.py`, `main_step_by_step.py`, `main_handwritten.py`, `main_handwritten_step_by_step.py`; tests | `example_2_5.py`, `example_2_5_step_by_step.py` |
+| [Example 2.6](#example-26-a-freely-falling-coin) | A freely falling coin | 80 | 2, all ran | -4.9 m, -9.8 m/s; -20 m, -20 m/s; -44 m, -29 m/s | `ch02/examples/n06/`: `main.py` | `example_2_6.py` |
+| [Example 2.7](#example-27-up-and-down-motion-in-free-fall) | Up-and-down motion in free fall | 81 | 1, ran | +10.1 m, +5.2 m/s; -18.4 m, -24.2 m/s; ±11.3 m/s; +11.5 m; -9.80 m/s² | `ch02/examples/n07/`: `main.py`; tests (written out) | `example_2_7.py` |
+| [Example 2.8](#example-28-two-solutions-or-one) | Two solutions or one? | 82 | in 2.7's script | +3.36 s | `ch02/examples/n08/`: `main.py`; tests (written out) | `example_2_8.py` |
+| [Exercise 2.1](#exercise-21-a-cars-distance-from-its-average-velocity) | A car's distance from its average velocity | 89 | 1, ran | 25.0 m | `ch02/exercises/n001/`: `main.py` | `exercise_2_1.py` |
+| [Exercise 2.3](#exercise-23-the-slow-trip-home) | The slow trip home | 89 | 3, all ran | 55 min | `ch02/exercises/n003/`: `main.py`, `main_two_steps.py`; tests (written out) | `exercise_2_3.py`, `exercise_2_3_two_steps.py` |
+| [Exercise 2.5](#exercise-25-average-velocity-and-speed-of-a-walk) | Average velocity and speed of a walk | 89 | 2, all ran | 0.313 m/s; 1.56 m/s | `ch02/exercises/n005/`: `main.py` | `exercise_2_5.py` |
+| [Exercise 2.19](#exercise-219-an-antelopes-speed-and-acceleration) | An antelope's speed and acceleration | 90 | 1, ran | 8.33 m/s; 1.11 m/s² | `ch02/exercises/n019/`: `main.py` | `exercise_2_19.py` |
+| [Exercise 2.21](#exercise-221-a-fast-pitch) | A fast pitch | 90 | 2, all ran | 675 m/s²; 0.0667 s | `ch02/exercises/n021/`: `main.py` | `exercise_2_21.py` |
+| [Exercise 2.23](#exercise-223-stopping-distance-of-an-airbag) | Stopping distance of an airbag | 90 | 1, ran | 1.70 m | `ch02/exercises/n023/`: `main.py`; tests (written out) | `exercise_2_23.py` |
+| [Example 3.6](#example-36-an-object-projected-horizontally) | An object projected horizontally | 107 | 1, ran | 4.5 m, -1.2 m; 4.7 m; 9.0 m/s, -4.9 m/s; 10.2 m/s at -29° | `ch03/examples/n06/`: `main.py` | `example_3_6.py` |
+| [Example 3.7](#example-37-height-and-range-of-a-projectile-i-a-batted-baseball) | Height and range of a projectile I: A batted baseball | 108 | 1, ran | 44.4 m, 39.6 m; 22.2 m/s, 10.0 m/s; 24.4 m/s at 24.2°; 3.02 s, 44.7 m; 6.04 s, 134 m; -29.6 m/s at -53.1° | `ch03/examples/n07/`: `main.py` | `example_3_7.py` |
+| [Example 3.8](#example-38-height-and-range-of-a-projectile-ii-maximum-height-maximum-range) | Height and range of a projectile II: Maximum height, maximum range | 109 | 1, ran | formulas for t1, h, t2 and R; 90°; 45° | `ch03/examples/n08/`: `main.py` | `example_3_8.py` |
+| [Example 3.9](#example-39-different-initial-and-final-heights) | Different initial and final heights | 109 | 2, 1 ran | -1.7 s or 0.98 s; 9.2 m | `ch03/examples/n09/`: `main.py`; tests (written out) | `example_3_9.py` |
+| [Example 3.10](#example-310-the-zookeeper-and-the-monkey) | The zookeeper and the monkey | 110 | 2, 1 ran | a "show that": the dart hits | `ch03/examples/n10/`: `main.py`; tests (written out) | `example_3_10.py` |
+| [Example 3.13](#example-313-relative-velocity-on-a-straight-road) | Relative velocity on a straight road | 116 | 4, all ran | -192 km/h; +192 km/h; no change | `ch03/examples/n13/`: `main.py` | `example_3_13.py` |
+| [Example 4.1](#example-41-superposition-of-forces-finding-the-net-force) | Superposition of forces: Finding the net force | 133 | 8, 5 ran | -100 N, 80 N; 128 N at 141° | `ch04/examples/n01/`: `main.py`, `main_step_by_step.py`; tests (written out) | `example_4_1.py`, `example_4_1_step_by_step.py` |
+| [Example 4.4](#example-44-newtons-second-law-i-determining-acceleration-from-force) | Newton's second law I: Determining acceleration from force | 141 | 1, ran | 0.50 m/s² | `ch04/examples/n04/`: `main.py` | `example_4_4.py` |
+| [Example 4.5](#example-45-newtons-second-law-ii-determining-force-from-acceleration) | Newton's second law II: Determining force from acceleration | 141 | 3, all ran | -2.0 m/s²; ΣF_x = -0.90 N, f = 0.90 N | `ch04/examples/n05/`: `main.py`, `main_two_steps.py` | `example_4_5.py`, `example_4_5_two_steps.py` |
+| [Example 4.7](#example-47-mass-and-weight) | Mass and weight | 145 | 1, ran | 2540 kg; -7.20 m/s² | `ch04/examples/n07/`: `main.py` | `example_4_7.py` |
 
 ## Example 2.4: Constant-acceleration calculations
 

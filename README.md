@@ -57,18 +57,22 @@ sol.where(t1 > 0).number(t1)               # 2.5 (s)
 ```
 
 The full example, with part (b),
-is in [examples/up_15e/ch02/](examples/up_15e/ch02/), and runs with:
+is in [examples/up_15e/ch02/examples/n04/](examples/up_15e/ch02/examples/n04/), and runs with:
 
 ```bash
-uv run python -m examples.up_15e.ch02.example_2_4_handwritten
+uv run python -m examples.up_15e.ch02.examples.n04.main_handwritten
 ```
 
 [examples/up_15e/](examples/up_15e/) holds the examples ported from
-combine-equations.py, most of them on its physics code, which equarium
-carries as `equarium.physics`, such as Example 2.4's:
+combine-equations.py, one folder per problem: `ch02/examples/n04/` is
+Example 2.4, and `ch02/exercises/n003/` is Exercise 2.3. Each folder's
+`main.py` is the main version, and a version in another style has a
+slug, as in `main_handwritten.py`. Most of them run on the old physics
+code, which equarium carries as `equarium.physics`, such as Example
+2.4's:
 
 ```bash
-uv run python -m examples.up_15e.ch02.example_2_4
+uv run python -m examples.up_15e.ch02.examples.n04.main
 ```
 
 ## Docs

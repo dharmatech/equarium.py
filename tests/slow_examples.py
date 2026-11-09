@@ -6,7 +6,7 @@ the top of a file.
 
 SLOW_EXAMPLES = frozenset(
     {
-        "examples.up_15e.ch03.example_3_9",  # eliminating() on two-way polar, about 6 s
-        "examples.up_15e.ch03.example_3_10",  # the dart's eliminations, about 9 s
+        "examples.up_15e.ch03.examples.n09.main",  # eliminating() on two-way polar, about 6 s
+        "examples.up_15e.ch03.examples.n10.main",  # the dart's eliminations, about 9 s
     }
 )

@@ -4,8 +4,8 @@ import sympy as sp
 
 from equarium import Solution, System
 from equarium.display import plain, render, render_history, render_solution
-from examples.up_15e.ch02.example_2_4_handwritten import sol_a
-from examples.up_15e.ch02.example_2_5_handwritten_step_by_step import m_a, speeds
+from examples.up_15e.ch02.examples.n04.main_handwritten import sol_a
+from examples.up_15e.ch02.examples.n05.main_handwritten_step_by_step import m_a, speeds
 
 from example_2_4 import base, part_a, pre, t0, t1, v0, v1, x0, x1
 from kinematics_005 import derived

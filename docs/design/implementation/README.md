@@ -26,6 +26,7 @@ long enough to be compacted.
 | 000 | [project setup](000-project-setup/README.md) | README | Done (2026-11-07) |
 | 001 | [example catalog](001-example-catalog/README.md) | one checkpoint | Catalog written (2026-11-08), its questions answered |
 | 002 | [core](002-core/README.md) | charter, spec, checkpoints | Done (2026-11-08): 8 of 8 increments reviewed |
+| 003 | [example layout](003-example-layout/README.md) | README | Done (2026-11-08) |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the
@@ -39,3 +40,7 @@ long enough to be compacted.
   physics code runs on the core, and the catalog's examples are ported
   under `examples/up_15e/`. The physics redesign would be the next
   series.
+- **003 example layout:** each example, exercise and table under
+  `examples/up_15e/` in a folder of its own, such as
+  `ch02/examples/n04/main.py` for Example 2.4, with room for its
+  versions, notes and diagrams.

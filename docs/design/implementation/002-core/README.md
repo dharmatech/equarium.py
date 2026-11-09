@@ -62,3 +62,8 @@ Found along the way, for a later series:
   most of it the dart's two-way polar substitutions, and
   `example_3_9.py` in about 6 s. Both are marked slow, through
   `tests/slow_examples.py`.
+
+*(2026-11-08: series 003 then moved each example into a folder of its
+own. `example_3_10.py` is now `examples/up_15e/ch03/examples/n10/main.py`,
+and [003's README](../003-example-layout/README.md) maps every old name
+to its new one.)*

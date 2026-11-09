@@ -4,7 +4,7 @@ catalog quotes: its five lines, in order."""
 import sympy as sp
 
 from equarium.sympy_compat import sides
-from examples.up_15e.ch02.table_2_5 import EQUATIONS, a_x, dt, v_1x, v_2x, v_av_x, x_1, x_2
+from examples.up_15e.ch02.tables.n05.main import EQUATIONS, a_x, dt, v_1x, v_2x, v_av_x, x_1, x_2
 
 # 003's output, all of it, printed and as SymPy objects.
 OLD = [

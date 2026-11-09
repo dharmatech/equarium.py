@@ -7,18 +7,19 @@ import sympy as sp
 import examples
 from equarium import System, UsageError
 from examples.answers import Answer, Formula
-from examples.up_15e.ch02.example_2_4_handwritten import sol_a, v1, x1
+from examples.up_15e.ch02.examples.n04.main_handwritten import sol_a, v1, x1
 from slow_examples import SLOW_EXAMPLES
 
 x, D, a = sp.symbols("x D a")
 
 
 def example_modules() -> list[str]:
-    """Every module under `examples/` named `example_…` or `exercise_…`."""
+    """Every module in a problem's folder: in a chapter's `examples/` or
+    `exercises/`, such as `examples.up_15e.ch02.examples.n04.main`."""
     return sorted(
         info.name
         for info in pkgutil.walk_packages(examples.__path__, prefix="examples.")
-        if info.name.rsplit(".", 1)[-1].startswith(("example_", "exercise_"))
+        if not info.ispkg and info.name.split(".")[-3:-2] in (["examples"], ["exercises"])
     )
 
 
@@ -40,37 +41,37 @@ def test_book(name: str) -> None:
 
 def test_the_examples_are_found() -> None:
     assert {
-        "examples.up_15e.ch02.example_2_4_handwritten",
-        "examples.up_15e.ch02.example_2_5_handwritten",
-        "examples.up_15e.ch02.example_2_5_handwritten_step_by_step",
-        "examples.up_15e.ch02.example_2_4",
-        "examples.up_15e.ch02.example_2_5",
-        "examples.up_15e.ch02.example_2_5_step_by_step",
-        "examples.up_15e.ch02.example_2_6",
-        "examples.up_15e.ch02.example_2_7",
-        "examples.up_15e.ch02.example_2_8",
-        "examples.up_15e.ch02.exercise_2_1",
-        "examples.up_15e.ch02.exercise_2_3",
-        "examples.up_15e.ch02.exercise_2_3_two_steps",
-        "examples.up_15e.ch02.exercise_2_5",
-        "examples.up_15e.ch02.exercise_2_19",
-        "examples.up_15e.ch02.exercise_2_21",
-        "examples.up_15e.ch02.exercise_2_23",
-        "examples.up_15e.ch03.example_3_6",
-        "examples.up_15e.ch03.example_3_7",
-        "examples.up_15e.ch03.example_3_8",
-        "examples.up_15e.ch03.example_3_9",
-        "examples.up_15e.ch03.example_3_10",
-        "examples.up_15e.ch03.example_3_13",
-        "examples.up_15e.ch04.example_4_1",
-        "examples.up_15e.ch04.example_4_1_step_by_step",
-        "examples.up_15e.ch04.example_4_4",
-        "examples.up_15e.ch04.example_4_5",
-        "examples.up_15e.ch04.example_4_5_two_steps",
-        "examples.up_15e.ch04.example_4_7",
+        "examples.up_15e.ch02.examples.n04.main_handwritten",
+        "examples.up_15e.ch02.examples.n05.main_handwritten",
+        "examples.up_15e.ch02.examples.n05.main_handwritten_step_by_step",
+        "examples.up_15e.ch02.examples.n04.main",
+        "examples.up_15e.ch02.examples.n05.main",
+        "examples.up_15e.ch02.examples.n05.main_step_by_step",
+        "examples.up_15e.ch02.examples.n06.main",
+        "examples.up_15e.ch02.examples.n07.main",
+        "examples.up_15e.ch02.examples.n08.main",
+        "examples.up_15e.ch02.exercises.n001.main",
+        "examples.up_15e.ch02.exercises.n003.main",
+        "examples.up_15e.ch02.exercises.n003.main_two_steps",
+        "examples.up_15e.ch02.exercises.n005.main",
+        "examples.up_15e.ch02.exercises.n019.main",
+        "examples.up_15e.ch02.exercises.n021.main",
+        "examples.up_15e.ch02.exercises.n023.main",
+        "examples.up_15e.ch03.examples.n06.main",
+        "examples.up_15e.ch03.examples.n07.main",
+        "examples.up_15e.ch03.examples.n08.main",
+        "examples.up_15e.ch03.examples.n09.main",
+        "examples.up_15e.ch03.examples.n10.main",
+        "examples.up_15e.ch03.examples.n13.main",
+        "examples.up_15e.ch04.examples.n01.main",
+        "examples.up_15e.ch04.examples.n01.main_step_by_step",
+        "examples.up_15e.ch04.examples.n04.main",
+        "examples.up_15e.ch04.examples.n05.main",
+        "examples.up_15e.ch04.examples.n05.main_two_steps",
+        "examples.up_15e.ch04.examples.n07.main",
     } <= set(example_modules())
     assert SLOW_EXAMPLES <= set(example_modules())
-    assert "examples.up_15e.ch02.table_2_5" not in example_modules()
+    assert "examples.up_15e.ch02.tables.n05.main" not in example_modules()
     assert "examples.answers" not in example_modules()
 
 
