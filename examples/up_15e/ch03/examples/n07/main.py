@@ -11,7 +11,7 @@ Ported from combine-equations.py's
 g = 9.80 m/s², not the old 9.81: with 9.81 the speed at 2.00 s and the
 height miss the book's answers. Its four zero equations are zero knowns
 here, followed by `eliminate_zeros()` where it called its
-`eliminate_zero_eqs`. (b)'s `b_1_v_y = 0` and (c)'s `b_1_y = 0` are
+`eliminate_zero_eqs`. (b)'s `b1.vel.y = 0` and (c)'s `b1.pos.y = 0` are
 equations it added to a copy, so here each is a zero known on its
 branch, eliminated there. The launch is polar one way, in the script's
 own symbols, and the speed and angle at 2.00 s are written by hand.
@@ -30,12 +30,12 @@ angle are added as wants.
 import sympy as sp
 
 from equarium import System, eq_flat
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import XY, Particle
 from examples.answers import Answer
 
-b = make_states_model("b", 2)  # the ball
+b = Particle("b", 2, XY)  # the ball
 b0, b1 = b.states
-b01 = b.edges[0]
+b01 = b.edge(0, 1)
 
 g = sp.Symbol("g")
 b0_vel_mag, b0_vel_angle = sp.symbols("b0_vel_mag b0_vel_angle")
@@ -45,7 +45,7 @@ b1_vel_mag, b1_vel_angle, b1_vel_angle_deg = sp.symbols(
 
 launch = (
     System()
-    .add(*kinematics_fundamental(b, axes=["x", "y"]))  # (1) to (7)
+    .add(*b.kinematics())  # (1) to (7)
     .add(*eq_flat(b01.a.y, -g, b0.vel.x, b1.vel.x))  # (8), (9): projectile motion
     .known({b0.pos.x: 0, b0.pos.y: 0, b01.a.x: 0, b0.t: 0})  # from the ground, at t = 0
     .eliminate_zeros()
@@ -75,22 +75,22 @@ flight = speed.add(sp.Eq(b1_vel_angle_deg, sp.deg(b1_vel_angle))).eliminate(b1_v
 sol_a = flight.known(b1.t, 2.00).solve(  # s
     b1.pos.x, b1.pos.y, b1.vel.x, b1.vel.y, b1_vel_mag, b1_vel_angle_deg
 )
-# b_1_x = b0_vel_mag*b_1_t*cos(b0_vel_angle)                      44.4
-# b_1_y = b_1_t*(2*b0_vel_mag*sin(b0_vel_angle) - b_1_t*g)/2      39.6
-# b_1_v_x = b0_vel_mag*cos(b0_vel_angle)                          22.2
-# b_1_v_y = b0_vel_mag*sin(b0_vel_angle) - b_1_t*g                9.99
-# b1_vel_mag = sqrt(b0_vel_mag**2 - 2*b0_vel_mag*b_1_t*g*sin(b0_vel_angle) + b_1_t**2*g**2)
+# b1.pos.x = b0_vel_mag*b1.t*cos(b0_vel_angle)                    44.4
+# b1.pos.y = b1.t*(2*b0_vel_mag*sin(b0_vel_angle) - g*b1.t)/2     39.6
+# b1.vel.x = b0_vel_mag*cos(b0_vel_angle)                         22.2
+# b1.vel.y = b0_vel_mag*sin(b0_vel_angle) - g*b1.t                9.99
+# b1_vel_mag = sqrt(b0_vel_mag**2 - 2*b0_vel_mag*g*b1.t*sin(b0_vel_angle) + g**2*b1.t**2)
 #                                                                 24.36
-# b1_vel_angle_deg = 180*atan2(b0_vel_mag*sin(b0_vel_angle) - b_1_t*g,
+# b1_vel_angle_deg = 180*atan2(b0_vel_mag*sin(b0_vel_angle) - g*b1.t,
 #                              b0_vel_mag*cos(b0_vel_angle))/pi   24.2
 sol_a_radians = speed.known(b1.t, 2.00).solve(b1_vel_angle)  # s; the old script's radians
-# b1_vel_angle = atan2(b0_vel_mag*sin(b0_vel_angle) - b_1_t*g,
+# b1_vel_angle = atan2(b0_vel_mag*sin(b0_vel_angle) - g*b1.t,
 #                      b0_vel_mag*cos(b0_vel_angle))              0.4225
 
 # (b) The highest point, where the vertical velocity is zero.
 sol_b = flight.known(b1.vel.y, 0).eliminate_zeros().solve(b1.t, b1.pos.y)  # m/s
-# b_1_t = b0_vel_mag*sin(b0_vel_angle)/g                          3.02
-# b_1_y = b0_vel_mag**2*sin(b0_vel_angle)**2/(2*g)                44.7
+# b1.t = b0_vel_mag*sin(b0_vel_angle)/g                           3.02
+# b1.pos.y = b0_vel_mag**2*sin(b0_vel_angle)**2/(2*g)             44.7
 
 # (c) Back at ground level. The time and the angle are added wants.
 sol_c = (
@@ -98,10 +98,10 @@ sol_c = (
     .eliminate_zeros()
     .solve(b1.t, b1.pos.x, b1.vel.x, b1.vel.y, b1_vel_angle_deg)
 )
-# b_1_t = 2*b0_vel_mag*sin(b0_vel_angle)/g                        6.04
-# b_1_x = b0_vel_mag**2*sin(2*b0_vel_angle)/g                     134
-# b_1_v_x = b0_vel_mag*cos(b0_vel_angle)                          22.2
-# b_1_v_y = -b0_vel_mag*sin(b0_vel_angle)                         -29.6
+# b1.t = 2*b0_vel_mag*sin(b0_vel_angle)/g                         6.04
+# b1.pos.x = b0_vel_mag**2*sin(2*b0_vel_angle)/g                  134
+# b1.vel.x = b0_vel_mag*cos(b0_vel_angle)                         22.2
+# b1.vel.y = -b0_vel_mag*sin(b0_vel_angle)                        -29.6
 # b1_vel_angle_deg = 180*atan2(-b0_vel_mag*sin(b0_vel_angle),
 #                              b0_vel_mag*cos(b0_vel_angle))/pi   -53.1
 

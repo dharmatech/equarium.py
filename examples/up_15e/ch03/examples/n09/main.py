@@ -6,10 +6,10 @@ window, horizontally, does it land?
 
 Ported from combine-equations.py's `examples/up/ch3/up-example-3.9-v2.py`,
 with the book's g = 9.80 m/s², not the old 9.81. Its four zero
-equations, `b_1_y` among them (it hits the ground), are zero knowns
+equations, `b1.pos.y` among them (it hits the ground), are zero knowns
 here, followed by `eliminate_zeros()` where it called
 `eliminate_zero_eqs`. The launch is polar both ways, through
-`magnitude_and_angle_equations`, so `all_at_once` finds no roots, and
+`from_polar()` and `to_polar()`, so `all_at_once` finds no roots, and
 `eliminating()` solves it, as the old version 2 did. The origin is at
 the ground, not at the hand as in the book: the same answer. The time
 is added as a want, solved with x in no more time than x alone. The
@@ -22,39 +22,34 @@ other root of x, -15.7 m.
 import sympy as sp
 
 from equarium import System, eliminating, eq_flat
-from equarium.physics.kinematics_states import (
-    kinematics_fundamental,
-    magnitude_and_angle_equations,
-    make_states_model,
-)
+from equarium.physics import XY, Particle
 from examples.answers import Answer
 
-b = make_states_model("b", 2)  # the ball
+b = Particle("b", 2, XY)  # the ball
 b0, b1 = b.states
-b01 = b.edges[0]
-assert b0.vel.mag is not None and b0.vel.angle is not None  # make_states_model sets both
+b01 = b.edge(0, 1)
 
 g = sp.Symbol("g")
 
 window = (
     System()
-    .add(*kinematics_fundamental(b, axes=["x", "y"]))  # (1) to (7)
+    .add(*b.kinematics())  # (1) to (7)
     .add(*eq_flat(b01.a.y, -g, b0.vel.x, b1.vel.x))  # (8), (9): projectile motion
-    .known({b0.pos.x: 0, b01.a.x: 0, b0.t: 0, b1.pos.y: 0})  # b_1_y: it hits the ground
+    .known({b0.pos.x: 0, b01.a.x: 0, b0.t: 0, b1.pos.y: 0})  # b1.pos.y: it hits the ground
     .eliminate_zeros()
     .known(g, 9.80)  # m/s²
     .known(b0.pos.y, 8.0)  # m
-    .add(*magnitude_and_angle_equations(b0))  # (10) to (13)
+    .add(*b0.vel.from_polar(), *b0.vel.to_polar())  # (10) to (13)
     .known(b0.vel.mag, 10.0)  # m/s
     .known(b0.vel.angle, sp.N(sp.rad(-20.0)))  # degrees to radians
 )
 
 sol = window.solve(b1.pos.x, b1.t, strategy=eliminating())  # about 5 s
 # Root 1:
-# b_1_x = b_0_v_mag*(b_0_v_mag*sin(b_0_v_angle)
-#         - sqrt(b_0_v_mag**2*sin(b_0_v_angle)**2 + 2*b_0_y*g))*cos(b_0_v_angle)/g   -15.7
-# b_1_t = (b_0_v_mag*sin(b_0_v_angle)
-#         - sqrt(b_0_v_mag**2*sin(b_0_v_angle)**2 + 2*b_0_y*g))/g                    -1.67
+# b1.pos.x = b0.vel.mag*(b0.vel.mag*sin(b0.vel.angle)
+#            - sqrt(2*g*b0.pos.y + b0.vel.mag**2*sin(b0.vel.angle)**2))*cos(b0.vel.angle)/g   -15.7
+# b1.t = (b0.vel.mag*sin(b0.vel.angle)
+#        - sqrt(2*g*b0.pos.y + b0.vel.mag**2*sin(b0.vel.angle)**2))/g                         -1.67
 # Root 2: the same with +, 9.17 and 0.976.
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.

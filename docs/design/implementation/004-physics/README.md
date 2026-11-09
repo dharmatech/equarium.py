@@ -1,8 +1,8 @@
 # 004 physics
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
-Increment 001, symbols and chapter 2, is done and reviewed. Checkpoint
-002, chapters 3 and 4 renamed, is written.
+Increment 001, symbols and chapter 2, is done and reviewed. Increment
+002, chapters 3 and 4 renamed, is built and waits for review.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -33,13 +33,13 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 1 of 7 done. 001 and 002 rename
+From the [spec](spec.md#increments). 2 of 7 done. 001 and 002 rename
 only; 003 to 006 change equations; 007 removes the old copy.
 
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
-| 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Checkpoint written (2026-11-08) | |
+| 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done (2026-11-08) | |
 | 003 | polar and degrees | | Not started | |
 | 004 | events | | Not started | |
 | 005 | the projectile setup | | Not started | |
@@ -62,8 +62,8 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Implement [checkpoint 002](checkpoints/002-chapters-3-and-4-renamed.md),
-chapters 3 and 4 renamed, in a new conversation, with the prompt above.
+Increment 002, chapters 3 and 4 renamed, is built and waits for review.
+Checkpoint 003, polar and degrees, is written after it.
 
 The review of 001 (2026-11-08) found nothing to fix. 294 fast tests and
 8 slow ones pass, pyright reports 0 errors, and all 66 old formulas

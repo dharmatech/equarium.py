@@ -5,15 +5,10 @@ An example module keeps a `BOOK: list[Answer | Formula]`, and
 book prints, and a `Formula` is a formula it prints.
 """
 
-import io
-import keyword
-import tokenize
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 import sympy as sp
-from sympy.core.function import AppliedUndef
-from sympy.parsing.sympy_parser import parse_expr
 from sympy.physics.units import Quantity
 
 from equarium import Solution, UsageError
@@ -131,42 +126,45 @@ def _half_unit(value: Decimal) -> Decimal:
 class Formula:
     """The formula a book prints for one symbol of a solution.
 
-    `Formula(sol_top, p1.pos.y, "p_0_v_mag**2*sin(p_0_v_angle)**2/(2*g)")`.
-    The printed formula is in SymPy's syntax and the solution's symbols,
-    by name: those of its equations, knowns, wants and formulas. Every
-    other name in it must be a SymPy function or constant, such as `sin`,
-    `sqrt` or `pi`, so a typo is an error rather than a new symbol.
-
-    A name SymPy defines, such as `E` or `I`, means SymPy's constant,
-    unless the solution has a symbol of that name.
+    `Formula(sol_top, p1.pos.y, p0.vel.mag**2*sp.sin(p0.vel.angle)**2/(2*g))`.
+    The printed formula is a SymPy expression in the solution's symbols:
+    those of its equations, knowns, wants and formulas. A symbol that
+    isn't one of them is an error, checked by identity, not by name, so a
+    plain `sp.Symbol("p0.vel.mag")` is caught.
     """
 
     solution: Solution
     symbol: sp.Symbol
-    printed: str
-    expr: sp.Expr = field(compare=False, repr=False)
+    expr: sp.Expr
 
-    def __init__(self, solution: Solution, symbol: sp.Symbol, printed: str) -> None:
+    def __init__(self, solution: Solution, symbol: sp.Symbol, expr: sp.Expr) -> None:
         if symbol not in solution.system.wants:
             raise UsageError(f"{symbol} isn't a want of the solution", symbol=symbol)
-        if not isinstance(printed, str):
+        if not isinstance(expr, sp.Expr):
             raise UsageError(
-                f"the printed formula for {symbol} is text, not {printed!r}", symbol=symbol
+                f"the printed formula for {symbol} is an expression, not {expr!r}", symbol=symbol
+            )
+        symbols = _symbols(solution)
+        strays = sorted(sym.name for sym in free_symbols(expr) if sym not in symbols)
+        if strays:
+            raise UsageError(
+                f"the printed formula for {symbol} has {', '.join(strays)},"
+                " which isn't a symbol of the solution",
+                symbol=symbol,
             )
         object.__setattr__(self, "solution", solution)
         object.__setattr__(self, "symbol", symbol)
-        object.__setattr__(self, "printed", printed)
-        object.__setattr__(self, "expr", _parse(printed, _symbols_by_name(solution), symbol))
+        object.__setattr__(self, "expr", expr)
 
     def mismatch(self) -> str | None:
         """None when the solution has one root, and its formula for the
         symbol is the printed one, and otherwise what differs.
 
         They are the same when their difference simplifies to 0, so an
-        equivalent form matches: `"sin(2*a)"` for `2*sin(a)*cos(a)`. Every
+        equivalent form matches: `sin(2*a)` for `2*sin(a)*cos(a)`. Every
         symbol in the printed formula must be in the root's formula.
         """
-        where = f"{self.symbol}: printed {self.printed}"
+        where = f"{self.symbol}: printed {self.expr}"
         roots = self.solution.roots
         if not roots:
             return f"{where}, found no roots ({self.solution.reason})"
@@ -183,8 +181,8 @@ class Formula:
         return None
 
 
-def _symbols_by_name(solution: Solution) -> dict[str, sp.Symbol]:
-    """The solution's symbols by name: its equations', knowns', wants' and
+def _symbols(solution: Solution) -> frozenset[sp.Symbol]:
+    """The solution's symbols: its equations', knowns', wants' and
     formulas'."""
     system = solution.system
     symbols: set[sp.Symbol] = set(system.knowns) | set(system.wants)
@@ -193,49 +191,4 @@ def _symbols_by_name(solution: Solution) -> dict[str, sp.Symbol]:
     for root in solution.roots:
         for formula in root.formulas.values():
             symbols |= free_symbols(formula)
-    return {sym.name: sym for sym in symbols}
-
-
-def _parse(printed: str, symbols: dict[str, sp.Symbol], symbol: sp.Symbol) -> sp.Expr:
-    """The printed formula as an expression, its names bound to the
-    solution's symbols."""
-    try:
-        tokens = list(tokenize.generate_tokens(io.StringIO(printed).readline))
-    except (tokenize.TokenError, SyntaxError) as e:
-        raise UsageError(f"can't read the printed formula for {symbol}: {e}", symbol=symbol) from e
-    for name in (token.string for token in tokens if token.type == tokenize.NAME):
-        if name not in symbols and not _sympy_name(name):
-            raise UsageError(
-                f"the printed formula for {symbol} names {name},"
-                " which isn't a symbol of the solution or a SymPy function or constant",
-                symbol=symbol,
-            )
-    try:
-        expr = parse_expr(printed, local_dict=dict(symbols))
-    except (SyntaxError, tokenize.TokenError, TypeError, ValueError, AttributeError) as e:
-        raise UsageError(f"can't read the printed formula for {symbol}: {e}", symbol=symbol) from e
-    if not isinstance(expr, sp.Expr):
-        raise UsageError(
-            f"the printed formula for {symbol} is {expr!r}, not an expression", symbol=symbol
-        )
-    # A name can still make a symbol, as `Symbol("q")` would.
-    strays = sorted(sym.name for sym in free_symbols(expr) if symbols.get(sym.name) != sym)
-    strays += sorted(str(f.func) for f in expr.atoms(AppliedUndef))
-    if strays:
-        raise UsageError(
-            f"the printed formula for {symbol} makes {', '.join(strays)},"
-            " which isn't a symbol of the solution",
-            symbol=symbol,
-        )
-    return expr
-
-
-def _sympy_name(name: str) -> bool:
-    """Whether SymPy defines `name` as a function, such as `sin` or `sqrt`,
-    or as a constant, such as `pi`."""
-    if keyword.iskeyword(name):
-        return False
-    value = getattr(sp, name, None)
-    if isinstance(value, sp.Expr):
-        return not value.free_symbols
-    return callable(value)
+    return frozenset(symbols)

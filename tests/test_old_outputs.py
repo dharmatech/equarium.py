@@ -25,6 +25,7 @@ The slow modules are imported only inside their tests.
 
 import importlib
 import math
+import re
 from typing import cast
 
 import pytest
@@ -405,11 +406,11 @@ def test_3_10_show_that() -> None:
     # One equation is left, the old last line with its sides swapped.
     (equation,) = proved.equations
     lhs, rhs = equation.eq.lhs, equation.eq.rhs
-    assert (str(rhs), str(lhs)) == OLD_3_10
+    assert (old_str(rhs), old_str(lhs)) == OLD_3_10
 
     # It holds exactly when the dart reaches x = D.
-    d_1_x, D = sp.symbols("d_1_x D")
-    assert equation.eq.subs(d_1_x, D) is sp.true
+    d1_x, D = Var("d", "1", "pos", "x"), sp.Symbol("D")
+    assert equation.eq.subs(d1_x, D) is sp.true
 
     # With d1.pos.x = D added, nothing is left.
     assert reached.equations == ()
@@ -424,19 +425,44 @@ def test_old_name_of_a_state() -> None:
     assert old_name(Var("m", "0", "t")) == "m_0_t"
 
 
+def test_old_name_of_a_states_velocity_in_polar() -> None:
+    assert old_name(Var("m", "0", "vel", "mag")) == "m_0_v_mag"
+    assert old_name(Var("m", "0", "vel", "angle")) == "m_0_v_angle"
+
+
 def test_old_name_of_an_edge() -> None:
     assert old_name(Var("m", "01", "dt")) == "dt_m_0_1"
     assert old_name(Var("m", "01", "a", "x")) == "a_x_m_0_1"
     assert old_name(Var("m", "01", "v_av", "x")) == "v_av_x_m_0_1"
 
 
+def test_old_name_of_a_lone_vector() -> None:
+    assert old_name(Var("F1", "", "x")) == "F1_x"
+    assert old_name(Var("F1", "", "y")) == "F1_y"
+    assert old_name(Var("F1", "", "mag")) == "F1_mag"
+    assert old_name(Var("F1", "", "angle")) == "F1_angle"
+    assert old_name(Var("a", "", "x")) == "a_x"  # 4.4's acceleration
+
+
 def test_old_name_of_a_plain_symbol() -> None:
     assert old_name(sp.Symbol("m_v")) == "m_v"
 
 
-def test_old_name_of_a_var_the_rule_doesnt_know() -> None:
-    with pytest.raises(ValueError, match="F1.x"):
-        old_name(Var("F1", "", "x"))
+@pytest.mark.parametrize(
+    "var",
+    [
+        Var("m", "0", "pos", "mag"),  # a position's polar parts
+        Var("m", "0", "pos", "angle"),
+        Var("m", "01", "a", "mag"),  # an edge's
+        Var("m", "0", "vel", "angle_deg"),
+        Var("F1", "", "angle_deg"),
+        Var("b", "", "mass"),
+    ],
+    ids=str,
+)
+def test_old_name_of_a_var_the_rule_doesnt_know(var: Var) -> None:
+    with pytest.raises(ValueError, match=re.escape(var.name)):
+        old_name(var)
 
 
 def test_old_str_prints_the_old_order() -> None:

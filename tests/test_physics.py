@@ -1,10 +1,13 @@
 """The physics layer: `Var`'s identity, the names, the misuses, the
-kinematics equations and the book's notation. Also the old physics code's
-copy, until increment 007 deletes it, and the layers."""
+kinematics equations, vectors and their equations, polar, and the book's
+notation. Also the old physics code's copy, until increment 007 deletes
+it, and the layers."""
 
 import pickle
+import re
 import subprocess
 import sys
+from typing import Any, cast
 
 import pytest
 import sympy as sp
@@ -12,14 +15,23 @@ import sympy as sp
 from equarium import UsageError
 from equarium.analysis import Role
 from equarium.display import GREEN, RED, RESET, render_solution
-from equarium.physics import XY, BookNotation, Edge, Particle, State, Var, Vector, X, Y
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import XY, BookNotation, Edge, Particle, State, Var, Vec, Vector, X, Y
+from equarium.physics.kinematics_states import (
+    kinematics_fundamental,
+    magnitude_and_angle_equations,
+    make_point,
+    make_states_model,
+)
+from equarium.physics.newtons_laws import newtons_second_law, superposition_equations
 from examples.up_15e.ch02.examples.n04.main import sol_a
 from old_names import old_str
 
 m = Particle("m", 2, X)
 m0, m1 = m.states
 m01 = m.edge(0, 1)
+
+F1, F2, F3, R = Vector("F1", XY), Vector("F2", XY), Vector("F3", XY), Vector("R", XY)
+d0 = Particle("d", 2, XY).states[0]
 
 
 # Var's identity
@@ -97,6 +109,26 @@ def test_components_follow_the_axes() -> None:
     assert Vector("m", X, "0", ("pos",)) == m0.pos
 
 
+def test_a_lone_vector() -> None:
+    assert [s.name for s in (F1.x, F1.y, F1.mag)] == ["F1.x", "F1.y", "F1.mag"]
+    assert F1.x == Var("F1", "", "x")
+    again = Vector("F1", XY)
+    assert again == F1 and hash(again) == hash(F1)
+    assert again.mag == F1.mag
+
+
+def test_the_polar_parts_names() -> None:
+    xy0 = Particle("m", 2, XY).states[0]
+    symbols = (xy0.vel.mag, xy0.vel.angle, xy0.vel.angle_deg, xy0.pos.mag, F1.angle)
+    assert [s.name for s in symbols] == [
+        "m0.vel.mag",
+        "m0.vel.angle",
+        "m0.vel.angle_deg",
+        "m0.pos.mag",
+        "F1.angle",
+    ]
+
+
 # Misuses
 
 
@@ -104,6 +136,12 @@ def test_components_follow_the_axes() -> None:
 def test_a_bad_name_raises(name: str) -> None:
     with pytest.raises(UsageError, match="name"):
         Particle(name, 2, X)
+
+
+@pytest.mark.parametrize("name", ["m.x", "", "2F", "F 1"])
+def test_a_bad_vector_name_raises(name: str) -> None:
+    with pytest.raises(UsageError, match="name"):
+        Vector(name, XY)
 
 
 @pytest.mark.parametrize("states", [1, 11])
@@ -126,6 +164,28 @@ def test_an_axis_the_vector_doesnt_have_raises() -> None:
     b0 = Particle("b", 2, Y).states[0]
     with pytest.raises(UsageError, match="b0.vel is in Y, so it has no x"):
         getattr(b0.vel, "x")
+
+
+def test_vector_misuses_raise() -> None:
+    # Through getattr, or with an operand cast to Any, so pyright doesn't
+    # see the misuse here.
+    f = Vector("f", X)
+    with pytest.raises(UsageError, match="f is in X, so it has no mag"):
+        getattr(f, "mag")
+    with pytest.raises(UsageError, match="f is in X, so it has no mag"):
+        getattr(f, "from_polar")()
+    with pytest.raises(UsageError, match=re.escape("F1 + f: F1 is in XY, but f is in X")):
+        _ = F1 + cast(Any, f)
+    with pytest.raises(UsageError, match=re.escape("F1 - f: F1 is in XY, but f is in X")):
+        _ = F1 - cast(Any, f)
+    with pytest.raises(UsageError, match=re.escape("R.eq(f): R is in XY, but f is in X")):
+        R.eq(cast(Any, f))
+    with pytest.raises(UsageError, match=re.escape("F1 + 1: 1 isn't a vector")):
+        _ = F1 + cast(Any, 1)
+    with pytest.raises(UsageError, match=re.escape("1 + F1: 1 isn't a vector")):
+        _ = cast(Any, 1) + F1
+    with pytest.raises(UsageError, match=re.escape("F1 * F2: F2 isn't a scalar")):
+        _ = F1 * cast(Any, F2)
 
 
 # The kinematics
@@ -163,6 +223,75 @@ def test_kinematics_renamed_back_are_the_old_copys() -> None:
     assert new == old
 
 
+# Vectors: the arithmetic, `.eq` and polar
+
+
+def test_vectors_add_subtract_and_scale() -> None:
+    k = sp.Symbol("m")
+    total = (F1.x + F2.x + F3.x, F1.y + F2.y + F3.y)
+    results = [
+        (F1 + F2, (F1.x + F2.x, F1.y + F2.y)),
+        (F1 - F2, (F1.x - F2.x, F1.y - F2.y)),
+        (-F1, (-F1.x, -F1.y)),
+        (2 * F1, (2 * F1.x, 2 * F1.y)),
+        (F1 * k, (k * F1.x, k * F1.y)),
+        (k * F1, (k * F1.x, k * F1.y)),  # SymPy gives way to Vector.__rmul__
+        ((F1 + F2) + F3, total),  # a Vec and a Vector mix
+        (F3 + (F1 + F2), total),
+    ]
+    for result, components in results:
+        assert isinstance(result, Vec)
+        assert result.axes is XY
+        assert result.components == components
+
+
+def test_sum_adds_vectors() -> None:
+    assert sum([F1, F2, F3]) == F1 + F2 + F3
+
+
+def test_eq_makes_one_equation_per_axis() -> None:
+    F, n, w, a = Vector("F", XY), Vector("n", XY), Vector("w", XY), Vector("a", XY)
+    k = sp.Symbol("m")
+    assert [str(eq) for eq in R.eq(F1 + F2 + F3)] == [
+        "Eq(R.x, F1.x + F2.x + F3.x)",
+        "Eq(R.y, F1.y + F2.y + F3.y)",
+    ]
+    assert [str(eq) for eq in (F + n + w).eq(a * k)] == [
+        "Eq(F.x + n.x + w.x, m*a.x)",
+        "Eq(F.y + n.y + w.y, m*a.y)",
+    ]
+
+
+def test_polar_one_way_each() -> None:
+    assert [str(eq) for eq in d0.vel.from_polar()] == [
+        "Eq(d0.vel.x, d0.vel.mag*cos(d0.vel.angle))",
+        "Eq(d0.vel.y, d0.vel.mag*sin(d0.vel.angle))",
+    ]
+    assert [str(eq) for eq in d0.vel.to_polar()] == [
+        "Eq(d0.vel.mag, sqrt(d0.vel.x**2 + d0.vel.y**2))",
+        "Eq(d0.vel.angle, atan2(d0.vel.y, d0.vel.x))",
+    ]
+
+
+def test_vector_equations_renamed_back_are_the_old_copys() -> None:
+    # Uses the old copy, so increment 007 deletes it with the copy.
+    new = [old_str(eq) for eq in (*d0.vel.from_polar(), *d0.vel.to_polar())]
+    old = [str(eq) for eq in magnitude_and_angle_equations(make_states_model("d", 2).states[0])]
+    assert new == old
+
+    F, n, w, a = Vector("F", XY), Vector("n", XY), Vector("w", XY), Vector("a", XY)
+    k = sp.Symbol("m")
+    new = [old_str(eq) for eq in (F + n + w).eq(a * k)]
+    forces = [make_point("F"), make_point("n"), make_point("w")]
+    old = [str(eq) for eq in newtons_second_law(forces, k, make_point("a"))]
+    assert new == old
+
+    new = [old_str(eq) for eq in R.eq(F1 + F2 + F3)]
+    forces = [make_point("F1"), make_point("F2"), make_point("F3")]
+    old = [str(eq) for eq in superposition_equations(make_point("R"), forces)]
+    assert new == old
+
+
 # BookNotation
 
 
@@ -182,11 +311,28 @@ def test_the_book_notation_of_an_edge() -> None:
     assert [with_both.text(s) for s in symbols] == ["ΔtP01", "aP01x", "vavP01x"]
 
 
+def test_the_book_notation_of_the_polar_parts() -> None:
+    xy0 = Particle("m", 2, XY).states[0]
+    symbols = (xy0.pos.mag, xy0.vel.mag, xy0.vel.angle, xy0.pos.angle)
+    assert [BookNotation().text(s) for s in symbols] == ["r0", "v0", "α0", "θ0"]
+    with_p = BookNotation(owners={"m": "P"})
+    assert [with_p.text(s) for s in symbols] == ["rP0", "vP0", "αP0", "θP0"]
+
+
+def test_the_book_notation_of_a_lone_vector() -> None:
+    symbols = (F1.x, F1.y, F1.mag, R.angle)
+    assert [BookNotation().text(s) for s in symbols] == ["F1x", "F1y", "F1", "θR"]
+    # A lone vector's name is its own: owners applies to particles.
+    with_p = BookNotation(owners={"F1": "P", "R": "P"})
+    assert [with_p.text(s) for s in symbols] == ["F1x", "F1y", "F1", "θR"]
+
+
 def test_the_book_notation_of_other_symbols_is_the_name() -> None:
     book = BookNotation()
     assert book.text(sp.Symbol("m_v")) == "m_v"
-    assert book.text(Var("F1", "", "x")) == "F1.x"
-    assert book.text(Var("m", "0", "pos", "mag")) == "m0.pos.mag"
+    assert book.text(Var("m", "01", "a", "mag")) == "m01.a.mag"
+    assert book.text(Var("m", "0", "vel", "angle_deg")) == "m0.vel.angle_deg"
+    assert book.text(Var("F1", "", "angle_deg")) == "F1.angle_deg"
 
 
 def test_the_book_notation_colors_by_role() -> None:
