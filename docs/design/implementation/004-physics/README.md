@@ -4,7 +4,8 @@
 Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
 003, polar and degrees, and 004, events, are done and reviewed. The
 rename is complete, polar is one way everywhere, and 2.5 and 3.10 link
-through events. Checkpoint 005, the projectile setup, is next.
+through events. Checkpoint 005, the projectile setup, is written
+(2026-11-09).
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -28,7 +29,7 @@ The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/004-physics/checkpoints/004-events.md`
+> Read `docs/design/implementation/004-physics/checkpoints/005-projectile-setup.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
 > `2026-11-08-physics-redesign`. If you've been told to read that
 > file, it is the whole assignment.
@@ -44,7 +45,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
-| 005 | the projectile setup | | Not started | |
+| 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Checkpoint written (2026-11-09) | |
 | 006 | Newton on the edge | | Not started | |
 | 007 | the end | | Not started | |
 
@@ -64,14 +65,32 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 005, the projectile setup: `Setup` and `Edge.projectile(g)`,
-for 3.6 to 3.10, from the [spec](spec.md#increments). It is the first
-increment whose formulas change, renamed back: 3.6 drops its by-hand
-`eliminate(m01.dt)`, and v1x stops being a given, so the book's
-v_x = 9.0 m/s becomes an `Answer`. So it builds the `RESHAPED` table
-that [checkpoint 003](checkpoints/003-polar-and-degrees.md) designs
-under "A row whose formula changes", and lists and pins every formula
-that changes. The user will read it closely before it is built.
+Increment 005, the projectile setup: `Setup` and `Edge.projectile(g)`,
+for 3.6 to 3.10. Its [checkpoint](checkpoints/005-projectile-setup.md)
+is written (2026-11-09), and the user reads it before it is built. It
+is the first increment whose formulas change, renamed back. Its scratch
+run found five, all rows of 3.6, all for one reason: `m1.vel.x` stops
+being a given, the setup's `m0.vel.x = m1.vel.x` gives it, and each
+formula has `m0.vel.x` in its place. The numbers don't change. The
+checkpoint lists each row under "The formulas that change", and builds
+the `RESHAPED` table that
+[checkpoint 003](checkpoints/003-polar-and-degrees.md) designs, to pin
+them. What else it changes:
+
+- **3.6's `BOOK` gains one `Answer`,** the book's v_x = 9.0 m/s, which
+  was a given. No other `BOOK` changes.
+- **3.6's by-hand `eliminate(m01.dt)` goes,** so it imports in 1.9 s,
+  where it took 0.5 s. No module crosses 5 s.
+- **3.7, 3.8 and 3.9 keep the same equations,** so the other 61 rows
+  and 3.10's show-that come out as they do today.
+- **3.10's monkey fits the setup with one more by-hand elimination,**
+  `m1.vel.x`, which was a zero known. That makes 20, where the old
+  script had 19. The checkpoint says how to leave the monkey as it is
+  instead.
+- **A new test gives `m1.vel.x` again,** with the old by-hand step, and
+  gets all six old rows of 3.6 back verbatim. So the old formulas stay
+  checked, and the test shows that the givens moved them, not the
+  solver.
 
 Increment 004, events, is done and reviewed: `Event`, for 2.5 (both)
 and 3.10, after its [checkpoint](checkpoints/004-events.md). No formula
