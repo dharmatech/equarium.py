@@ -706,3 +706,11 @@ provenance, and porting the search is the catalog's call); the old
 and `add_if_new`; `clear_zero_denominators` (added only if a check
 fails without it); 2D and LaTeX rendering; Jupyter; timeouts for
 `solve`; consistency checks for overdetermined systems.
+
+*(2026-11-08, from checkpoint 008's prototype: Example 3.6 finds no
+roots without `clear_zero_denominators`. Its equation
+`0 = (-m_0_v_x + m_1_v_x)/dt_m_0_1` has both velocities known, so its
+only unknown is `dt_m_0_1`, which `sp.solve` can't solve it for. The
+user chose a by-hand `eliminate(m01.dt)` in the port, so the core still
+leaves `clear_zero_denominators` out. It stays a candidate for a later
+series.)*

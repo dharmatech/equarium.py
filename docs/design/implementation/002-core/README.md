@@ -2,8 +2,9 @@
 
 **Status:** Spec agreed (2026-11-07). Increments 001 to 007 are done
 and reviewed (2026-11-08). 007 was split in two after series 001's
-catalog: 007 was the physics code and chapter 2, and 008, chapters 3
-and 4, is next. Its checkpoint isn't written yet.
+catalog: 007 was the physics code and chapter 2. 008, chapters 3 and
+4, is the last increment: its checkpoint is written and waits for the
+user's review.
 
 equarium's core: the problem state (equations, knowns, wants, and the
 steps that produced them), the operations on it, and the display. The
@@ -22,9 +23,9 @@ spec and checkpoints.
   the user sees each review before the next checkpoint is written.
 
 To implement a checkpoint, give a new conversation this, with the
-checkpoint's file name (the last one was 007; 008's isn't written yet):
+checkpoint's file name:
 
-> Read `docs/design/implementation/002-core/checkpoints/007-physics-code-and-chapter-2.md`
+> Read `docs/design/implementation/002-core/checkpoints/008-chapters-3-and-4.md`
 > in `~/journal/2026-11-06-equations/equarium.py`. If you've been told
 > to read that file, it is the whole assignment.
 
@@ -41,4 +42,4 @@ From the [spec](spec.md#increments), with 007 split in two (2026-11-08). 007 of 
 | 005 | units | [005](checkpoints/005-units.md) | Done, reviewed (2026-11-08) | `8f1a98d` |
 | 006 | elimination attempts | [006](checkpoints/006-elimination-attempts.md) | Done, reviewed (2026-11-08) | `9ec5d88` |
 | 007 | the old physics code on the core, chapter 2 | [007](checkpoints/007-physics-code-and-chapter-2.md) | Done, reviewed (2026-11-08) | `ec3cef8` |
-| 008 | chapters 3 and 4 on the core | | Planned | |
+| 008 | chapters 3 and 4 on the core | [008](checkpoints/008-chapters-3-and-4.md) | Checkpoint written (2026-11-08), waiting for review | |
