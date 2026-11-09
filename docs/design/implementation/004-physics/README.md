@@ -1,8 +1,8 @@
 # 004 physics
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
-Increment 001, symbols and chapter 2, is done and reviewed. Increment
-002, chapters 3 and 4 renamed, is built and waits for review.
+Increments 001, symbols and chapter 2, and 002, chapters 3 and 4
+renamed, are done and reviewed. The rename is complete.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -39,7 +39,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | # | Increment | Checkpoint | Status | Commit |
 |---|---|---|---|---|
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
-| 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done (2026-11-08) | |
+| 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
 | 003 | polar and degrees | | Not started | |
 | 004 | events | | Not started | |
 | 005 | the projectile setup | | Not started | |
@@ -62,13 +62,26 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Increment 002, chapters 3 and 4 renamed, is built and waits for review.
-Checkpoint 003, polar and degrees, is written after it.
+Checkpoint 003, polar and degrees, the first increment that changes
+equations.
 
 The review of 001 (2026-11-08) found nothing to fix. 294 fast tests and
 8 slow ones pass, pyright reports 0 errors, and all 66 old formulas
 come back verbatim. One note for later: `BookNotation`'s `owners` is a
 dict, so a `BookNotation` can't be hashed. Nothing hashes one yet.
+
+The review of 002 (2026-11-08) found nothing to fix. 315 fast tests and
+8 slow ones pass, pyright reports 0 errors, and all 66 old formulas and
+3.10's show-that come back verbatim. No example imports the old copy
+any more. Two notes for later:
+
+- Pyright types `m * F1` as a SymPy `Expr`, from SymPy's own
+  `Expr.__mul__`, though at run time it is a `Vec`. So `.eq(m * a)`
+  would be a type error. Examples write `a * m`, and 006's `newton`
+  builds the product itself.
+- `BookNotation` treats a `Var` with an empty `where` as a lone
+  vector's. Events (`meet.t`, 004) and the mass (`b.mass`, 006) have an
+  empty `where` too, so their rows go before that branch.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,
