@@ -4,7 +4,7 @@
 Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
 and 003, polar and degrees, are done and reviewed. The rename is
 complete, and polar is one way everywhere. Checkpoint 004, events, is
-next.
+written (2026-11-09).
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -28,7 +28,7 @@ The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/004-physics/checkpoints/003-polar-and-degrees.md`
+> Read `docs/design/implementation/004-physics/checkpoints/004-events.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
 > `2026-11-08-physics-redesign`. If you've been told to read that
 > file, it is the whole assignment.
@@ -43,7 +43,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 001 | symbols and chapter 2 | [001](checkpoints/001-symbols-and-chapter-2.md) | Done, reviewed (2026-11-08) | `6bf4296` |
 | 002 | chapters 3 and 4, renamed | [002](checkpoints/002-chapters-3-and-4-renamed.md) | Done, reviewed (2026-11-08) | `a5f848d` |
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
-| 004 | events | | Not started | |
+| 004 | events | [004](checkpoints/004-events.md) | Checkpoint written (2026-11-09) | |
 | 005 | the projectile setup | | Not started | |
 | 006 | Newton on the edge | | Not started | |
 | 007 | the end | | Not started | |
@@ -64,10 +64,18 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 004, events: `Event`, for 2.5 (both) and 3.10, from the
-[spec](spec.md#increments). It is the first `Var` with an empty `where`
-that isn't a lone vector's, so `BookNotation` and `old_name` need its
-rows before their lone-vector branch (see the review of 002).
+Increment 004, events: `Event`, for 2.5 (both) and 3.10. Its
+[checkpoint](checkpoints/004-events.md) is written (2026-11-09). Its
+scratch run found that no formula changes once renamed back: 2.5's
+links come time first, with the state on the left, and 3.10's `agree`
+gains one link, but every solution, all 66 old formulas and 3.10's
+show-that come back verbatim, with `SCRIPT_NAMES` renaming 2.5's
+`meet.t` and `meet.pos.x` back to `t_01` and `dist`. So `RESHAPED` is
+still not needed. The event's symbols are the first with an empty
+`where` that aren't a lone vector's: `BookNotation` matches them before
+a lone vector's and prints `t` and `x`, and `old_name` reaches them
+only through the map, which it reads before its rules. The import
+times don't change.
 
 Increment 003, polar and degrees, the first increment that changes
 equations, is done and reviewed. No formula changed once renamed back:
