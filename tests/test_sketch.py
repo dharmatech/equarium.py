@@ -1,18 +1,19 @@
-"""The setup sketches, an experiment: `equarium.sketch` and the sketches
-`examples/sketches.py` writes."""
+"""The setup sketches, an experiment: `equarium.sketch`, and each
+problem's `sketch.py` and the `sketch.svg` it writes."""
 
+import importlib
+import pkgutil
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 import pytest
 import sympy as sp
 from sympy.physics.units import hour, kilometer, meter, second
 
+import examples
 from equarium import System, UsageError
+from equarium.analysis import Role
 from equarium.physics import XY, Particle, X
 from equarium.sketch import COLOR, quantity, sketch, split_subscript
-from equarium.analysis import Role
-from examples.sketches import HERE, SKETCHES
 
 SVG = "{http://www.w3.org/2000/svg}"
 
@@ -98,8 +99,22 @@ def test_a_sketch_needs_the_x_axis_and_a_part() -> None:
         sketch(m)
 
 
-@pytest.mark.parametrize("folder", sorted(SKETCHES))
-def test_the_written_sketch_is_todays(folder: str) -> None:
-    # Rewrite with `uv run python -m examples.sketches`.
-    path = HERE / folder / "sketch.svg"
-    assert Path(path).read_text() == SKETCHES[folder]()
+def sketch_modules() -> list[str]:
+    """Each problem folder's `sketch` module, such as
+    `examples.up_15e.ch02.examples.n04.sketch`."""
+    return sorted(
+        info.name
+        for info in pkgutil.walk_packages(examples.__path__, prefix="examples.")
+        if not info.ispkg and info.name.rsplit(".", 1)[-1] == "sketch"
+    )
+
+
+def test_the_sketches_are_found() -> None:
+    assert "examples.up_15e.ch02.examples.n04.sketch" in sketch_modules()
+
+
+@pytest.mark.parametrize("name", sketch_modules())
+def test_the_written_sketch_is_todays(name: str) -> None:
+    # Rewrite it with `uv run python -m <name>`.
+    module = importlib.import_module(name)
+    assert module.SVG.read_text() == module.draw()

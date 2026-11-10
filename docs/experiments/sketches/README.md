@@ -1,7 +1,8 @@
 # Setup sketches (experiment)
 
-**Status:** first prototype, Example 2.4 (2026-11-09). This is an
-experiment, not a series. It takes a series number only if it's adopted.
+**Status:** first prototype, Example 2.4 (2026-11-09). Its sketch code
+moved into the problem's folder (2026-11-10). This is an experiment, not
+a series. It takes a series number only if it's adopted.
 
 The book's "set up" step is a sketch: axes, an origin, the points of
 interest, and the knowns and unknowns labeled. Most of the book's
@@ -34,19 +35,27 @@ physics branch.
   schematic, not to scale: the states are evenly spaced, in order, to
   the right of the origin. The module depends on the physics layer and
   the core, and neither imports it.
-- **`examples/sketches.py`.** It writes each sketch beside its problem's
-  `main.py`, as `sketch.svg`. It lives outside the problem folders,
-  since every module in one must be an example with a `BOOK`.
+- **A problem's `sketch.py`, in its folder.** 2.4's is
+  `examples/up_15e/ch02/examples/n04/sketch.py`. Its `draw()` returns
+  the sketch of `main.py`'s `part_a` and `part_b`, and run, it writes
+  `sketch.svg` beside it:
 
   ```bash
-  uv run python -m examples.sketches
+  uv run python -m examples.up_15e.ch02.examples.n04.sketch
   ```
 
-- **`examples/up_15e/ch02/examples/n04/sketch.svg`.** 2.4's two parts,
-  drawn from `main.py`'s `part_a` and `part_b`.
+- **`examples/up_15e/ch02/examples/n04/sketch.svg`.** What 2.4's
+  `sketch.py` writes.
 - **`tests/test_sketch.py`.** It tests the subscripts, the values and
-  the labels' colors, and checks that each written `sketch.svg` is what
-  `examples/sketches.py` draws today.
+  the labels' colors. It finds every problem's `sketch.py` and checks
+  that the `sketch.svg` beside it is what it draws today.
+- **Only `main.py` and `main_<slug>.py` are versions.** The tests check
+  a problem's versions against the book, and those are the only modules
+  they take as versions, as the repo's README names them. Any other
+  module in a problem's folder, such as `sketch.py`, supports them and
+  needs no `BOOK`. The change is in `tests/test_examples.py`'s
+  `is_version`. It suits the physics branch too, which has no other
+  modules in a problem's folder yet.
 
 ## Found so far
 
