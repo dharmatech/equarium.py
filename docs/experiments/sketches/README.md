@@ -61,10 +61,9 @@ physics branch on 2026-11-10, and goes to master with it.
 - **The model has nearly everything.** Which symbols go on which point
   or arc, and their roles and values, all come from the `System` and the
   `Particle`. Only the title is written by hand.
-- **Units make it read like the book.** `main.py` has plain numbers, so
-  its sketch says `aₓ = 4`. Drawn from the units version,
-  `main_units.py` in the same folder, the same sketch says
-  `aₓ = 4 m/s²` and `x₀ = 5 m`. A zero loses its
+- **Units make it read like the book.** With plain numbers, the sketch
+  said `aₓ = 4`. 2.4's `main.py` has units since 2026-11-10, and its
+  sketch says `aₓ = 4 m/s²` and `x₀ = 5 m`. A zero loses its
   unit: SymPy makes `0 * second` a plain `0`.
 - **Not to scale is the safe default.** A wanted position has no value
   to place, so the states go in order. The origin is always on the

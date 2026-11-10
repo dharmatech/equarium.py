@@ -11,6 +11,9 @@ checkpoints 007 and 008 list are expected:
 - the old scripts printed `formula.subs(values)`, so an exact number
   printed as `43`, where equarium's number is `sp.N` of it, `43.0000000000000`.
   So the numbers compare by value, within 1e-9 relative;
+- 2.4's knowns have units since 2026-11-10, where the old script's were
+  plain numbers. Its rows give the old numbers in the port's units,
+  `43*meter` for the printed `43`;
 - the additions (2.6's velocities at 2.0 s and 3.0 s, 2.3's `longer`, the
   new wants of chapters 3 and 4, 4.1's book step, 4.5's second step) have
   no old output. Their `BOOK`s check them;
@@ -68,14 +71,14 @@ OLD_GIVENS: dict[str, dict[str, sp.Expr | float]] = {
 # The module is under `examples.up_15e`.
 OLD: list[tuple[str, str, str, str, str | None]] = [
     # Example 2.4, v4-001
-    ("ch02.examples.n04.main", "sol_a", "m_1_x", "a_x_m_0_1*m_1_t**2/2 + m_0_v_x*m_1_t + m_0_x", "43"),
-    ("ch02.examples.n04.main", "sol_a", "m_1_v_x", "a_x_m_0_1*m_1_t + m_0_v_x", "23"),
+    ("ch02.examples.n04.main", "sol_a", "m_1_x", "a_x_m_0_1*m_1_t**2/2 + m_0_v_x*m_1_t + m_0_x", "43*meter"),
+    ("ch02.examples.n04.main", "sol_a", "m_1_v_x", "a_x_m_0_1*m_1_t + m_0_v_x", "23*meter/second"),
     (
         "ch02.examples.n04.main",
         "sol_b",
         "m_1_x",
         "(2*a_x_m_0_1*m_0_x - m_0_v_x**2 + m_1_v_x**2)/(2*a_x_m_0_1)",
-        "55",
+        "55*meter",
     ),
     # Example 2.5, v4-000
     ("ch02.examples.n05.main", "sol", "t_01", "2*m_v/a_x_p_0_1", "10"),
