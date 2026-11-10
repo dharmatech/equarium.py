@@ -1,12 +1,15 @@
 # 004 physics
 
-**Status:** Charter and spec agreed with the user (2026-11-08).
-Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
-003, polar and degrees, 004, events, 005, the projectile setup, and
-006, Newton on the edge, are done and reviewed. The rename is complete,
-polar is one way everywhere, 2.5 and 3.10 link through events, 3.6 to
-3.10 use the projectile setup, and 4.4 and 4.5 use Newton on the edge.
-Checkpoint 007, the end, is written (2026-11-09).
+**Status:** Charter and spec agreed with the user (2026-11-08). All
+seven increments are built. Increments 001, symbols and chapter 2, 002,
+chapters 3 and 4 renamed, 003, polar and degrees, 004, events, 005, the
+projectile setup, and 006, Newton on the edge, are done and reviewed.
+Increment 007, the end, is built and waits for review. The rename is
+complete, polar is one way everywhere, 2.5 and 3.10 link through
+events, 3.6 to 3.10 use the projectile setup, and 4.4 and 4.5 use
+Newton on the edge. The old physics code's copy is deleted, and the
+version is 0.2.0. Merging into `master`, tagging `v0.2.0` and pushing
+are the user's calls.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -28,7 +31,7 @@ as version 0.2.0, when the user chooses.
 
 The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
-checkpoint's file name:
+checkpoint's file name (the last one was 007, and the series is done):
 
 > Read `docs/design/implementation/004-physics/checkpoints/007-the-end.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
@@ -37,7 +40,7 @@ checkpoint's file name:
 
 ## Increments
 
-From the [spec](spec.md#increments). 6 of 7 done. 001 and 002 rename
+From the [spec](spec.md#increments). 7 of 7 done. 001 and 002 rename
 only; 003 to 006 change equations; 007 removes the old copy.
 
 | # | Increment | Checkpoint | Status | Commit |
@@ -48,7 +51,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
 | 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done, reviewed (2026-11-09) | `f505be6` |
 | 006 | Newton on the edge | [006](checkpoints/006-newton-on-the-edge.md) | Done, reviewed (2026-11-09) | `2572faf` |
-| 007 | the end | [007](checkpoints/007-the-end.md) | Checkpoint written (2026-11-09) | |
+| 007 | the end | [007](checkpoints/007-the-end.md) | Done (2026-11-09) | |
 
 ## Decisions
 
@@ -66,40 +69,50 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Increment 007, the end, from the [spec](spec.md#increments). Its
-[checkpoint](checkpoints/007-the-end.md) is written (2026-11-09), and
-the user approved its section on the record (2026-11-09), so it can be
-built. No equation, formula, example or `BOOK` changes. What it
-changes:
+All seven increments are built, so no checkpoint comes next. What is
+left is the user's three calls, after the review of 007:
+
+- **The merge** of the branch `2026-11-08-physics-redesign` into
+  `master`. `master` is at `v0.1.0` (`3370e5d`), an ancestor of the
+  branch, so the merge can be a fast-forward.
+- **The tag** `v0.2.0`, on the merged commit.
+- **The push:** `master`, the tag `v0.2.0`, and the tag `v0.1.0` if it
+  is still local.
+
+Increment 007, the end, is built and waits for review, after its
+[checkpoint](checkpoints/007-the-end.md). The user approved the
+checkpoint's section on the record (2026-11-09) before it was built. No
+equation, formula, example or `BOOK` changed. What changed:
 
 - **The old copy is deleted:** `kinematics_states.py` and
-  `newtons_laws.py`. Only `tests/test_physics.py` imports them.
-- **The record stays as it is,** character for character: the 66 rows
+  `newtons_laws.py`. Only `tests/test_physics.py` imported them. The
+  old code is still in the tag `v0.1.0`, in every commit of the branch
+  before this increment's, and in the old repo.
+- **The record stayed as it was,** character for character: the 66 rows
   and `RESHAPED` in `tests/test_old_outputs.py`, and the map in
-  `tests/old_names.py`. Neither file uses the copy. At `10f9d5f`,
-  `tests/test_old_outputs.py`, run alone, passes its 89 tests and loads
-  neither old module. With the copy deleted, it passes the same 89.
-- **Of the four tests that use the copy, two go and two become one.**
-  The comparisons of the vector equations and of Newton's second law
-  go: the tests beside them pin the same equations as strings. The
-  kinematics comparison stays, with the copy's output written out as 22
-  strings, the old library's own four among them. It is the only test
-  that pins the order of the equations for three states in `XY`: with
-  the loops swapped in scratch, it alone fails. The spec has all four
-  deleted. The user chose to keep this one (2026-11-09).
-- **The fast suite has 344 tests,** where it has 347. With all four
-  deleted, it would have 343.
-- **`physics/__init__.py`'s docstring** loses its paragraph on the
+  `tests/old_names.py`. Neither file used the copy. With the copy
+  deleted, `tests/test_old_outputs.py` passes the same 89 tests.
+- **Of the four tests that used the copy, two went and two became
+  one.** The comparisons of the vector equations and of Newton's second
+  law went: the tests beside them pin the same equations as strings.
+  The kinematics comparison stayed, as
+  `test_kinematics_renamed_back_are_the_old_codes`, with the copy's
+  output written out as 22 strings, the old library's own four among
+  them. The copy printed the same 22, in order, just before it went.
+  It is the only test that pins the order of the equations for three
+  states in `XY`: with the loops swapped in the checkpoint's scratch,
+  it alone failed. The spec has all four deleted. The user chose to
+  keep this one (2026-11-09).
+- **The fast suite has 344 tests,** where it had 347, and
+  `tests/test_physics.py` has 57, where it had 60.
+- **`physics/__init__.py`'s docstring** lost its paragraph on the
   copy.
 - **The version is 0.2.0,** in `pyproject.toml` and in `uv.lock`, which
   records it too.
-- **The package README doesn't change.** Increment 001 already rewrote
+- **The package README didn't change.** Increment 001 already rewrote
   its sentence on the old physics code.
 - **This README, the series map and 002's README** say the series is
   done.
-
-Merging into `master`, tagging `v0.2.0` and pushing are the user's
-calls, not 007's.
 
 Increment 006, Newton on the edge, is done and reviewed:
 `Particle.mass` and `Edge.newton(*forces)`, in `newton.py`, for 4.4 and

@@ -1,8 +1,8 @@
 """The physics layer: `Var`'s identity, the names, the misuses, the
 kinematics equations, vectors and their equations, polar, events and
 their links, the projectile setup, Newton's second law and the mass, and
-the book's notation. Also the old physics code's copy, until increment
-007 deletes it, and the layers."""
+the book's notation. Also the kinematics equations against the old
+physics code's output, and the layers."""
 
 import pickle
 import re
@@ -30,13 +30,6 @@ from equarium.physics import (
     X,
     Y,
 )
-from equarium.physics.kinematics_states import (
-    kinematics_fundamental,
-    magnitude_and_angle_equations,
-    make_point,
-    make_states_model,
-)
-from equarium.physics.newtons_laws import newtons_second_law, superposition_equations
 from examples.up_15e.ch02.examples.n04.main import sol_a
 from examples.up_15e.ch02.examples.n05.main import sol as sol_2_5
 from old_names import old_str
@@ -235,14 +228,40 @@ def test_kinematics_of_three_states_in_the_old_order() -> None:
     ]
 
 
-def test_kinematics_renamed_back_are_the_old_copys() -> None:
-    # Uses the old copy, so increment 007 deletes it with the copy.
-    new = [old_str(eq) for eq in Particle("m", 2, Y).kinematics()]
-    old = [str(eq) for eq in kinematics_fundamental(make_states_model("m", 2), axes=("y",))]
-    assert new == old
-    new = [old_str(eq) for eq in Particle("m", 3, XY).kinematics()]
-    old = [str(eq) for eq in kinematics_fundamental(make_states_model("m", 3), axes=("x", "y"))]
-    assert new == old
+def test_kinematics_renamed_back_are_the_old_codes() -> None:
+    # The old physics code's output, written out: equarium's copy of that
+    # code went in increment 007 of the 004 series. The first four strings
+    # are the old library's own, from its venv in combine-equations.py
+    # (2026-11-08). The rest are the copy's, printed before it went.
+    assert [old_str(eq) for eq in m.kinematics()] == [
+        "Eq(dt_m_0_1, -m_0_t + m_1_t)",
+        "Eq(v_av_x_m_0_1, (-m_0_x + m_1_x)/dt_m_0_1)",
+        "Eq(a_x_m_0_1, (-m_0_v_x + m_1_v_x)/dt_m_0_1)",
+        "Eq(v_av_x_m_0_1, m_0_v_x/2 + m_1_v_x/2)",
+    ]
+    assert [old_str(eq) for eq in Particle("m", 2, Y).kinematics()] == [
+        "Eq(dt_m_0_1, -m_0_t + m_1_t)",
+        "Eq(v_av_y_m_0_1, (-m_0_y + m_1_y)/dt_m_0_1)",
+        "Eq(a_y_m_0_1, (-m_0_v_y + m_1_v_y)/dt_m_0_1)",
+        "Eq(v_av_y_m_0_1, m_0_v_y/2 + m_1_v_y/2)",
+    ]
+    # Three states in XY, which no example has: for each edge, x then y.
+    assert [old_str(eq) for eq in Particle("m", 3, XY).kinematics()] == [
+        "Eq(dt_m_0_1, -m_0_t + m_1_t)",
+        "Eq(dt_m_1_2, -m_1_t + m_2_t)",
+        "Eq(v_av_x_m_0_1, (-m_0_x + m_1_x)/dt_m_0_1)",
+        "Eq(v_av_y_m_0_1, (-m_0_y + m_1_y)/dt_m_0_1)",
+        "Eq(v_av_x_m_1_2, (-m_1_x + m_2_x)/dt_m_1_2)",
+        "Eq(v_av_y_m_1_2, (-m_1_y + m_2_y)/dt_m_1_2)",
+        "Eq(a_x_m_0_1, (-m_0_v_x + m_1_v_x)/dt_m_0_1)",
+        "Eq(a_y_m_0_1, (-m_0_v_y + m_1_v_y)/dt_m_0_1)",
+        "Eq(a_x_m_1_2, (-m_1_v_x + m_2_v_x)/dt_m_1_2)",
+        "Eq(a_y_m_1_2, (-m_1_v_y + m_2_v_y)/dt_m_1_2)",
+        "Eq(v_av_x_m_0_1, m_0_v_x/2 + m_1_v_x/2)",
+        "Eq(v_av_y_m_0_1, m_0_v_y/2 + m_1_v_y/2)",
+        "Eq(v_av_x_m_1_2, m_1_v_x/2 + m_2_v_x/2)",
+        "Eq(v_av_y_m_1_2, m_1_v_y/2 + m_2_v_y/2)",
+    ]
 
 
 # Vectors: the arithmetic, `.eq` and polar
@@ -294,25 +313,6 @@ def test_polar_one_way_each() -> None:
         "Eq(d0.vel.angle, atan2(d0.vel.y, d0.vel.x))",
     ]
     assert [str(eq) for eq in d0.vel.degrees()] == ["Eq(d0.vel.angle_deg, 180*d0.vel.angle/pi)"]
-
-
-def test_vector_equations_renamed_back_are_the_old_copys() -> None:
-    # Uses the old copy, so increment 007 deletes it with the copy.
-    new = [old_str(eq) for eq in (*d0.vel.from_polar(), *d0.vel.to_polar())]
-    old = [str(eq) for eq in magnitude_and_angle_equations(make_states_model("d", 2).states[0])]
-    assert new == old
-
-    F, n, w, a = Vector("F", XY), Vector("n", XY), Vector("w", XY), Vector("a", XY)
-    k = sp.Symbol("m")
-    new = [old_str(eq) for eq in (F + n + w).eq(a * k)]
-    forces = [make_point("F"), make_point("n"), make_point("w")]
-    old = [str(eq) for eq in newtons_second_law(forces, k, make_point("a"))]
-    assert new == old
-
-    new = [old_str(eq) for eq in R.eq(F1 + F2 + F3)]
-    forces = [make_point("F1"), make_point("F2"), make_point("F3")]
-    old = [str(eq) for eq in superposition_equations(make_point("R"), forces)]
-    assert new == old
 
 
 # Events
@@ -495,20 +495,6 @@ def test_newton_misuses_raise() -> None:
         m01.newton()
 
 
-def test_newton_renamed_back_is_the_old_copys() -> None:
-    # Uses the old copy, so increment 007 deletes it with the copy. The old
-    # code took the mass and the acceleration, here 4.4's `m` and `a`.
-    box = Particle("box", 2, XY)
-    box01 = box.edge(0, 1)
-    F, n, w = Vector("F", XY), Vector("n", XY), Vector("w", XY)
-    k, a = sp.Symbol("m"), make_point("a")
-    names = {box.mass: k, box01.a.x: a.x, box01.a.y: a.y}
-    new = [old_str(eq.xreplace(names)) for eq in box01.newton(F, n, w)]
-    forces = [make_point("F"), make_point("n"), make_point("w")]
-    old = [str(eq) for eq in newtons_second_law(forces, k, a)]
-    assert new == old
-
-
 # BookNotation
 
 
@@ -606,18 +592,7 @@ def test_the_book_notation_of_2_5_with_owners() -> None:
     assert printed.startswith("t = 2*m_v/aPx\n")
 
 
-# The old copy, and the layers
-
-
-def test_the_same_equations_as_the_old_library() -> None:
-    # The old library's own output, from its venv in combine-equations.py
-    # (2026-11-08).
-    assert [str(eq) for eq in kinematics_fundamental(make_states_model("m", 2), axes=("x",))] == [
-        "Eq(dt_m_0_1, -m_0_t + m_1_t)",
-        "Eq(v_av_x_m_0_1, (-m_0_x + m_1_x)/dt_m_0_1)",
-        "Eq(a_x_m_0_1, (-m_0_v_x + m_1_v_x)/dt_m_0_1)",
-        "Eq(v_av_x_m_0_1, m_0_v_x/2 + m_1_v_x/2)",
-    ]
+# The layers
 
 
 def test_the_core_doesnt_import_the_physics_code() -> None:

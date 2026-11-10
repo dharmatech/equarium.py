@@ -30,10 +30,6 @@ equation per axis, `f.x + n.x + w.x = b.mass*b01.a.x`. The mass is the
 particle's, `b.mass`, and the acceleration is the edge's, the one the
 kinematics equations have, so a system with both needs no equation to
 link them.
-
-The old physics code from combine-equations.py, `kinematics_states` and
-`newtons_laws`, stays here until increment 007 of the 004 series. No
-example uses it any more: only `tests/test_physics.py` does, to compare.
 """
 
 from equarium.physics.axes import XY, X, Y

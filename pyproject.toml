@@ -1,6 +1,6 @@
 [project]
 name = "equarium"
-version = "0.1.0"
+version = "0.2.0"
 description = "Solve physics problems from core equations with SymPy: state what you know and what you want, and let the solver derive the rest."
 readme = "README.md"
 authors = [

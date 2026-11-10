@@ -27,7 +27,7 @@ long enough to be compacted.
 | 001 | [example catalog](001-example-catalog/README.md) | one checkpoint | Catalog written (2026-11-08), its questions answered |
 | 002 | [core](002-core/README.md) | charter, spec, checkpoints | Done (2026-11-08): 8 of 8 increments reviewed |
 | 003 | [example layout](003-example-layout/README.md) | README | Done (2026-11-08) |
-| 004 | [physics](004-physics/README.md) | charter, spec, checkpoints | In progress (2026-11-09): 6 of 7 increments done, on branch `2026-11-08-physics-redesign` |
+| 004 | [physics](004-physics/README.md) | charter, spec, checkpoints | Done (2026-11-09): 7 of 7 increments done, on branch `2026-11-08-physics-redesign`, as version 0.2.0 |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the
@@ -39,8 +39,8 @@ long enough to be compacted.
   The old physics code then runs on it with no design changes, before
   any physics redesign. It doesn't shape the core. Done: the old
   physics code runs on the core, and the catalog's examples are ported
-  under `examples/up_15e/`. The physics redesign would be the next
-  series.
+  under `examples/up_15e/`. Series 004 then redesigned the physics
+  layer and deleted that code.
 - **003 example layout:** each example, exercise and table under
   `examples/up_15e/` in a folder of its own, such as
   `ch02/examples/n04/main.py` for Example 2.4, with room for its
@@ -51,4 +51,6 @@ long enough to be compacted.
   events, the projectile setup and Newton's laws. The examples move
   over in place, with the same book answers. It runs on the branch
   `2026-11-08-physics-redesign`, from the tag `v0.1.0`, the core with
-  the old physics code.
+  the old physics code. Done: every example runs on the new layer, the
+  old physics code's copy is deleted, and the version is 0.2.0. The
+  branch merges into `master` when the user chooses.
