@@ -1,8 +1,9 @@
 # Setup sketches (experiment)
 
 **Status:** first prototype, Example 2.4 (2026-11-09). Its sketch code
-moved into the problem's folder (2026-11-10). This is an experiment, not
-a series. It takes a series number only if it's adopted.
+moved into the problem's folder, and the experiment merged into the
+physics branch (2026-11-10). This is an experiment, not a series. It
+takes a series number only if it's adopted.
 
 The book's "set up" step is a sketch: axes, an origin, the points of
 interest, and the knowns and unknowns labeled. Most of the book's
@@ -12,11 +13,10 @@ the model instead: the particle, its states and edges, and the system's
 knowns, wants and other unknowns. A sketch drawn from the code always
 agrees with the code.
 
-**Where:** branch `2026-11-09-generated-sketches`, from
-`2026-11-08-physics-redesign` at `107a670`. It's checked out as its own
-worktree, `~/journal/2026-11-06-equations/equarium-sketches`, so the
-physics branch's review isn't disturbed. Nothing here goes on the
-physics branch.
+**Where:** it began on its own branch, `2026-11-09-generated-sketches`,
+from `2026-11-08-physics-redesign` at `107a670`, in its own worktree so
+the physics branch's review wasn't disturbed. It merged into the
+physics branch on 2026-11-10, and goes to master with it.
 
 ## What there is
 
@@ -54,8 +54,7 @@ physics branch.
   they take as versions, as the repo's README names them. Any other
   module in a problem's folder, such as `sketch.py`, supports them and
   needs no `BOOK`. The change is in `tests/test_examples.py`'s
-  `is_version`. It suits the physics branch too, which has no other
-  modules in a problem's folder yet.
+  `is_version`.
 
 ## Found so far
 

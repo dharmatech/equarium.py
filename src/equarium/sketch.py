@@ -1,6 +1,6 @@
 """Setup sketches: a problem's model drawn as SVG, from its `System`.
 
-An experiment, on the branch `2026-11-09-generated-sketches`. A sketch is
+An experiment, with notes in `docs/experiments/sketches/`. A sketch is
 the book's "set up" step, drawn from the model:
 - the axis, with the origin
 - each state as a point on it, with its velocity as an arrow
