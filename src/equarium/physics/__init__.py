@@ -10,9 +10,9 @@ imports the core, and the core imports nothing from here.
 A `Vector` is a state's or an edge's, `m0.vel` or `m01.a`, or a lone
 vector, such as a force, `Vector("F1", XY)`. Vectors add, subtract and
 scale into a `Vec`, a vector expression, and `.eq` makes one equation
-per axis: `R.eq(F1 + F2 + F3)`, `(F + n + w).eq(a * m)`. An `XY` vector
-has polar parts, `mag`, `angle` and `angle_deg`, and `from_polar()`,
-`to_polar()` and `degrees()` write its polar equations, one way each.
+per axis: `R.eq(F1 + F2 + F3)`. An `XY` vector has polar parts, `mag`,
+`angle` and `angle_deg`, and `from_polar()`, `to_polar()` and
+`degrees()` write its polar equations, one way each.
 
 An `Event` is two or more states at the same time and place,
 `Event("meet", m1, p1)`, with its own time and position, `meet.t` and
@@ -24,6 +24,12 @@ equations, `d01.a.y = -g` and `d0.vel.x = d1.vel.x`, and knowns,
 `d01.a.x` zero. The example adds both,
 `.add(*flight.equations).known(flight.knowns)`, and sets its own origin
 and clock.
+
+An edge has Newton's second law, `b01.newton(n, w, f)`: ΣF = m a, one
+equation per axis, `f.x + n.x + w.x = b.mass*b01.a.x`. The mass is the
+particle's, `b.mass`, and the acceleration is the edge's, the one the
+kinematics equations have, so a system with both needs no equation to
+link them.
 
 The old physics code from combine-equations.py, `kinematics_states` and
 `newtons_laws`, stays here until increment 007 of the 004 series. No

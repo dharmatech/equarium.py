@@ -9,19 +9,21 @@ direction?
 
 Ported from combine-equations.py's
 `examples/up/ch4/up-example-4.5/up-example-4.5-000-two-steps.py`, with
-the physics code's lone vectors and `.eq` where it had local helpers for
-the forces and Newton's second law. Its zeros are values, so they are
-zero knowns here, never eliminated. The old script ends at step 2's
-display, without feeding in the acceleration. Here step 2 takes step 1's
-acceleration as a known and solves for `f.x`.
+the physics code's lone vectors and Newton's second law on the bottle's
+edge, `b01.newton(n, w, f)`, where it had local helpers for the forces
+and the law. Its zeros are values, so they are zero knowns here, never
+eliminated. The old script ends at step 2's display, without feeding in
+the acceleration. Here step 2 takes step 1's acceleration as a known and
+solves for `f.x`. The acceleration is one symbol in both steps,
+`b01.a.x`, where the old script's step 2 had its own `a`, and the mass
+is the bottle's, `b.mass`. The forces are in x only, as the bottle is,
+so step 2 is one equation, where the old script displayed two.
 
     uv run python -m examples.up_15e.ch04.examples.n05.main_two_steps
 """
 
-import sympy as sp
-
 from equarium import System
-from equarium.physics import XY, Particle, Vector, X
+from equarium.physics import Particle, Vector, X
 from examples.answers import Answer
 
 b = Particle("b", 2, X)  # the bottle
@@ -42,22 +44,20 @@ sol_1 = slide.solve(b01.a.x)
 # b01.a.x = (b0.vel.x - b1.vel.x)*(b0.vel.x + b1.vel.x)/(2*(b0.pos.x - b1.pos.x))   -2.0
 
 # Step 2: the friction force, from Newton's second law.
-n = Vector("n", XY)  # the normal force
-w = Vector("w", XY)  # the weight
-f = Vector("f", XY)  # the friction force
-m = sp.Symbol("m")  # the mass
-a = Vector("a", XY)  # the acceleration
+n = Vector("n", X)  # the normal force
+w = Vector("w", X)  # the weight
+f = Vector("f", X)  # the friction force
 
 push = (
     System()
-    .add(*(n + w + f).eq(a * m))  # (1), (2)
+    .add(*b01.newton(n, w, f))  # (1)
     .known(n.x, 0)  # N
     .known(w.x, 0)  # N
-    .known(m, 0.45)  # kg
-    .known(a.x, sol_1.number(b01.a.x))  # m/s², from step 1
+    .known(b.mass, 0.45)  # kg
+    .known(b01.a.x, sol_1.number(b01.a.x))  # m/s², from step 1
 )
 sol_2 = push.solve(f.x)
-# f.x = m*a.x - n.x - w.x   -0.9
+# f.x = b.mass*b01.a.x - n.x - w.x   -0.9
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol_1, b01.a.x, "-2.0"),  # m/s²

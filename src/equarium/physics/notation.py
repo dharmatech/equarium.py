@@ -2,7 +2,7 @@
 
 The debug form is the symbol's name, `m0.pos.x`, with the core's default
 hook. The book's form is for reading: `x0`, `v0x`, `ax`, `Δt`, `v0`, `α0`,
-`α0°`, `F1x`, `θR`, and an event's `t` and `x`.
+`α0°`, `F1x`, `θR`, an event's `t` and `x`, and a particle's mass, `m`.
 """
 
 from collections.abc import Mapping
@@ -41,6 +41,9 @@ class BookNotation:
     `meet.t` prints `t` and `meet.pos.x` `x`. `owners` doesn't apply to
     an event either.
 
+    A particle's mass is the book's `m`: `b.mass` prints `m`, and `mP`
+    with the owner's subscript.
+
     A plain symbol, and a `Var` the notation doesn't know, print their
     names: an edge's polar parts, such as `m01.a.mag` and
     `m01.a.angle_deg`, and an event's, such as `hit.pos.mag`.
@@ -56,12 +59,14 @@ class BookNotation:
         """The book's form, without color."""
         if not isinstance(symbol, Var):
             return symbol.name
-        if symbol.where == "":  # an event's, then a lone vector's, by its own name
+        if symbol.where == "":  # an event's, a particle's mass, then a lone vector's
             match symbol.path:
                 case ("t",):  # an event's time
                     return "t"
                 case ("pos", axis) if axis in AXES:  # an event's position
                     return axis
+                case ("mass",):  # a particle's mass
+                    return f"m{self.owners.get(symbol.owner, '')}"
                 case (axis,) if axis in AXES:
                     return f"{symbol.owner}{axis}"
                 case ("mag",):

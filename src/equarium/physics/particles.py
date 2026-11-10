@@ -13,9 +13,10 @@ import sympy as sp
 from equarium.errors import UsageError
 from equarium.physics.axes import XY, Axes
 from equarium.physics.kinematics import kinematics_equations
+from equarium.physics.newton import mass_of, newton_equations
 from equarium.physics.projectile import Setup, projectile_setup
 from equarium.physics.symbols import Var
-from equarium.physics.vectors import Vector
+from equarium.physics.vectors import Vec, Vector
 
 MAX_STATES = 10  # the most that keeps an edge's `m01` unambiguous
 
@@ -51,7 +52,8 @@ class State[A: Axes]:
 class Edge[A: Axes]:
     """The interval between two consecutive states: its time, average
     velocity and acceleration, `m01.dt`, `m01.v_av` and `m01.a`. An `XY`
-    edge also has the projectile setup, `m01.projectile(g)`."""
+    edge also has the projectile setup, `m01.projectile(g)`. Newton's
+    second law on an edge is `m01.newton(n, w, f)`."""
 
     start: State[A]
     end: State[A]
@@ -86,6 +88,11 @@ class Edge[A: Axes]:
         known zero."""
         return projectile_setup(self, g)
 
+    def newton(self, *forces: Vector[A] | Vec[A]) -> list[sp.Eq]:
+        """Newton's second law, ΣF = m a: for each axis, the forces' sum
+        equals the particle's mass times this edge's acceleration."""
+        return newton_equations(self, forces)
+
 
 @dataclass(frozen=True, init=False)
 class Particle[A: Axes]:
@@ -94,7 +101,8 @@ class Particle[A: Axes]:
     `m01 = m.edge(0, 1)`.
 
     The name is a Python identifier that doesn't end in a digit, since
-    `p2` with state 0 would print `p20.t`.
+    `p2` with state 0 would print `p20.t`. Its mass is `m.mass`, which
+    Newton's second law uses.
     """
 
     name: str
@@ -122,6 +130,11 @@ class Particle[A: Axes]:
         """One edge between each pair of consecutive states."""
         states = self.states
         return tuple(Edge(start, end) for start, end in zip(states, states[1:]))
+
+    @property
+    def mass(self) -> Var:
+        """The particle's mass, `m.mass`."""
+        return mass_of(self.name)
 
     def edge(self, i: int, j: int) -> Edge[A]:
         """The edge from state `i` to state `j`, which is `i + 1`."""

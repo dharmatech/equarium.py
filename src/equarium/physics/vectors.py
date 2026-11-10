@@ -156,7 +156,7 @@ def _name[A: Axes](v: Vector[A]) -> str:
     return ".".join((v.owner + v.where, *v.quantity))
 
 
-def _describe(v: object) -> str:
+def describe(v: object) -> str:
     """How an operand reads in a message: a vector's name, a `Vec`'s
     components, or anything else's repr."""
     if isinstance(v, Vector):
@@ -177,18 +177,18 @@ def _operand[A: Axes](left: Vector[A] | Vec[A], right: object, call: str) -> Vec
     checks this, and so does the run time, since `zip` would drop an axis
     silently."""
     if not isinstance(right, Vector | Vec):
-        raise UsageError(f"{call}: {_describe(right)} isn't a vector")
+        raise UsageError(f"{call}: {describe(right)} isn't a vector")
     if right.axes is not left.axes:
         raise UsageError(
-            f"{call}: {_describe(left)} is in {left.axes.__name__},"
-            f" but {_describe(right)} is in {right.axes.__name__}"
+            f"{call}: {describe(left)} is in {left.axes.__name__},"
+            f" but {describe(right)} is in {right.axes.__name__}"
         )
     return _as_vec(cast(Vector[A] | Vec[A], right))
 
 
 def _combine[A: Axes](left: Vector[A] | Vec[A], right: object, op: str) -> Vec[A]:
     """`left + right` or `left - right`, component by component."""
-    other = _operand(left, right, f"{_describe(left)} {op} {_describe(right)}")
+    other = _operand(left, right, f"{describe(left)} {op} {describe(right)}")
     pairs = zip(_as_vec(left).components, other.components)
     if op == "+":
         return Vec(left.axes, tuple(a + b for a, b in pairs))
@@ -199,7 +199,7 @@ def _start_sum[A: Axes](other: object, v: Vector[A] | Vec[A]) -> Vec[A]:
     """`0 + v`, as `sum()` starts. Any other left operand is a misuse."""
     if type(other) is not int or other != 0:
         raise UsageError(
-            f"{_describe(other)} + {_describe(v)}: {_describe(other)} isn't a vector,"
+            f"{describe(other)} + {describe(v)}: {describe(other)} isn't a vector,"
             " or the 0 that sum() starts with"
         )
     return _as_vec(v)
@@ -208,11 +208,11 @@ def _start_sum[A: Axes](other: object, v: Vector[A] | Vec[A]) -> Vec[A]:
 def _scalar(k: object, v: object) -> sp.Expr | float:
     """`k`, once it's a scalar: a SymPy expression, an `int` or a `float`."""
     if not isinstance(k, sp.Expr | int | float):
-        raise UsageError(f"{_describe(v)} * {_describe(k)}: {_describe(k)} isn't a scalar")
+        raise UsageError(f"{describe(v)} * {describe(k)}: {describe(k)} isn't a scalar")
     return k
 
 
 def _equations[A: Axes](left: Vector[A] | Vec[A], right: object) -> list[sp.Eq]:
-    other = _operand(left, right, f"{_describe(left)}.eq({_describe(right)})")
+    other = _operand(left, right, f"{describe(left)}.eq({describe(right)})")
     pairs = zip(_as_vec(left).components, other.components)
     return [cast(sp.Eq, sp.Eq(a, b)) for a, b in pairs]

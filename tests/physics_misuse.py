@@ -43,3 +43,7 @@ Event("hit", m1, d1)  # pyright: ignore[reportArgumentType]
 g = sp.Symbol("g")
 m01.projectile(g)  # pyright: ignore[reportAttributeAccessIssue]
 b.edge(0, 1).projectile(g)  # pyright: ignore[reportAttributeAccessIssue]
+
+# Newton's second law with a force that isn't in the edge's axes.
+m01.newton(F1)  # pyright: ignore[reportArgumentType]
+Particle("d", 2, XY).edge(0, 1).newton(f)  # pyright: ignore[reportArgumentType]

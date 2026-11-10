@@ -13,14 +13,16 @@ The rules:
 
 A plain symbol keeps its name. A `Var` the rules don't cover raises, so a
 symbol they miss is loud: a position's or an edge's polar parts, any
-`angle_deg`, an event's. The old code had none of them.
+`angle_deg`, an event's, a particle's mass. The old code had none of
+them.
 
 `SCRIPT_NAMES` is a per-module map for the names an old script made
 itself, which a reshape turned into `Var`s: 3.6's `dist` is
 `m1.pos.mag` now. In its module, the map wins over the rules: 3.7's
 `b0.vel.mag` is `b0_vel_mag`, where the rule says `b_0_v_mag`. 2.5's
-`meet.t` and `meet.pos.x` are its `t_01` and `dist`. Increment 006 adds
-4.5's `b.mass`.
+`meet.t` and `meet.pos.x` are its `t_01` and `dist`. 4.4's `box.mass`
+and 4.5's `b.mass` are their `m`, and 4.4's `box01.a.x` is its `a_x`,
+where the rule says `a_x_box_0_1`.
 """
 
 from collections.abc import Mapping
@@ -57,6 +59,11 @@ SCRIPT_NAMES: Mapping[str, Mapping[Var, str]] = {
     },
     "ch04.examples.n01.main": {Var("R", "", "angle_deg"): "R_angle_deg"},
     "ch04.examples.n01.main_step_by_step": {Var("R", "", "angle_deg"): "R_angle_deg"},
+    "ch04.examples.n04.main": {
+        Var("box", "", "mass"): "m",
+        Var("box", "01", "a", "x"): "a_x",
+    },
+    "ch04.examples.n05.main": {Var("b", "", "mass"): "m"},
 }
 
 

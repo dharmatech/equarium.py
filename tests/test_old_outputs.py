@@ -1,8 +1,8 @@
 """The ports against the old scripts: every formula the catalog quotes for
 a ported script's want, verbatim, and its number, by value. The physics
 layer's symbols are renamed back to the old names first, with `old_name`.
-The names a script made itself, such as 3.6's `dist` and 2.5's `t_01`,
-are renamed back through the module's map, `SCRIPT_NAMES`.
+The names a script made itself, such as 3.6's `dist`, 2.5's `t_01` and
+4.5's `m`, are renamed back through the module's map, `SCRIPT_NAMES`.
 
 The old output is as `docs/design/implementation/001-example-catalog/catalog.md`
 quotes it, from the old scripts run on 2026-11-08. The differences that
@@ -463,6 +463,23 @@ def test_3_6_given_v1x_again_is_the_old_output() -> None:
         assert math.isclose(float(old.number(symbol)), float(number), rel_tol=1e-9)
 
 
+def test_4_5_step_2_has_the_edges_acceleration() -> None:
+    # Not a row: the old script never solved its step 2. The catalog's
+    # scratch try gave `f_x = a_x*m - n_x - w_x`, with step 2's own `a_x`.
+    # Since increment 006 of the 004 series, the acceleration is the
+    # edge's, the one symbol step 1 solves for and step 2 knows.
+    module = importlib.import_module("examples.up_15e.ch04.examples.n05.main_two_steps")
+    sol_1, sol_2 = getattr(module, "sol_1"), getattr(module, "sol_2")
+    assert isinstance(sol_1, Solution) and isinstance(sol_2, Solution)
+    f_x, b_mass, b01_a_x = Var("f", "", "x"), Var("b", "", "mass"), Var("b", "01", "a", "x")
+    formula = sol_2.formula(f_x)
+    assert str(formula) == "b.mass*b01.a.x - n.x - w.x"
+    old_names = {b_mass: sp.Symbol("m"), b01_a_x: sp.Symbol("a_x")}
+    assert old_str(formula.xreplace(old_names)) == "a_x*m - n_x - w_x"
+    assert b01_a_x in sol_1.system.wants
+    assert sol_2.system.knowns[b01_a_x] == sol_1.number(b01_a_x)
+
+
 # 3.10 v1-001's last line, the stated condition.
 OLD_3_10 = ("d_0_v_mag*sin(d_0_v_angle)", "D*d_0_v_mag*sin(d_0_v_angle)/d_1_x")
 
@@ -511,7 +528,7 @@ def test_old_name_of_a_lone_vector() -> None:
     assert old_name(Var("F1", "", "y")) == "F1_y"
     assert old_name(Var("F1", "", "mag")) == "F1_mag"
     assert old_name(Var("F1", "", "angle")) == "F1_angle"
-    assert old_name(Var("a", "", "x")) == "a_x"  # 4.4's acceleration
+    assert old_name(Var("a", "", "x")) == "a_x"  # as the old 4.4's acceleration was
 
 
 def test_old_name_of_a_plain_symbol() -> None:
@@ -549,6 +566,9 @@ def test_old_name_in_its_module_is_the_scripts() -> None:
     meet = (Var("meet", "", "t"), Var("meet", "", "pos", "x"))
     for module in ("ch02.examples.n05.main", "ch02.examples.n05.main_step_by_step"):
         assert [old_name(v, module) for v in meet] == ["t_01", "dist"]
+    box = (Var("box", "", "mass"), Var("box", "01", "a", "x"))
+    assert [old_name(v, "ch04.examples.n04.main") for v in box] == ["m", "a_x"]
+    assert old_name(Var("b", "", "mass"), "ch04.examples.n05.main") == "m"
 
 
 def test_old_name_the_map_wins_over_the_rule() -> None:
@@ -556,6 +576,9 @@ def test_old_name_the_map_wins_over_the_rule() -> None:
     assert old_name(b0_vel_mag, "ch03.examples.n07.main") == "b0_vel_mag"
     assert old_name(b0_vel_mag) == "b_0_v_mag"
     assert old_name(b0_vel_mag, "ch03.examples.n09.main") == "b_0_v_mag"
+    box01_a_x = Var("box", "01", "a", "x")  # 4.4's acceleration, the old script's own
+    assert old_name(box01_a_x, "ch04.examples.n04.main") == "a_x"
+    assert old_name(box01_a_x) == "a_x_box_0_1"
 
 
 def test_old_name_the_map_applies_in_its_module_only() -> None:

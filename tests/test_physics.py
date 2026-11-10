@@ -1,7 +1,8 @@
 """The physics layer: `Var`'s identity, the names, the misuses, the
 kinematics equations, vectors and their equations, polar, events and
-their links, the projectile setup, and the book's notation. Also the old
-physics code's copy, until increment 007 deletes it, and the layers."""
+their links, the projectile setup, Newton's second law and the mass, and
+the book's notation. Also the old physics code's copy, until increment
+007 deletes it, and the layers."""
 
 import pickle
 import re
@@ -14,7 +15,7 @@ import sympy as sp
 
 from equarium import System, UsageError
 from equarium.analysis import Role
-from equarium.display import GREEN, RED, RESET, render_solution
+from equarium.display import GREEN, RED, RESET, render, render_solution
 from equarium.physics import (
     XY,
     BookNotation,
@@ -416,6 +417,98 @@ def test_the_projectile_setup_needs_xy() -> None:
         getattr(b01, "projectile")(g)
 
 
+# Newton's second law, and the mass
+
+
+def test_a_particles_mass() -> None:
+    b = Particle("b", 2, X)
+    assert b.mass.name == "b.mass"
+    assert b.mass == Var("b", "", "mass")
+    assert sp.Symbol("b.mass") != b.mass
+    # The name is the identity: the same mass, whatever the states and axes.
+    assert Particle("b", 3, XY).mass == b.mass
+    assert Particle("box", 2, XY).mass != b.mass
+
+
+def test_newton_on_an_edge() -> None:
+    b = Particle("b", 2, X)
+    b01 = b.edge(0, 1)
+    n, w, f = Vector("n", X), Vector("w", X), Vector("f", X)
+    (eq,) = b01.newton(n, w, f)
+    assert str(eq) == "Eq(f.x + n.x + w.x, b.mass*b01.a.x)"
+    # The particle's mass and the edge's own acceleration.
+    assert eq.rhs == b.mass * b01.a.x
+    assert b01.newton(n, w, f) == b.edge(0, 1).newton(f, w, n)
+
+
+def test_newton_makes_one_equation_per_axis() -> None:
+    box = Particle("box", 2, XY)
+    F, n, w = Vector("F", XY), Vector("n", XY), Vector("w", XY)
+    assert [str(eq) for eq in box.edge(0, 1).newton(F, n, w)] == [
+        "Eq(F.x + n.x + w.x, box.mass*box01.a.x)",
+        "Eq(F.y + n.y + w.y, box.mass*box01.a.y)",
+    ]
+    c01 = Particle("c", 2, Y).edge(0, 1)
+    assert [str(eq) for eq in c01.newton(Vector("w", Y))] == ["Eq(w.y, c.mass*c01.a.y)"]
+
+
+def test_newton_of_a_later_edge_and_of_a_vector_expression() -> None:
+    p = Particle("p", 3, X)
+    f, n = Vector("f", X), Vector("n", X)
+    assert [str(eq) for eq in p.edge(1, 2).newton(f)] == ["Eq(f.x, p.mass*p12.a.x)"]
+    # A vector expression is a force too.
+    assert [str(eq) for eq in p.edge(0, 1).newton(f, -n)] == ["Eq(f.x - n.x, p.mass*p01.a.x)"]
+
+
+def test_newton_with_the_kinematics_needs_no_link() -> None:
+    # 4.5's shape: (3), the book's 2.7, and (5), Newton's second law, have
+    # the same acceleration, so f.x comes out with no equation to link them.
+    b = Particle("b", 2, X)
+    b0, b1 = b.states
+    b01 = b.edge(0, 1)
+    f = Vector("f", X)
+    system = System().add(*b.kinematics()).add(*b01.newton(f))
+    assert [e.label for e in system.equations] == ["1", "2", "3", "4", "5"]
+    assert str(system.equation("3").eq) == "Eq(b01.a.x, (-b0.vel.x + b1.vel.x)/b01.dt)"
+    assert str(system.equation("5").eq) == "Eq(f.x, b.mass*b01.a.x)"
+    sol = system.known({b.mass: 2, b0.vel.x: 0, b1.vel.x: 6, b0.t: 0, b1.t: 3}).solve(f.x)
+    assert str(sol.formula(f.x)) == "b.mass*(b0.vel.x - b1.vel.x)/(b0.t - b1.t)"
+    assert float(sol.number(f.x)) == 4.0  # as a float, since Float(4) == 4 is false
+
+
+def test_newton_misuses_raise() -> None:
+    # With a force cast to Any, so pyright doesn't see the misuse here.
+    f = Vector("f", X)
+    d01 = Particle("d", 2, XY).edge(0, 1)
+    message = "m01.newton(f, F1): m01 is in X, but F1 is in XY"
+    with pytest.raises(UsageError, match=re.escape(message)):
+        m01.newton(f, cast(Any, F1))
+    message = "d01.newton(f): d01 is in XY, but f is in X"
+    with pytest.raises(UsageError, match=re.escape(message)):
+        d01.newton(cast(Any, f))
+    message = "m01.newton((-F1.x, -F1.y)): m01 is in X, but (-F1.x, -F1.y) is in XY"
+    with pytest.raises(UsageError, match=re.escape(message)):
+        m01.newton(cast(Any, -F1))
+    with pytest.raises(UsageError, match=re.escape("m01.newton(f, f.x): f.x isn't a vector")):
+        m01.newton(f, cast(Any, f.x))
+    with pytest.raises(UsageError, match=re.escape("m01.newton() needs one or more forces")):
+        m01.newton()
+
+
+def test_newton_renamed_back_is_the_old_copys() -> None:
+    # Uses the old copy, so increment 007 deletes it with the copy. The old
+    # code took the mass and the acceleration, here 4.4's `m` and `a`.
+    box = Particle("box", 2, XY)
+    box01 = box.edge(0, 1)
+    F, n, w = Vector("F", XY), Vector("n", XY), Vector("w", XY)
+    k, a = sp.Symbol("m"), make_point("a")
+    names = {box.mass: k, box01.a.x: a.x, box01.a.y: a.y}
+    new = [old_str(eq.xreplace(names)) for eq in box01.newton(F, n, w)]
+    forces = [make_point("F"), make_point("n"), make_point("w")]
+    old = [str(eq) for eq in newtons_second_law(forces, k, a)]
+    assert new == old
+
+
 # BookNotation
 
 
@@ -471,6 +564,16 @@ def test_the_book_notation_of_an_event() -> None:
     with_p = BookNotation(owners={"meet": "P", "hit": "P"})
     assert [with_p.text(s) for s in symbols] == ["t", "x", "y"]
     assert BookNotation().text(hit.pos.mag) == "hit.pos.mag"
+
+
+def test_the_book_notation_of_a_mass() -> None:
+    b = Particle("b", 2, X)
+    assert BookNotation().text(b.mass) == "m"
+    assert BookNotation(owners={"b": "B"}).text(b.mass) == "mB"
+    # Newton's second law, as the book writes it.
+    system = System().add(*b.edge(0, 1).newton(Vector("n", X), Vector("w", X), Vector("f", X)))
+    printed = render(system, symbol=BookNotation(color=False))
+    assert printed.startswith("(1)  fx + nx + wx = m*ax\n")
 
 
 def test_the_book_notation_of_other_symbols_is_the_name() -> None:
