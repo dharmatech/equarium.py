@@ -14,13 +14,22 @@ from slow_examples import SLOW_EXAMPLES
 x, D, a, b = sp.symbols("x D a b")
 
 
+def is_version(name: str) -> bool:
+    """A version of a problem's solution is `main` or `main_<slug>`. Any
+    other module in a problem's folder, such as `sketch`, supports them."""
+    module = name.rsplit(".", 1)[-1]
+    return module == "main" or module.startswith("main_")
+
+
 def example_modules() -> list[str]:
-    """Every module in a problem's folder: in a chapter's `examples/` or
+    """Every version in a problem's folder: in a chapter's `examples/` or
     `exercises/`, such as `examples.up_15e.ch02.examples.n04.main`."""
     return sorted(
         info.name
         for info in pkgutil.walk_packages(examples.__path__, prefix="examples.")
-        if not info.ispkg and info.name.split(".")[-3:-2] in (["examples"], ["exercises"])
+        if not info.ispkg
+        and info.name.split(".")[-3:-2] in (["examples"], ["exercises"])
+        and is_version(info.name)
     )
 
 
@@ -74,6 +83,20 @@ def test_the_examples_are_found() -> None:
     assert SLOW_EXAMPLES <= set(example_modules())
     assert "examples.up_15e.ch02.tables.n05.main" not in example_modules()
     assert "examples.answers" not in example_modules()
+    assert "examples.up_15e.ch02.examples.n04.sketch" not in example_modules()
+
+
+@pytest.mark.parametrize(
+    ("name", "version"),
+    [
+        ("examples.up_15e.ch02.examples.n04.main", True),
+        ("examples.up_15e.ch02.examples.n04.main_handwritten", True),
+        ("examples.up_15e.ch02.examples.n04.sketch", False),
+        ("examples.up_15e.ch02.examples.n04.mainly", False),
+    ],
+)
+def test_a_version_is_main_or_main_with_a_slug(name: str, version: bool) -> None:
+    assert is_version(name) is version
 
 
 # Answer

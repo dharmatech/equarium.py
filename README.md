@@ -67,8 +67,11 @@ uv run python -m examples.up_15e.ch02.examples.n04.main_handwritten
 combine-equations.py, one folder per problem: `ch02/examples/n04/` is
 Example 2.4, and `ch02/exercises/n003/` is Exercise 2.3. Each folder's
 `main.py` is the main version, and a version in another style has a
-slug, as in `main_handwritten.py`. Most of them run on equarium's
-physics layer, `equarium.physics`, such as Example 2.4's:
+slug, as in `main_handwritten.py`. The tests check each version against
+the book's answers. Another module in a problem's folder, such as
+`sketch.py`, supports the versions and has no answers to check. Most
+versions run on equarium's physics layer, `equarium.physics`, such as
+Example 2.4's:
 
 ```bash
 uv run python -m examples.up_15e.ch02.examples.n04.main
