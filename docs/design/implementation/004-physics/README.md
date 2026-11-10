@@ -6,7 +6,7 @@ Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
 006, Newton on the edge, are done and reviewed. The rename is complete,
 polar is one way everywhere, 2.5 and 3.10 link through events, 3.6 to
 3.10 use the projectile setup, and 4.4 and 4.5 use Newton on the edge.
-Checkpoint 007, the end, is next.
+Checkpoint 007, the end, is written (2026-11-09).
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -30,7 +30,7 @@ The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
 checkpoint's file name:
 
-> Read `docs/design/implementation/004-physics/checkpoints/006-newton-on-the-edge.md`
+> Read `docs/design/implementation/004-physics/checkpoints/007-the-end.md`
 > in `~/journal/2026-11-06-equations/equarium.py`, on the branch
 > `2026-11-08-physics-redesign`. If you've been told to read that
 > file, it is the whole assignment.
@@ -48,7 +48,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
 | 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done, reviewed (2026-11-09) | `f505be6` |
 | 006 | Newton on the edge | [006](checkpoints/006-newton-on-the-edge.md) | Done, reviewed (2026-11-09) | `2572faf` |
-| 007 | the end | | Not started | |
+| 007 | the end | [007](checkpoints/007-the-end.md) | Checkpoint written (2026-11-09) | |
 
 ## Decisions
 
@@ -66,17 +66,40 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Checkpoint 007, the end, from the [spec](spec.md#increments): delete
-the old copy, `kinematics_states.py` and `newtons_laws.py`, and the
-tests in `tests/test_physics.py` that compare with it, the only code
-that imports it. Update `physics/__init__.py`'s docstring and the
-package README's mention of the old code, bump `pyproject.toml` to
-0.2.0, and say in this README, the series map and 002's README that
-the series is done. No equation or formula changes. The 66 rows of
-`tests/test_old_outputs.py` and the map in `tests/old_names.py` don't
-use the old copy, and stay as the record, as the spec's "The tests"
-says. The user confirms that before it is built. Merging into `master`,
-tagging `v0.2.0` and pushing are the user's calls, not 007's.
+Increment 007, the end, from the [spec](spec.md#increments). Its
+[checkpoint](checkpoints/007-the-end.md) is written (2026-11-09), and
+the user approved its section on the record (2026-11-09), so it can be
+built. No equation, formula, example or `BOOK` changes. What it
+changes:
+
+- **The old copy is deleted:** `kinematics_states.py` and
+  `newtons_laws.py`. Only `tests/test_physics.py` imports them.
+- **The record stays as it is,** character for character: the 66 rows
+  and `RESHAPED` in `tests/test_old_outputs.py`, and the map in
+  `tests/old_names.py`. Neither file uses the copy. At `10f9d5f`,
+  `tests/test_old_outputs.py`, run alone, passes its 89 tests and loads
+  neither old module. With the copy deleted, it passes the same 89.
+- **Of the four tests that use the copy, two go and two become one.**
+  The comparisons of the vector equations and of Newton's second law
+  go: the tests beside them pin the same equations as strings. The
+  kinematics comparison stays, with the copy's output written out as 22
+  strings, the old library's own four among them. It is the only test
+  that pins the order of the equations for three states in `XY`: with
+  the loops swapped in scratch, it alone fails. The spec has all four
+  deleted. The user chose to keep this one (2026-11-09).
+- **The fast suite has 344 tests,** where it has 347. With all four
+  deleted, it would have 343.
+- **`physics/__init__.py`'s docstring** loses its paragraph on the
+  copy.
+- **The version is 0.2.0,** in `pyproject.toml` and in `uv.lock`, which
+  records it too.
+- **The package README doesn't change.** Increment 001 already rewrote
+  its sentence on the old physics code.
+- **This README, the series map and 002's README** say the series is
+  done.
+
+Merging into `master`, tagging `v0.2.0` and pushing are the user's
+calls, not 007's.
 
 Increment 006, Newton on the edge, is done and reviewed:
 `Particle.mass` and `Edge.newton(*forces)`, in `newton.py`, for 4.4 and
