@@ -1,13 +1,12 @@
 # 004 physics
 
 **Status:** Charter and spec agreed with the user (2026-11-08). All
-seven increments are built. Increments 001, symbols and chapter 2, 002,
-chapters 3 and 4 renamed, 003, polar and degrees, 004, events, 005, the
-projectile setup, and 006, Newton on the edge, are done and reviewed.
-Increment 007, the end, is built and waits for review. The rename is
-complete, polar is one way everywhere, 2.5 and 3.10 link through
-events, 3.6 to 3.10 use the projectile setup, and 4.4 and 4.5 use
-Newton on the edge. The old physics code's copy is deleted, and the
+seven increments are done and reviewed: 001, symbols and chapter 2,
+002, chapters 3 and 4 renamed, 003, polar and degrees, 004, events,
+005, the projectile setup, 006, Newton on the edge, and 007, the end.
+The rename is complete, polar is one way everywhere, 2.5 and 3.10 link
+through events, 3.6 to 3.10 use the projectile setup, and 4.4 and 4.5
+use Newton on the edge. The old physics code's copy is deleted, and the
 version is 0.2.0. Merging into `master`, tagging `v0.2.0` and pushing
 are the user's calls.
 
@@ -51,7 +50,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
 | 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done, reviewed (2026-11-09) | `f505be6` |
 | 006 | Newton on the edge | [006](checkpoints/006-newton-on-the-edge.md) | Done, reviewed (2026-11-09) | `2572faf` |
-| 007 | the end | [007](checkpoints/007-the-end.md) | Done (2026-11-09) | |
+| 007 | the end | [007](checkpoints/007-the-end.md) | Done, reviewed (2026-11-09) | `bb0f492` |
 
 ## Decisions
 
@@ -69,8 +68,8 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-All seven increments are built, so no checkpoint comes next. What is
-left is the user's three calls, after the review of 007:
+All seven increments are done and reviewed, so no checkpoint comes
+next. What is left is the user's three calls:
 
 - **The merge** of the branch `2026-11-08-physics-redesign` into
   `master`. `master` is at `v0.1.0` (`3370e5d`), an ancestor of the
@@ -79,7 +78,7 @@ left is the user's three calls, after the review of 007:
 - **The push:** `master`, the tag `v0.2.0`, and the tag `v0.1.0` if it
   is still local.
 
-Increment 007, the end, is built and waits for review, after its
+Increment 007, the end, is done and reviewed, after its
 [checkpoint](checkpoints/007-the-end.md). The user approved the
 checkpoint's section on the record (2026-11-09) before it was built. No
 equation, formula, example or `BOOK` changed. What changed:
@@ -261,6 +260,21 @@ and -0.9. 4.5 has five equations, its (5)
 The only `BOOK` line that changed is 4.4's `Answer`, whose symbol is
 `box01.a.x`, with the same value. All five misuses raise `UsageError`
 with the checkpoint's messages.
+
+The review of 007 (2026-11-09) found nothing to fix. 344 fast tests
+pass in 45 s and the 3 slow ones in 5 min 11 s, and pyright reports 0
+errors. `tests/test_physics.py`, now 57 tests, `physics/__init__.py`,
+`pyproject.toml` and `uv.lock` are byte for byte the build the review
+made from the checkpoint before committing it. In that build, the copy
+printed the kept test's 22 strings, in order, and with the kinematics
+loops swapped only that test failed. `tests/test_old_outputs.py` and
+`tests/old_names.py` are the same files as at `3f7af33`, so the 66
+rows, `RESHAPED` and `SCRIPT_NAMES` are unchanged, and so are the
+examples, the misuse file and the package README. The three greps find
+nothing, importing either old module raises `ModuleNotFoundError`, the
+installed version reads 0.2.0, and `uv.lock` changed only its version
+line. `src/equarium/physics/` has `__init__.py` and the spec's ten
+modules. The series map and 002's README say the series is done.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,
