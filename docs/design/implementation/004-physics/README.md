@@ -2,11 +2,11 @@
 
 **Status:** Charter and spec agreed with the user (2026-11-08).
 Increments 001, symbols and chapter 2, 002, chapters 3 and 4 renamed,
-003, polar and degrees, 004, events, and 005, the projectile setup, are
-done and reviewed. The rename is complete, polar is one way everywhere,
-2.5 and 3.10 link through events, and 3.6 to 3.10 use the projectile
-setup. Increment 006, Newton on the edge, is built and waits for
-review.
+003, polar and degrees, 004, events, 005, the projectile setup, and
+006, Newton on the edge, are done and reviewed. The rename is complete,
+polar is one way everywhere, 2.5 and 3.10 link through events, 3.6 to
+3.10 use the projectile setup, and 4.4 and 4.5 use Newton on the edge.
+Checkpoint 007, the end, is next.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -47,7 +47,7 @@ only; 003 to 006 change equations; 007 removes the old copy.
 | 003 | polar and degrees | [003](checkpoints/003-polar-and-degrees.md) | Done, reviewed (2026-11-09) | `4d84e67` |
 | 004 | events | [004](checkpoints/004-events.md) | Done, reviewed (2026-11-09) | `e0c0b68` |
 | 005 | the projectile setup | [005](checkpoints/005-projectile-setup.md) | Done, reviewed (2026-11-09) | `f505be6` |
-| 006 | Newton on the edge | [006](checkpoints/006-newton-on-the-edge.md) | Done (2026-11-09) | |
+| 006 | Newton on the edge | [006](checkpoints/006-newton-on-the-edge.md) | Done, reviewed (2026-11-09) | `2572faf` |
 | 007 | the end | | Not started | |
 
 ## Decisions
@@ -66,7 +66,19 @@ The spec has them all. The ones the user settled (2026-11-08):
 
 ## What's next
 
-Increment 006, Newton on the edge, is built and waits for review:
+Checkpoint 007, the end, from the [spec](spec.md#increments): delete
+the old copy, `kinematics_states.py` and `newtons_laws.py`, and the
+tests in `tests/test_physics.py` that compare with it, the only code
+that imports it. Update `physics/__init__.py`'s docstring and the
+package README's mention of the old code, bump `pyproject.toml` to
+0.2.0, and say in this README, the series map and 002's README that
+the series is done. No equation or formula changes. The 66 rows of
+`tests/test_old_outputs.py` and the map in `tests/old_names.py` don't
+use the old copy, and stay as the record, as the spec's "The tests"
+says. The user confirms that before it is built. Merging into `master`,
+tagging `v0.2.0` and pushing are the user's calls, not 007's.
+
+Increment 006, Newton on the edge, is done and reviewed:
 `Particle.mass` and `Edge.newton(*forces)`, in `newton.py`, for 4.4 and
 4.5 (both), after its
 [checkpoint](checkpoints/006-newton-on-the-edge.md). It is the last
@@ -199,6 +211,20 @@ back verbatim. 3.10's show-that and every `BOOK` pass, and the only
 script's five follow, and the monkey keeps (2), (6), (8) and (9). The
 grep for projectile lines of their own finds nothing, and `projectile(`
 is called six times.
+
+The review of 006 (2026-11-09) found nothing to fix. 347 fast tests
+pass in 45 s and the 3 slow ones in 5 min 14 s, and pyright reports 0
+errors. The code and the three modules are the checkpoint's scratch
+build, line for line. The tests differ from it in one test only, which
+binds `b0, b1` earlier and adds a comment. All 66 rows pass. Without
+the three new names in `SCRIPT_NAMES`, exactly 4.4's and 4.5's rows
+fail, and `RESHAPED` still has five. 4.5's f_x is its row, verbatim,
+and -0.9. 4.5 has five equations, its (5)
+`f.x + n.x + w.x = b.mass*b01.a.x`. The new test pins step 2's
+`b.mass*b01.a.x - n.x - w.x`, with step 2 knowing step 1's `b01.a.x`.
+The only `BOOK` line that changed is 4.4's `Answer`, whose symbol is
+`box01.a.x`, with the same value. All five misuses raise `UsageError`
+with the checkpoint's messages.
 
 Found while writing the spec, for a later series (the core doesn't
 change in this one): labels for generated equations, `show(symbol=…)`,
