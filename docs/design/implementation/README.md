@@ -28,7 +28,7 @@ long enough to be compacted.
 | 002 | [core](002-core/README.md) | charter, spec, checkpoints | Done (2026-11-08): 8 of 8 increments reviewed |
 | 003 | [example layout](003-example-layout/README.md) | README | Done (2026-11-08) |
 | 004 | [physics](004-physics/README.md) | charter, spec, checkpoints | Done (2026-11-09): 7 of 7 increments done; merged into `master` (2026-11-11) as version 0.2.0 |
-| 005 | [constant acceleration](005-constant-acceleration/README.md) | README, checkpoints | Checkpoint 001 built (2026-11-11), not yet reviewed |
+| 005 | [constant acceleration](005-constant-acceleration/README.md) | README, checkpoints | Checkpoint 001 done (2026-11-11); 002, the audit, written |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the
@@ -63,5 +63,6 @@ long enough to be compacted.
   `m01.constant_acceleration()` states the assumption for one edge.
   001 adds the call to every example, with no result changed; 002
   audits each problem against the book. On the branch
-  `2026-11-11-constant-acceleration`, from `master`. 001 is built, not
-  yet reviewed.
+  `2026-11-11-constant-acceleration`, from `master`. 001 is done; 002
+  drops the call from Exercises 2.1, 2.3 and 2.5, which use averages
+  only, with no result changed.

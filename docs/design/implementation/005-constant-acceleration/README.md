@@ -1,7 +1,7 @@
 # 005 constant acceleration
 
-**Status:** Checkpoint 001 built at this commit (2026-11-11), not yet
-reviewed.
+**Status:** Checkpoint 001 done at `3788772` (2026-11-11). Checkpoint
+002, the audit, written (2026-11-11), not built.
 
 The physics layer's kinematics equations assume constant acceleration
 on every edge, without saying so. This series makes the assumption a
@@ -128,8 +128,8 @@ separate, and not merged yet.
 
 | # | Checkpoint | Status |
 |---|---|---|
-| 001 | [explicit constant acceleration](checkpoints/001-explicit-constant-acceleration.md) | Built (2026-11-11), not yet reviewed |
-| 002 | the audit | Written after 001 is reviewed |
+| 001 | [explicit constant acceleration](checkpoints/001-explicit-constant-acceleration.md) | Done at `3788772` (2026-11-11) |
+| 002 | [the audit](checkpoints/002-the-audit.md) | Written (2026-11-11) |
 
 The 19 modules that call `kinematics()` today, which 002 audits, are
 listed in checkpoint 001.

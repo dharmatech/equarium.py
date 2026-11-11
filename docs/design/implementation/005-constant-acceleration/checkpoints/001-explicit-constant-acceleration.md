@@ -1,6 +1,6 @@
 # constant acceleration 001: explicit constant acceleration
 
-**Status:** Built at this commit (2026-11-11), not yet reviewed.
+**Status:** Done at `3788772` (2026-11-11), checked against this page.
 
 If you've been told to read this file, this is the whole assignment.
 Build it, check it, commit it, report, and stop.
