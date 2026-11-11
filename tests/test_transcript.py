@@ -21,7 +21,9 @@ from equarium.transcript import (
     run,
     run_module,
     run_path,
+    changed_lines,
     strip_results,
+    uncolored,
 )
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
@@ -236,6 +238,194 @@ def test_the_command_line(capsys: pytest.CaptureFixture[str]) -> None:
     assert "x * 2\n#> 10\n" in capsys.readouterr().out
 
 
+# Only what changed
+
+# A value of one line per item, which `plus`, `swap` and `drop` remake.
+LINES = """\
+class Lines:
+    def __init__(self, *items):
+        self.items = items
+    def plus(self, *items):
+        return Lines(*self.items, *items)
+    def swap(self, old, new):
+        return Lines(*(new if item == old else item for item in self.items))
+    def drop(self, gone):
+        return Lines(*(item for item in self.items if item != gone))
+    def _repr_pretty_(self, p, cycle):
+        p.text("\\n".join(self.items))
+
+"""
+
+
+def results(source: str, display: transcript.Display = "changes") -> str:
+    """The transcript of `LINES` and then `source`, from `source` on, in
+    the changes display unless a test asks for another."""
+    text = render(run(LINES + dedent(source), display=display))
+    assert text.startswith(LINES)
+    return text[len(LINES) :]
+
+
+def test_a_value_made_from_a_seen_one_shows_what_changed() -> None:
+    assert results(
+        """\
+        a = Lines("x = 1", "y = 2")
+        a = a.plus("z = 3")
+        a = a.swap("x = 1", "x = 5")
+        b = a.plus("w = 4")
+        """
+    ) == dedent(
+        """\
+        a = Lines("x = 1", "y = 2")
+        #> x = 1
+        #> y = 2
+        a = a.plus("z = 3")
+        #> z = 3
+        a = a.swap("x = 1", "x = 5")
+        #> x = 5
+        b = a.plus("w = 4")
+        #> w = 4
+        """
+    )
+
+
+def test_a_name_alone_shows_all_of_it() -> None:
+    assert results('a = Lines("x = 1")\na = a.plus("y = 2")\na\n') == (
+        'a = Lines("x = 1")\n#> x = 1\na = a.plus("y = 2")\n#> y = 2\na\n#> x = 1\n#> y = 2\n'
+    )
+
+
+def test_a_line_thats_gone_is_marked() -> None:
+    assert results('a = Lines("x = 1", "y = 2")\na = a.drop("y = 2")\n').endswith(
+        'a = a.drop("y = 2")\n#> - y = 2\n'
+    )
+
+
+def test_a_step_that_changes_nothing_says_so() -> None:
+    assert results('a = Lines("x = 1", "y = 2")\na = a.plus()\n').endswith(
+        "a = a.plus()\n#> (no change)\n"
+    )
+
+
+def test_another_type_and_one_line_show_whole() -> None:
+    assert results(
+        """\
+        a = Lines("x = 1", "y = 2")
+        t = a.items
+        n = 5
+        n = n + 1
+        """
+    ).endswith("t = a.items\n#> ('x = 1', 'y = 2')\nn = 5\n#> 5\nn = n + 1\n#> 6\n")
+
+
+def test_the_changes_are_from_what_the_reader_last_saw() -> None:
+    # The hidden step isn't seen, so the next one shows both changes.
+    assert results('a = Lines("x = 1")\na = a.plus("y = 2");\na = a.plus("z = 3")\n').endswith(
+        'a = a.plus("y = 2");\na = a.plus("z = 3")\n#> y = 2\n#> z = 3\n'
+    )
+
+
+def test_full_shows_every_value_whole() -> None:
+    assert results('a = Lines("x = 1")\na = a.plus("y = 2")\n', display="full").endswith(
+        'a = a.plus("y = 2")\n#> x = 1\n#> y = 2\n'
+    )
+
+
+def test_marked_shows_every_value_whole_with_its_changes_marked() -> None:
+    assert results(
+        """\
+        a = Lines("x = 1", "y = 2", "z = 3")
+        a = a.swap("y = 2", "y = 5")
+        a = a.drop("z = 3")
+        a = a.plus()
+        """,
+        display="marked",
+    ) == dedent(
+        """\
+        a = Lines("x = 1", "y = 2", "z = 3")
+        #> x = 1
+        #> y = 2
+        #> z = 3
+        a = a.swap("y = 2", "y = 5")
+        #>   x = 1
+        #> * y = 5
+        #>   z = 3
+        a = a.drop("z = 3")
+        #>   x = 1
+        #>   y = 5
+        #> - z = 3
+        a = a.plus()
+        #>   x = 1
+        #>   y = 5
+        """
+    )
+
+
+def test_marked_pairs_like_lines_as_changes_does() -> None:
+    before = "(1)  dt = t1\n(2)  v = x/dt\n(3)  a = v/dt\nknowns: none"
+    after = "(2)  v = x/t1\n(3)  a = v/t1\nknowns: none"
+    assert transcript.marked_lines(before, after) == (
+        "- (1)  dt = t1\n* (2)  v = x/t1\n* (3)  a = v/t1\n  knowns: none"
+    )
+    assert transcript.marked_lines("5", "6") == "6"
+
+
+def test_the_display_flags_on_the_command_line(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = tmp_path / "script.py"
+    path.write_text(LINES + 'a = Lines("x = 1")\na = a.plus("y = 2")\n')
+    assert transcript.main([str(path)]) == 0  # marked, the default
+    assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#>   x = 1\n#> * y = 2\n')
+    assert transcript.main([str(path), "--changes"]) == 0
+    assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#> y = 2\n')
+    assert transcript.main([str(path), "--full"]) == 0
+    assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#> x = 1\n#> y = 2\n')
+
+
+def test_changes_are_judged_without_colors() -> None:
+    green = "\x1b[32mx\x1b[0m = 1"
+    assert changed_lines("x = 1\ny = 2", f"{green}\ny = 2") == "(no change)"
+    assert changed_lines("x = 1\ny = 2", f"{green}\ny = 3") == "y = 3"
+
+
+def test_a_shorter_run_pairs_like_lines() -> None:
+    # Eliminating dt: (1) goes, and (2) and (3) change in place.
+    before = "(1)  dt = t1\n(2)  v = x/dt\n(3)  a = v/dt\nknowns: none"
+    after = "(2)  v = x/t1\n(3)  a = v/t1\nknowns: none"
+    assert changed_lines(before, after) == "- (1)  dt = t1\n(2)  v = x/t1\n(3)  a = v/t1"
+
+
+def test_a_system_built_step_by_step_shows_each_steps_effect() -> None:
+    script = dedent(
+        """\
+        from sympy.physics.units import meter, second
+        from equarium import System
+        from equarium.physics import Particle, X
+        m = Particle("m", 2, X);
+        m0, m1 = m.states;
+        m01 = m.edge(0, 1);
+        s = System().add(*m.kinematics())
+        s = s.add(*m01.constant_acceleration())
+        s = s.known(m0.t, 0 * second)
+        s = s.eliminate_zeros()
+        a = s.want(m1.pos.x)
+        """
+    )
+    text = render(run(script, display="changes"))
+    after = uncolored(text.split("s = s.add(*m01.constant_acceleration())\n", 1)[1])
+    *steps, connected = after.splitlines()
+    assert steps == [
+        "#> (4)  m01.v_av.x = m0.vel.x/2 + m1.vel.x/2",
+        "s = s.known(m0.t, 0 * second)",
+        "#> knowns: m0.t = 0",
+        "s = s.eliminate_zeros()",
+        "#> (1)  m01.dt = m1.t",
+        "a = s.want(m1.pos.x)",
+        "#> wants: m1.pos.x",
+    ]
+    # Only m0.t is known, so everything else in the four equations isn't.
+    assert connected.startswith("#> connected: m0.pos.x, m0.vel.x, m01.a.x, m01.dt,")
+    assert connected.endswith("(8 unknowns in 4 equations)")
+
+
 # Results in the script
 
 
@@ -375,7 +565,11 @@ def test_2_4_shows_its_systems(n04: Transcript) -> None:
     part_a = entry_value(
         n04, "part_a = motorcycle.known(m1.t, 2 * second).want(m1.pos.x, m1.vel.x)"
     )
-    assert "wants: m1.pos.x, m1.vel.x" in part_a.splitlines()
+    lines = part_a.splitlines()
+    # It's made from `motorcycle`, which shows whole, so it shows whole
+    # with what changed marked: the wants are new, and no equation is.
+    assert "* wants: m1.pos.x, m1.vel.x" in lines
+    assert all(line.startswith("  ") for line in lines if line.lstrip("* ").startswith("("))
 
 
 def test_2_4_shows_its_solutions(n04: Transcript) -> None:
