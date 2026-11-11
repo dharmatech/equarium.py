@@ -167,10 +167,14 @@ def test_a_value_prints_by_its_repr_pretty() -> None:
 
 
 def test_without_its_results_a_transcript_is_the_script() -> None:
-    source = BASICS.read_text()
+    source = strip_results(BASICS.read_text())  # basics.py has its results in it
     if not source.endswith("\n"):
         source += "\n"  # a transcript ends its last line
     assert without_results(render(run_path(str(BASICS)))) == source
+
+
+def test_basics_has_its_current_results_in_it() -> None:
+    assert render(run_path(str(BASICS)), color=False, unrun=True) == BASICS.read_text()
 
 
 def test_the_transcript_module_imports_nothing_from_equarium() -> None:
