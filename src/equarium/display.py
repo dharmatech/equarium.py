@@ -6,7 +6,7 @@ does SymPy's order of terms.
 """
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING, Protocol, assert_never
 
 import sympy as sp
 from sympy.printing.str import StrPrinter
@@ -30,6 +30,12 @@ if TYPE_CHECKING:
     from equarium.system import System
 
 type SymbolHook = Callable[[sp.Symbol, Role], str]
+
+
+class TextPrinter(Protocol):
+    """The part of IPython's pretty printer that `_repr_pretty_` uses."""
+
+    def text(self, obj: str) -> None: ...
 
 GREEN = "\x1b[32m"
 RED = "\x1b[31m"

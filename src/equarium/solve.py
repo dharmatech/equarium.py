@@ -132,6 +132,11 @@ class Solution:
     def show(self) -> None:
         print(display.render_solution(self))
 
+    def _repr_pretty_(self, p: display.TextPrinter, cycle: bool) -> None:
+        """The solution as IPython, and transcript mode, print it: as
+        `show` prints it."""
+        p.text(display.render_solution(self))
+
     def _only_root(self, call: str) -> Root:
         if len(self.roots) != 1:
             count = plural(len(self.roots), "root")
