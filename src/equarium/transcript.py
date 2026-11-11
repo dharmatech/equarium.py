@@ -30,15 +30,15 @@ A value prints as IPython would print it: through its class's
 `_repr_pretty_`, when it has one, and otherwise `repr`.
 
 An assignment that makes a value from one the reader has seen shows
-only what changed: `motorcycle = motorcycle.known(m0.pos.x, 5)`, or
-`part_a = motorcycle.want(x1)`, whose right side starts from a name
-whose value was shown. The value has to be of the same type and take
-more than one line. Its lines that are new or different show as they
-are now, and a line that's gone shows marked `- `. Lines are compared
-without their colors. Anything else shows whole, and so does a name
-alone on a line, `motorcycle`: that's how to see all of it. `--full`
-shows every value whole, and `--marked` shows it whole with each line
-marked: `* ` new or different, `- ` gone, `  ` the same.
+it with what changed marked: `motorcycle = motorcycle.known(m0.pos.x,
+5)`, or `part_a = motorcycle.want(x1)`, whose right side starts from a
+name whose value was shown. The value has to be of the same type and
+take more than one line. Each of its lines is marked `* ` when it's new
+or different and `  ` when it's the same, and a line that's gone shows
+in its place marked `- `. Lines are compared without their colors.
+Anything else shows whole, unmarked, and so does a name alone on a
+line, `motorcycle`. `--changes` shows only the marked lines, and
+`--full` every value whole, unmarked.
 
 An error stops the run. Its traceback is the statement's last result.
 The terminal transcript ends there, and in place, the lines that didn't
@@ -104,7 +104,7 @@ def run(
     namespace: dict[str, object] | None = None,
     rule: Rule = "worksheet",
     file_lines: Sequence[int] | None = None,
-    display: Display = "changes",
+    display: Display = "marked",
 ) -> Transcript:
     """Run `source`, statement by statement, in `namespace`, and record
     each statement's results.
@@ -582,7 +582,7 @@ class Script:
             return f.read()
 
     def run(
-        self, content: str, rule: Rule = "worksheet", display: Display = "changes"
+        self, content: str, rule: Rule = "worksheet", display: Display = "marked"
     ) -> Transcript:
         """Run `content`, the file's, as this script, without the results
         it has in it."""
@@ -591,13 +591,13 @@ class Script:
             return run(source, self.path, namespace, rule, file_lines, display)
 
 
-def run_path(path: str, rule: Rule = "worksheet", display: Display = "changes") -> Transcript:
+def run_path(path: str, rule: Rule = "worksheet", display: Display = "marked") -> Transcript:
     """Run a script file."""
     script = Script.file(path)
     return script.run(script.read(), rule, display)
 
 
-def run_module(name: str, rule: Rule = "worksheet", display: Display = "changes") -> Transcript:
+def run_module(name: str, rule: Rule = "worksheet", display: Display = "marked") -> Transcript:
     """Run a module."""
     script = Script.module(name)
     return script.run(script.read(), rule, display)
@@ -607,7 +607,7 @@ def run_module(name: str, rule: Rule = "worksheet", display: Display = "changes"
 
 
 def in_place(
-    script: Script, rule: Rule = "worksheet", display: Display = "changes"
+    script: Script, rule: Rule = "worksheet", display: Display = "marked"
 ) -> tuple[int, str]:
     """Run the script and write its results into it, without colors.
 
@@ -641,7 +641,7 @@ def watch(
     script: Script,
     target: list[str],
     rule: Rule = "worksheet",
-    display: Display = "changes",
+    display: Display = "marked",
     interval: float = 0.2,
 ) -> None:
     """Write the script's results into it now, and again each time its
@@ -654,7 +654,7 @@ def watch(
     command = [sys.executable, "-m", "equarium.transcript", "--in-place", *target]
     if rule == "repl":
         command.append("--repl")
-    if display != "changes":
+    if display != "marked":
         command.append(f"--{display}")
     shown = os.path.relpath(script.path)
     if shown.startswith(".."):
@@ -730,14 +730,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     shown = parser.add_mutually_exclusive_group()
     shown.add_argument(
-        "--full",
+        "--changes",
         action="store_true",
-        help="show every value whole, not only what changed",
+        help="show only what changed in a value made from one already shown",
     )
     shown.add_argument(
-        "--marked",
+        "--full",
         action="store_true",
-        help="show every value whole, with its changed lines marked *",
+        help="show every value whole, without marking what changed",
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
@@ -752,7 +752,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     rule: Rule = "repl" if args.repl else "worksheet"
-    display: Display = "full" if args.full else "marked" if args.marked else "changes"
+    display: Display = "changes" if args.changes else "full" if args.full else "marked"
     if args.module is not None:
         script = Script.module(args.module)
         target = ["-m", args.module]

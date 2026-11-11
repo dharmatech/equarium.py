@@ -258,7 +258,8 @@ class Lines:
 
 
 def results(source: str, display: transcript.Display = "changes") -> str:
-    """The transcript of `LINES` and then `source`, from `source` on."""
+    """The transcript of `LINES` and then `source`, from `source` on, in
+    the changes display unless a test asks for another."""
     text = render(run(LINES + dedent(source), display=display))
     assert text.startswith(LINES)
     return text[len(LINES) :]
@@ -371,12 +372,12 @@ def test_marked_pairs_like_lines_as_changes_does() -> None:
 def test_the_display_flags_on_the_command_line(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     path = tmp_path / "script.py"
     path.write_text(LINES + 'a = Lines("x = 1")\na = a.plus("y = 2")\n')
-    assert transcript.main([str(path)]) == 0
+    assert transcript.main([str(path)]) == 0  # marked, the default
+    assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#>   x = 1\n#> * y = 2\n')
+    assert transcript.main([str(path), "--changes"]) == 0
     assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#> y = 2\n')
     assert transcript.main([str(path), "--full"]) == 0
     assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#> x = 1\n#> y = 2\n')
-    assert transcript.main([str(path), "--marked"]) == 0
-    assert capsys.readouterr().out.endswith('a = a.plus("y = 2")\n#>   x = 1\n#> * y = 2\n')
 
 
 def test_changes_are_judged_without_colors() -> None:
@@ -393,7 +394,7 @@ def test_a_shorter_run_pairs_like_lines() -> None:
 
 
 def test_a_system_built_step_by_step_shows_each_steps_effect() -> None:
-    text = transcribe(
+    script = dedent(
         """\
         from sympy.physics.units import meter, second
         from equarium import System
@@ -408,6 +409,7 @@ def test_a_system_built_step_by_step_shows_each_steps_effect() -> None:
         a = s.want(m1.pos.x)
         """
     )
+    text = render(run(script, display="changes"))
     after = uncolored(text.split("s = s.add(*m01.constant_acceleration())\n", 1)[1])
     *steps, connected = after.splitlines()
     assert steps == [
@@ -563,10 +565,11 @@ def test_2_4_shows_its_systems(n04: Transcript) -> None:
     part_a = entry_value(
         n04, "part_a = motorcycle.known(m1.t, 2 * second).want(m1.pos.x, m1.vel.x)"
     )
-    assert "wants: m1.pos.x, m1.vel.x" in part_a.splitlines()
-    # It's made from `motorcycle`, which shows whole, so it shows only
-    # what changed: no equation is new.
-    assert not any(line.startswith("(") for line in part_a.splitlines())
+    lines = part_a.splitlines()
+    # It's made from `motorcycle`, which shows whole, so it shows whole
+    # with what changed marked: the wants are new, and no equation is.
+    assert "* wants: m1.pos.x, m1.vel.x" in lines
+    assert all(line.startswith("  ") for line in lines if line.lstrip("* ").startswith("("))
 
 
 def test_2_4_shows_its_solutions(n04: Transcript) -> None:

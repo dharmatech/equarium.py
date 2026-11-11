@@ -78,14 +78,14 @@ It merged into the physics branch, and with it into `master`, on
     `✓ p1.t = …, as in the book` when it's found as the book prints it,
     and both forms when it's an equivalent one. So `BOOK` reads as the
     worksheet's answer check, one line to an answer.
-- **Only what changed** (branch `2026-11-11-transcript-changes`). An
-  assignment that makes a value from one the reader has seen shows only
-  the lines that are new or different, as they are now:
-  `motorcycle = motorcycle.known(m0.pos.x, 5 * meter)` shows only the
-  knowns line, and `part_a = motorcycle.want(m1.pos.x)` only the wants
+- **Each step's effect** (branch `2026-11-11-transcript-changes`). An
+  assignment that makes a value from one the reader has seen marks the
+  lines that are new or different: after
+  `motorcycle = motorcycle.known(m0.pos.x, 5 * meter)` the knowns line
+  is starred, and after `part_a = motorcycle.want(m1.pos.x)` the wants
   and what they connect. The source line says what the step did; the
-  result says what that did to the value. The rule, in the engine and
-  for any value:
+  marks say what that did to the value. The rule, in the engine and for
+  any value:
   - the right side starts from a name whose value the reader has seen,
     `motorcycle` in `motorcycle.known(...)`, by calls, attributes and
     subscripts, and the new value is of the same type and takes more
@@ -103,12 +103,12 @@ It merged into the physics branch, and with it into `master`, on
   - the changes are from what the reader last saw: a step hidden by `;`
     isn't seen, so the next shows both.
 
-  Three ways to show such a value, one flag each:
-  - **only what changed,** the default;
-  - **`--full`:** the whole value, as before;
-  - **`--marked`:** the whole value, each line marked `* ` new or
-    different, `- ` gone (in its place), or `  ` the same. The context
-    stays next to every step, and what the step did stands out.
+  Three ways to show such a value:
+  - **marked,** the default: the whole value, each line marked `* ` new
+    or different, `- ` gone (in its place), or `  ` the same. The
+    context stays next to every step, and what the step did stands out;
+  - **`--changes`:** only the marked lines;
+  - **`--full`:** the whole value, unmarked, as before.
 - **`basics.py`**, beside these notes: a plain Python script with no
   equarium in it.
 - **`tests/test_transcript.py`.** The rules on small scripts, in place,
@@ -188,12 +188,11 @@ valid Python.
   system next to each step is reassuring context, and a name alone to
   see it is one more thing to do. That led to `--marked`: the length of
   `--full`, with each step's effect starred, `* knowns: …` or
-  `* (1)  m01.dt = m1.t`. Which is the default is open.
+  `* (1)  m01.dt = m1.t`. The user liked it best, and made it the
+  default (2026-11-11).
 
 ## Open questions
 
-- **Which display is the default:** only what changed, the whole value,
-  or the whole value marked. The user is trying all three.
 - **Which rule.** The worksheet rule shows 2.4's results with no change
   to the script. The REPL rule is what Python users know.
 - **Other objects.** `BookNotation` and a projectile's `Setup` still
