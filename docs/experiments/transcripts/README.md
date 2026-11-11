@@ -1,7 +1,9 @@
 # Transcript mode (experiment)
 
 **Status:** a prototype (2026-11-11): the terminal transcript, then the
-results written into the script itself, on every save. This is an
+results written into the script itself, on every save, then three ways
+to show a step: only what it changed, the whole value, or the whole
+value with its changes marked. This is an
 experiment, not a series. It takes a series number only if it's
 adopted.
 
@@ -76,6 +78,37 @@ It merged into the physics branch, and with it into `master`, on
     `✓ p1.t = …, as in the book` when it's found as the book prints it,
     and both forms when it's an equivalent one. So `BOOK` reads as the
     worksheet's answer check, one line to an answer.
+- **Only what changed** (branch `2026-11-11-transcript-changes`). An
+  assignment that makes a value from one the reader has seen shows only
+  the lines that are new or different, as they are now:
+  `motorcycle = motorcycle.known(m0.pos.x, 5 * meter)` shows only the
+  knowns line, and `part_a = motorcycle.want(m1.pos.x)` only the wants
+  and what they connect. The source line says what the step did; the
+  result says what that did to the value. The rule, in the engine and
+  for any value:
+  - the right side starts from a name whose value the reader has seen,
+    `motorcycle` in `motorcycle.known(...)`, by calls, attributes and
+    subscripts, and the new value is of the same type and takes more
+    than one line;
+  - lines are compared without their colors, so a symbol turning green
+    isn't a change;
+  - a line that's gone shows marked `- `. Where a run of lines is
+    replaced by as many, each changed in place; where the counts differ,
+    `difflib.ndiff` pairs like lines, so eliminating `dt` shows
+    `- (1)  m01.dt = m1.t` and the new (2) and (3);
+  - a step that changes nothing shows `(no change)`;
+  - anything else shows whole: a new value, one of another type, or a
+    `solve()`'s solution. So does a name alone on a line, `motorcycle`,
+    which is how to see all of it at a point of your choosing;
+  - the changes are from what the reader last saw: a step hidden by `;`
+    isn't seen, so the next shows both.
+
+  Three ways to show such a value, one flag each:
+  - **only what changed,** the default;
+  - **`--full`:** the whole value, as before;
+  - **`--marked`:** the whole value, each line marked `* ` new or
+    different, `- ` gone (in its place), or `  ` the same. The context
+    stays next to every step, and what the step did stands out.
 - **`basics.py`**, beside these notes: a plain Python script with no
   equarium in it.
 - **`tests/test_transcript.py`.** The rules on small scripts, in place,
@@ -143,9 +176,24 @@ valid Python.
   on save with `68.0*meter` and `27.0*meter/second`.
 - **A bare string other than the docstring shows,** as in the REPL:
   `"abc"` then `#> 'abc'`. At first no bare string showed.
+- **Built up step by step, 2.4 halves.** The user's incremental 2.4,
+  `motorcycle = motorcycle.add(...)`, then `.known(...)` one by one, then
+  parts as `part_a1 = part_a.want(m1.pos.x)`, reprinted the whole system
+  after every step: 145 lines, the four equations ten times. With only
+  what changed it's 80, and each result is that step's effect: the
+  knowns line growing, `eliminate_zeros()` rewriting (1), the known
+  `m1.t` making (1) ready, the want connecting 4 unknowns in 4
+  equations. With `--full` it's the 145 lines, character for character.
+- **The user's verdict on only what changed: not sure.** The whole
+  system next to each step is reassuring context, and a name alone to
+  see it is one more thing to do. That led to `--marked`: the length of
+  `--full`, with each step's effect starred, `* knowns: …` or
+  `* (1)  m01.dt = m1.t`. Which is the default is open.
 
 ## Open questions
 
+- **Which display is the default:** only what changed, the whole value,
+  or the whole value marked. The user is trying all three.
 - **Which rule.** The worksheet rule shows 2.4's results with no change
   to the script. The REPL rule is what Python users know.
 - **Other objects.** `BookNotation` and a projectile's `Setup` still

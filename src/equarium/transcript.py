@@ -29,6 +29,17 @@ its `#> ` lines is the script. Its results are:
 A value prints as IPython would print it: through its class's
 `_repr_pretty_`, when it has one, and otherwise `repr`.
 
+An assignment that makes a value from one the reader has seen shows
+only what changed: `motorcycle = motorcycle.known(m0.pos.x, 5)`, or
+`part_a = motorcycle.want(x1)`, whose right side starts from a name
+whose value was shown. The value has to be of the same type and take
+more than one line. Its lines that are new or different show as they
+are now, and a line that's gone shows marked `- `. Lines are compared
+without their colors. Anything else shows whole, and so does a name
+alone on a line, `motorcycle`: that's how to see all of it. `--full`
+shows every value whole, and `--marked` shows it whole with each line
+marked: `* ` new or different, `- ` gone, `  ` the same.
+
 An error stops the run. Its traceback is the statement's last result.
 The terminal transcript ends there, and in place, the lines that didn't
 run stay as they are.
@@ -43,6 +54,7 @@ import argparse
 import ast
 import contextlib
 import copy
+import difflib
 import importlib.util
 import io
 import os
@@ -58,6 +70,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 type Rule = Literal["worksheet", "repl"]
+type Display = Literal["changes", "full", "marked"]
 
 MARK = "#> "
 
@@ -91,13 +104,16 @@ def run(
     namespace: dict[str, object] | None = None,
     rule: Rule = "worksheet",
     file_lines: Sequence[int] | None = None,
+    display: Display = "changes",
 ) -> Transcript:
     """Run `source`, statement by statement, in `namespace`, and record
     each statement's results.
 
     `file_lines` is the line in the file of each line of `source`, when
     they differ, as they do once its results are stripped. Tracebacks and
-    syntax errors then give the file's lines.
+    syntax errors then give the file's lines. `display` says how a value
+    made from one the reader has seen shows: only what changed, whole,
+    or whole with its changes marked.
     """
     if namespace is None:
         namespace = {"__name__": "__main__"}
@@ -116,6 +132,7 @@ def run(
     entries: list[Entry] = []
     echoed = 0  # how many lines are in entries so far
     flags = 0
+    seen: dict[str, Seen] = {}  # what the reader last saw of each name
     for number, (node, end) in enumerate(zip(tree.body, ends)):
         text = "".join(lines[echoed:end])
         echoed = max(echoed, end)
@@ -128,13 +145,150 @@ def run(
                 shows = rule == "worksheet" or isinstance(node, ast.Expr)
                 if shows and result is not None and not hidden[number]:
                     if not (number == 0 and _is_docstring(node)):
-                        value = show(result)
+                        whole = show(result)
+                        value = whole
+                        if display != "full":
+                            before = _seen_before(node, result, seen)
+                            if before is not None:
+                                shown = changed_lines if display == "changes" else marked_lines
+                                value = shown(before, whole)
+                        name = _bound_name(node)
+                        if name is not None:
+                            seen[name] = Seen(type(result), whole)
         except Exception as e:  # the script's error, recorded, not raised
             entries.append(Entry(text, printed.getvalue(), value, _traceback(e)))
             return Transcript(tuple(entries), "".join(lines[echoed:]), failed=True)
         entries.append(Entry(text, printed.getvalue(), value))
         flags |= _future_flags(node)
     return Transcript(tuple(entries), "".join(lines[echoed:]), failed=False)
+
+
+@dataclass(frozen=True)
+class Seen:
+    """A value as the reader last saw it: its type, and all of its text."""
+
+    kind: type
+    text: str
+
+
+def _bound_name(node: ast.stmt) -> str | None:
+    """The one name a statement binds or shows: `x` for `x = ...`,
+    `x: int = ...` and a bare `x`. None for anything else."""
+    match node:
+        case ast.Assign(targets=[ast.Name(id=name)]):
+            return name
+        case ast.AnnAssign(target=ast.Name(id=name)):
+            return name
+        case ast.Expr(value=ast.Name(id=name)):
+            return name
+        case _:
+            return None
+
+
+def _root_name(expr: ast.expr) -> str | None:
+    """The name a chain of calls, attributes and subscripts starts from:
+    `motorcycle` for `motorcycle.known(x0, 5).want(x1)`."""
+    while True:
+        match expr:
+            case ast.Call(func=inner) | ast.Attribute(value=inner) | ast.Subscript(value=inner):
+                expr = inner
+            case ast.Name(id=name):
+                return name
+            case _:
+                return None
+
+
+def _seen_before(node: ast.stmt, result: object, seen: dict[str, Seen]) -> str | None:
+    """For an assignment whose value is made from one the reader has seen,
+    the text they saw, to show the changes from. None when the value
+    shows whole: a bare expression, a value of another type, or one that
+    takes a single line."""
+    if not isinstance(node, ast.Assign | ast.AnnAssign) or node.value is None:
+        return None
+    if _bound_name(node) is None:
+        return None
+    root = _root_name(node.value)
+    if root is None or root not in seen:
+        return None
+    before = seen[root]
+    if before.kind is not type(result):
+        return None
+    return before.text
+
+
+def changed_lines(before: str, after: str) -> str:
+    """The lines of `after` that are new or different from `before`, as
+    they are now, and the lines of `before` that are gone, marked `- `.
+    `(no change)` when none differ. A one-line value is `after` whole.
+    How lines are matched is `line_marks`'."""
+    if "\n" not in after and "\n" not in before:
+        return after  # one line: the whole value is no longer than its change
+    out = [line if mark == "* " else f"- {line}" for mark, line in line_marks(before, after)
+           if mark != "  "]
+    return "\n".join(out) if out else "(no change)"
+
+
+def marked_lines(before: str, after: str) -> str:
+    """All of `after`, each line marked: `* ` when it's new or different
+    from `before`, `  ` when it's the same, and the lines of `before`
+    that are gone, in their place, marked `- `. A one-line value is
+    `after` whole, unmarked."""
+    if "\n" not in after and "\n" not in before:
+        return after
+    return "\n".join(mark + line for mark, line in line_marks(before, after))
+
+
+def line_marks(before: str, after: str) -> list[tuple[str, str]]:
+    """Each line of `after`, in order, with the lines of `before` that are
+    gone in their place: `("* ", line)` new or different, `("  ", line)`
+    the same, `("- ", line)` gone. Lines are compared without their
+    colors.
+
+    Where a run of lines is replaced by as many, each changed in place.
+    Where the counts differ, a line changed in place when it's like one
+    of the new ones, as `difflib.ndiff` pairs them, and is gone
+    otherwise: eliminating `dt` gives `- (1)  dt = t1` and the new (2)
+    and (3), not all three gone and two new."""
+    old, new = before.split("\n"), after.split("\n")
+    old_plain, new_plain = [uncolored(line) for line in old], [uncolored(line) for line in new]
+    matcher = difflib.SequenceMatcher(a=old_plain, b=new_plain, autojunk=False)
+    marks: list[tuple[str, str]] = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            marks.extend(("  ", line) for line in new[j1:j2])
+        elif tag == "replace" and i2 - i1 != j2 - j1:
+            marks.extend(_paired(old[i1:i2], new[j1:j2], old_plain[i1:i2], new_plain[j1:j2]))
+        elif tag == "delete":
+            marks.extend(("- ", line) for line in old[i1:i2])
+        else:  # an insert, or a replace line for line
+            marks.extend(("* ", line) for line in new[j1:j2])
+    return marks
+
+
+def _paired(
+    old: list[str], new: list[str], old_plain: list[str], new_plain: list[str]
+) -> list[tuple[str, str]]:
+    """A replaced run of lines of a different length: `ndiff` pairs each
+    old line with a like new one, if any. A paired line is changed in
+    place; an unpaired old line is gone; an unpaired new one is new."""
+    marks: list[tuple[str, str]] = []
+    diff = list(difflib.ndiff(old_plain, new_plain))
+    i = j = 0
+    for k, line in enumerate(diff):
+        code = line[:2]
+        if code == "- ":
+            changed = k + 1 < len(diff) and diff[k + 1].startswith("? ")
+            if not changed:
+                marks.append(("- ", old[i]))
+            i += 1
+        elif code == "+ ":
+            marks.append(("* ", new[j]))
+            j += 1
+        elif code == "  ":
+            marks.append(("  ", new[j]))
+            i += 1
+            j += 1
+    return marks
 
 
 def _lines(source: str) -> list[str]:
@@ -427,30 +581,34 @@ class Script:
         with open(self.path, encoding="utf-8") as f:
             return f.read()
 
-    def run(self, content: str, rule: Rule = "worksheet") -> Transcript:
+    def run(
+        self, content: str, rule: Rule = "worksheet", display: Display = "changes"
+    ) -> Transcript:
         """Run `content`, the file's, as this script, without the results
         it has in it."""
         source, file_lines = _stripped(content)
         with _as_main(self.path, self.package, self.path_entry) as namespace:
-            return run(source, self.path, namespace, rule, file_lines)
+            return run(source, self.path, namespace, rule, file_lines, display)
 
 
-def run_path(path: str, rule: Rule = "worksheet") -> Transcript:
+def run_path(path: str, rule: Rule = "worksheet", display: Display = "changes") -> Transcript:
     """Run a script file."""
     script = Script.file(path)
-    return script.run(script.read(), rule)
+    return script.run(script.read(), rule, display)
 
 
-def run_module(name: str, rule: Rule = "worksheet") -> Transcript:
+def run_module(name: str, rule: Rule = "worksheet", display: Display = "changes") -> Transcript:
     """Run a module."""
     script = Script.module(name)
-    return script.run(script.read(), rule)
+    return script.run(script.read(), rule, display)
 
 
 # In place, and on every save
 
 
-def in_place(script: Script, rule: Rule = "worksheet") -> tuple[int, str]:
+def in_place(
+    script: Script, rule: Rule = "worksheet", display: Display = "changes"
+) -> tuple[int, str]:
     """Run the script and write its results into it, without colors.
 
     The file is left as it is when it doesn't parse, or when it changed
@@ -460,7 +618,7 @@ def in_place(script: Script, rule: Rule = "worksheet") -> tuple[int, str]:
     name = os.path.basename(script.path)
     before = script.read()
     try:
-        transcript = script.run(before, rule)
+        transcript = script.run(before, rule, display)
     except SyntaxError as e:
         where = f"line {e.lineno}: " if e.lineno else ""
         return 2, f"{name}: doesn't parse, left as it is: {where}{e.msg}"
@@ -479,7 +637,13 @@ def in_place(script: Script, rule: Rule = "worksheet") -> tuple[int, str]:
     return code, f"{name}: {ran}, results written"
 
 
-def watch(script: Script, target: list[str], rule: Rule = "worksheet", interval: float = 0.2) -> None:
+def watch(
+    script: Script,
+    target: list[str],
+    rule: Rule = "worksheet",
+    display: Display = "changes",
+    interval: float = 0.2,
+) -> None:
     """Write the script's results into it now, and again each time its
     code changes, until interrupted.
 
@@ -490,6 +654,8 @@ def watch(script: Script, target: list[str], rule: Rule = "worksheet", interval:
     command = [sys.executable, "-m", "equarium.transcript", "--in-place", *target]
     if rule == "repl":
         command.append("--repl")
+    if display != "changes":
+        command.append(f"--{display}")
     shown = os.path.relpath(script.path)
     if shown.startswith(".."):
         shown = script.path
@@ -562,6 +728,17 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="show only bare expressions' values, as Python's REPL does",
     )
+    shown = parser.add_mutually_exclusive_group()
+    shown.add_argument(
+        "--full",
+        action="store_true",
+        help="show every value whole, not only what changed",
+    )
+    shown.add_argument(
+        "--marked",
+        action="store_true",
+        help="show every value whole, with its changed lines marked *",
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--in-place",
@@ -575,6 +752,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     rule: Rule = "repl" if args.repl else "worksheet"
+    display: Display = "full" if args.full else "marked" if args.marked else "changes"
     if args.module is not None:
         script = Script.module(args.module)
         target = ["-m", args.module]
@@ -582,13 +760,13 @@ def main(argv: list[str] | None = None) -> int:
         script = Script.file(args.path)
         target = [args.path]
     if args.watch:
-        watch(script, target, rule)
+        watch(script, target, rule, display)
         return 0
     if args.in_place:
-        code, report = in_place(script, rule)
+        code, report = in_place(script, rule, display)
         print(report)
         return code
-    transcript = script.run(script.read(), rule)
+    transcript = script.run(script.read(), rule, display)
     sys.stdout.write(render(transcript))
     return 1 if transcript.failed else 0
 
