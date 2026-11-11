@@ -1,0 +1,9 @@
+{
+    // Pylance ships its own SymPy stubs, which reject arithmetic SymPy
+    // supports, such as `5 * meter` or `2 * x`. Without them, Pylance reads
+    // SymPy's code, as `uv run pyright` does, and the two agree.
+    // Remove this once a Pylance release includes the upstream fix:
+    // microsoft/python-type-stubs#406, which fixes the SymPy stubs, or
+    // #398, which deletes them.
+    "python.analysis.disableBundledStubs": true
+}
