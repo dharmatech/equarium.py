@@ -26,6 +26,7 @@ b01 = b.edge(0, 1)
 airbag = (
     System()
     .add(*b.kinematics())
+    .add(*b01.constant_acceleration())
     .known(b01.a.x, -250 * meter / second**2)
     .known(b0.vel.x, 105 * kilometer / hour)
     .known(b1.vel.x, 0 * meter / second)

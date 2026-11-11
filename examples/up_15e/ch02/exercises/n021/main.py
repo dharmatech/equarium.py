@@ -27,6 +27,7 @@ b01 = b.edge(0, 1)
 pitch = (
     System()
     .add(*b.kinematics())
+    .add(*b01.constant_acceleration())
     .known(b0.pos.x, 0 * meter)
     .known(b1.pos.x, 1.50 * meter)
     .known(b0.vel.x, 0 * meter / second)

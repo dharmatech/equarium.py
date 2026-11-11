@@ -63,6 +63,7 @@ def test_a_sketch_labels_knowns_wants_and_unknowns() -> None:
     part = (
         System()
         .add(*m.kinematics())
+        .add(*m01.constant_acceleration())
         .known(m0.t, 0)
         .known(m01.a.x, 4 * meter / second**2)
         .known(m0.pos.x, 5 * meter)

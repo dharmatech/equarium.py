@@ -35,6 +35,7 @@ usual_time = 1 * hour + 50 / 60 * hour
 usual = (
     System()
     .add(*ca.kinematics())
+    .add(*ca01.constant_acceleration())
     .known(ca0.t, 0 * hour)
     .known(ca1.t, usual_time)
     .known(ca0.pos.x, 0 * kilometer)
@@ -49,6 +50,7 @@ longer = sp.Symbol("longer")
 slow_trip = (
     System()
     .add(*cb.kinematics())
+    .add(*cb01.constant_acceleration())
     .add(sp.Eq(longer, cb1.t - ca1.t))  # added: how much longer the slow trip takes
     .known(cb0.t, 0 * hour)
     .known(cb0.pos.x, 0 * kilometer)

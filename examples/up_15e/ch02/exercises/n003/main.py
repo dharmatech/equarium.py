@@ -34,7 +34,9 @@ longer = sp.Symbol("longer")
 trips = (
     System()
     .add(*ca.kinematics())
+    .add(*ca01.constant_acceleration())
     .add(*cb.kinematics())
+    .add(*cb01.constant_acceleration())
     .add(*eq_flat(ca1.pos.x, cb1.pos.x))  # the same distance
     .add(sp.Eq(longer, cb1.t - ca1.t))  # added: how much longer the slow trip takes
     .known(ca0.t, 0 * hour)

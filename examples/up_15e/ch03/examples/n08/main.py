@@ -44,7 +44,8 @@ flight = p01.projectile(g)
 
 launch = (
     System()
-    .add(*p.kinematics())  # (1) to (7)
+    .add(*p.kinematics())  # (1) to (5)
+    .add(*p01.constant_acceleration())  # (6), (7)
     .add(*flight.equations)  # (8), (9): projectile motion
     .known(flight.knowns)  # p01.a.x = 0
     .known({p0.pos.x: 0, p0.pos.y: 0, p0.t: 0})  # from the origin, at t = 0

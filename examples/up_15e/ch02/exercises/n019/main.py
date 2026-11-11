@@ -24,6 +24,7 @@ o01 = o.edge(0, 1)
 antelope = (
     System()
     .add(*o.kinematics())
+    .add(*o01.constant_acceleration())
     .known(o0.pos.x, 0 * meter)
     .known(o1.pos.x, 70.0 * meter)
     .known(o01.dt, 6.00 * second)

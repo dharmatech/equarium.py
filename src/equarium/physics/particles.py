@@ -12,7 +12,7 @@ import sympy as sp
 
 from equarium.errors import UsageError
 from equarium.physics.axes import XY, Axes
-from equarium.physics.kinematics import kinematics_equations
+from equarium.physics.kinematics import constant_acceleration_equations, kinematics_equations
 from equarium.physics.newton import mass_of, newton_equations
 from equarium.physics.projectile import Setup, projectile_setup
 from equarium.physics.symbols import Var
@@ -51,9 +51,11 @@ class State[A: Axes]:
 @dataclass(frozen=True)
 class Edge[A: Axes]:
     """The interval between two consecutive states: its time, average
-    velocity and acceleration, `m01.dt`, `m01.v_av` and `m01.a`. An `XY`
-    edge also has the projectile setup, `m01.projectile(g)`. Newton's
-    second law on an edge is `m01.newton(n, w, f)`."""
+    velocity and average acceleration, `m01.dt`, `m01.v_av` and `m01.a`.
+    `m01.constant_acceleration()` states that the acceleration is
+    constant over the edge. An `XY` edge also has the projectile setup,
+    `m01.projectile(g)`. Newton's second law on an edge is
+    `m01.newton(n, w, f)`."""
 
     start: State[A]
     end: State[A]
@@ -82,6 +84,13 @@ class Edge[A: Axes]:
     @property
     def v_av(self) -> Vector[A]:
         return Vector(self.owner, self.axes, self.where, ("v_av",))
+
+    def constant_acceleration(self) -> list[sp.Eq]:
+        """The book's 2.10, one equation per axis: with constant
+        acceleration over the edge, its average velocity is the mean of
+        its start's and end's velocities. One call for each edge that
+        has constant acceleration."""
+        return constant_acceleration_equations(self)
 
     def projectile(self: Edge[XY], g: sp.Expr) -> Setup:
         """The projectile setup: `a.y = -g` and `v0x = v1x`, with `a.x`
@@ -146,6 +155,7 @@ class Particle[A: Axes]:
         return self.edges[i]
 
     def kinematics(self) -> list[sp.Eq]:
-        """Every edge's Δt, then the book's 2.2, 2.7 and 2.10 for each
-        edge and axis."""
+        """Every edge's Δt, then the book's 2.2 and 2.4 for each edge and
+        axis, which hold for any motion. Constant acceleration is a step
+        of its own, for each edge: `m01.constant_acceleration()`."""
         return kinematics_equations(self)

@@ -25,6 +25,7 @@ c01 = c.edge(0, 1)
 car = (
     System()
     .add(*c.kinematics())
+    .add(*c01.constant_acceleration())
     .known(c0.pos.x, 0 * meter)
     .known(c0.t, 0 * second)
     .known(c1.t, 4.0 * second)
