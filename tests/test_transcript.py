@@ -29,6 +29,7 @@ from equarium.transcript import (
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 BASICS = Path("docs/experiments/transcripts/basics.py")
 N04 = Path("examples/up_15e/ch02/examples/n04/main.py")
+N04_WATCH = Path("examples/up_15e/ch02/examples/n04/main_incremental_watch.py")
 
 
 def transcribe(source: str, rule: transcript.Rule = "worksheet") -> str:
@@ -220,6 +221,14 @@ def test_without_its_results_a_transcript_is_the_script() -> None:
 
 def test_basics_has_its_current_results_in_it() -> None:
     assert render(run_path(str(BASICS)), color=False, unrun=True) == BASICS.read_text()
+
+
+def test_2_4_built_up_has_its_current_results_in_it() -> None:
+    # Written by `--watch`, as the default, marked display. A change to
+    # the code, or to how a result shows, without rerunning it fails here:
+    # rerun `--in-place` on it.
+    written = N04_WATCH.read_text()
+    assert render(run_path(str(N04_WATCH)), color=False, unrun=True) == written
 
 
 def test_the_transcript_module_imports_nothing_from_equarium() -> None:
