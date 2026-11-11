@@ -3,13 +3,26 @@ Example 2.4."""
 
 import ast
 import re
+import subprocess
+import sys
+import time
+from collections.abc import Callable
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
 
 from equarium import transcript
-from equarium.transcript import Transcript, render, run, run_module, run_path
+from equarium.transcript import (
+    Script,
+    Transcript,
+    in_place,
+    render,
+    run,
+    run_module,
+    run_path,
+    strip_results,
+)
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 BASICS = Path("docs/experiments/transcripts/basics.py")
@@ -87,8 +100,10 @@ def test_a_statement_over_several_lines_shows_after_its_last() -> None:
     assert transcribe("total = (\n    1\n    + 2\n)\n") == "total = (\n    1\n    + 2\n)\n#> 3\n"
 
 
-def test_none_and_bare_strings_dont_show() -> None:
-    assert transcribe('"""A docstring."""\nprint()\nNone\n') == '"""A docstring."""\nprint()\n#>\nNone\n'
+def test_none_and_the_docstring_dont_show() -> None:
+    assert transcribe('"""A docstring."""\nprint()\nNone\n"abc"\n') == (
+        '"""A docstring."""\nprint()\n#>\nNone\n"abc"\n#> \'abc\'\n'
+    )
 
 
 def test_an_assignment_shows_what_its_target_holds() -> None:
@@ -153,6 +168,8 @@ def test_a_value_prints_by_its_repr_pretty() -> None:
 
 def test_without_its_results_a_transcript_is_the_script() -> None:
     source = BASICS.read_text()
+    if not source.endswith("\n"):
+        source += "\n"  # a transcript ends its last line
     assert without_results(render(run_path(str(BASICS)))) == source
 
 
@@ -170,6 +187,119 @@ def test_the_transcript_module_imports_nothing_from_equarium() -> None:
 def test_the_command_line(capsys: pytest.CaptureFixture[str]) -> None:
     assert transcript.main([str(BASICS)]) == 0
     assert "x * 2\n#> 10\n" in capsys.readouterr().out
+
+
+# Results in the script
+
+
+def test_stripping_drops_the_result_lines_only() -> None:
+    source = 'x = 5\n#> 5\ns = """\n#> kept\n"""\nprint()\n#>\n    #> kept too\n'
+    assert strip_results(source) == 'x = 5\ns = """\n#> kept\n"""\nprint()\n    #> kept too\n'
+
+
+def test_stripping_a_script_that_doesnt_tokenize_is_a_syntax_error() -> None:
+    with pytest.raises(SyntaxError):
+        strip_results("x = (\n")
+
+
+def test_a_transcript_drops_the_old_results(tmp_path: Path) -> None:
+    path = tmp_path / "script.py"
+    path.write_text("x = 5\n#> 999\n")
+    assert render(run_path(str(path))) == "x = 5\n#> 5\n"
+
+
+def script(tmp_path: Path, source: str) -> Script:
+    path = tmp_path / "script.py"
+    path.write_text(source)
+    return Script.file(str(path))
+
+
+def test_in_place_writes_the_results_into_the_script(tmp_path: Path) -> None:
+    s = script(tmp_path, "x = 5\nx * 2\n")
+    assert in_place(s) == (0, "script.py: ran, results written")
+    assert s.read() == "x = 5\n#> 5\nx * 2\n#> 10\n"
+    assert in_place(s) == (0, "script.py: ran, no change")
+
+
+def test_in_place_replaces_the_old_results(tmp_path: Path) -> None:
+    s = script(tmp_path, "x = 6\n#> 5\n")
+    in_place(s)
+    assert s.read() == "x = 6\n#> 6\n"
+
+
+def test_in_place_keeps_the_lines_after_an_error(tmp_path: Path) -> None:
+    s = script(tmp_path, "x = 1\n1 / 0\ny = 2\n")
+    assert in_place(s) == (
+        1,
+        "script.py: stopped at an error, ZeroDivisionError: division by zero, results written",
+    )
+    written = s.read()
+    assert written.endswith("#> ZeroDivisionError: division by zero\ny = 2\n")
+    assert strip_results(written) == "x = 1\n1 / 0\ny = 2\n"
+
+
+def test_a_traceback_gives_the_files_lines(tmp_path: Path) -> None:
+    s = script(tmp_path, "x = 1\n#> 1\n#> 1\n1 / 0\n")
+    in_place(s)
+    written = s.read()
+    assert 'script.py", line 2, in <module>\n#>     1 / 0\n' not in written
+    assert written.startswith("x = 1\n#> 1\n1 / 0\n#> Traceback")
+    # Run again, its results in it: the error is on the file's line 3.
+    in_place(s)
+    assert '#>   File "' + str(tmp_path / "script.py") + '", line 3, in <module>\n#>     1 / 0\n' in s.read()
+
+
+def test_in_place_leaves_a_script_that_doesnt_parse(tmp_path: Path) -> None:
+    for source in ("x = 5\n#> 5\nx = (\n", "x = 5\n#> 5\nx = = 6\n"):
+        s = script(tmp_path, source)
+        code, report = in_place(s)
+        assert code == 2
+        assert report.startswith("script.py: doesn't parse, left as it is: line 3")
+        assert s.read() == source
+
+
+def test_in_place_leaves_a_script_that_changed_while_it_ran(tmp_path: Path) -> None:
+    source = 'with open(__file__, "a") as f:\n    f.write("# edited\\n")\n'
+    s = script(tmp_path, source)
+    assert in_place(s) == (0, "script.py: changed while it ran, left as it is")
+    assert s.read() == source + "# edited\n"
+
+
+def test_in_place_writes_no_colors(tmp_path: Path) -> None:
+    s = script(
+        tmp_path,
+        dedent(
+            """\
+            class Green:
+                def _repr_pretty_(self, p, cycle):
+                    p.text("\\x1b[32mgreen\\x1b[0m")
+            Green()
+            """
+        ),
+    )
+    in_place(s)
+    assert s.read().endswith("Green()\n#> green\n")
+
+
+def wait_for(condition: Callable[[], bool], timeout: float = 20.0) -> None:
+    deadline = time.monotonic() + timeout
+    while not condition():
+        assert time.monotonic() < deadline, "timed out"
+        time.sleep(0.05)
+
+
+def test_watch_writes_the_results_on_every_save(tmp_path: Path) -> None:
+    path = tmp_path / "script.py"
+    path.write_text("x = 5\n")
+    command = [sys.executable, "-m", "equarium.transcript", "--watch", str(path)]
+    process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        wait_for(lambda: path.read_text() == "x = 5\n#> 5\n")
+        path.write_text("x = 6\n#> 5\n")
+        wait_for(lambda: path.read_text() == "x = 6\n#> 6\n")
+    finally:
+        process.terminate()
+        process.wait(timeout=10)
 
 
 # Example 2.4

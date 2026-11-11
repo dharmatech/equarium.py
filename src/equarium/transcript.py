@@ -3,6 +3,12 @@ and print its source as written, with each statement's results under it.
 
     uv run python -m equarium.transcript path/to/script.py
     uv run python -m equarium.transcript -m package.module
+    uv run python -m equarium.transcript --in-place path/to/script.py
+    uv run python -m equarium.transcript --watch path/to/script.py
+
+`--in-place` writes the results into the script itself, as comments,
+and `--watch` does that again every time the script is saved, so that
+the script is its own transcript in the editor.
 
 An experiment: see `docs/experiments/transcripts/`. This module imports
 nothing from equarium, so it works for any Python script, and can move to
@@ -18,14 +24,18 @@ its `#> ` lines is the script. Its results are:
   shows its value and an assignment shows the value it bound, as in
   Mathematica. Under the REPL rule, `--repl`, only a bare expression
   does, as in Python's REPL. Either way, a `;` ending the line hides the
-  value, `None` never shows, and neither does a bare string, which is a
-  docstring or a comment.
+  value, and neither `None` nor the script's docstring shows.
 
 A value prints as IPython would print it: through its class's
 `_repr_pretty_`, when it has one, and otherwise `repr`.
 
-An error stops the run. Its traceback is the statement's last result,
-and the transcript ends there.
+An error stops the run. Its traceback is the statement's last result.
+The terminal transcript ends there, and in place, the lines that didn't
+run stay as they are.
+
+The `#> ` lines are the results, and belong to transcript mode: before
+it runs a script, it drops them, so a script with results in it runs as
+it would without them.
 """
 
 import __future__
@@ -36,10 +46,14 @@ import copy
 import importlib.util
 import io
 import os
+import re
+import subprocess
 import sys
+import time
+import tokenize
 import traceback
 import types
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -67,7 +81,7 @@ class Entry:
 @dataclass(frozen=True)
 class Transcript:
     entries: tuple[Entry, ...]
-    rest: str  # the lines after the last statement's
+    rest: str  # the lines after the last entry's; after an error, the lines not run
     failed: bool
 
 
@@ -76,18 +90,33 @@ def run(
     filename: str = "<script>",
     namespace: dict[str, object] | None = None,
     rule: Rule = "worksheet",
+    file_lines: Sequence[int] | None = None,
 ) -> Transcript:
     """Run `source`, statement by statement, in `namespace`, and record
-    each statement's results."""
+    each statement's results.
+
+    `file_lines` is the line in the file of each line of `source`, when
+    they differ, as they do once its results are stripped. Tracebacks and
+    syntax errors then give the file's lines.
+    """
     if namespace is None:
         namespace = {"__name__": "__main__"}
-    tree = ast.parse(source, filename)
-    lines = source.splitlines(keepends=True)
+    try:
+        tree = ast.parse(source, filename)
+    except SyntaxError as e:
+        if file_lines is not None and e.lineno is not None:
+            e.lineno = _file_line(file_lines, e.lineno)
+            e.end_lineno = None
+        raise
+    lines = _lines(source)
+    ends = [node.end_lineno or node.lineno for node in tree.body]
+    hidden = [_hidden(node, lines) for node in tree.body]
+    if file_lines is not None:
+        _renumber(tree, file_lines)
     entries: list[Entry] = []
     echoed = 0  # how many lines are in entries so far
     flags = 0
-    for node in tree.body:
-        end = node.end_lineno or node.lineno
+    for number, (node, end) in enumerate(zip(tree.body, ends)):
         text = "".join(lines[echoed:end])
         echoed = max(echoed, end)
 
@@ -96,16 +125,65 @@ def run(
         try:
             with contextlib.redirect_stdout(printed):
                 result = _execute(node, filename, namespace, flags)
-                if rule == "worksheet" or isinstance(node, ast.Expr):
-                    if result is not None and not _hidden(node, lines):
+                shows = rule == "worksheet" or isinstance(node, ast.Expr)
+                if shows and result is not None and not hidden[number]:
+                    if not (number == 0 and _is_docstring(node)):
                         value = show(result)
         except Exception as e:  # the script's error, recorded, not raised
-            # The lines after it didn't run, so they aren't shown.
             entries.append(Entry(text, printed.getvalue(), value, _traceback(e)))
-            return Transcript(tuple(entries), "", failed=True)
+            return Transcript(tuple(entries), "".join(lines[echoed:]), failed=True)
         entries.append(Entry(text, printed.getvalue(), value))
         flags |= _future_flags(node)
     return Transcript(tuple(entries), "".join(lines[echoed:]), failed=False)
+
+
+def _lines(source: str) -> list[str]:
+    """The source's lines, ending as Python's tokenizer ends them, at
+    `\\n`. (`str.splitlines` also ends one at a form feed.)"""
+    return io.StringIO(source).readlines()
+
+
+def strip_results(source: str) -> str:
+    """The script without its results: each line that is a comment `#> …`
+    or `#>`, from the start of the line. A `#> ` line inside a string
+    stays. A `SyntaxError` when the source doesn't tokenize."""
+    return _stripped(source)[0]
+
+
+def _stripped(source: str) -> tuple[str, list[int]]:
+    """The script without its results, and the line in `source` of each
+    of its lines."""
+    results: set[int] = set()
+    try:
+        for token in tokenize.generate_tokens(io.StringIO(source).readline):
+            if (
+                token.type == tokenize.COMMENT
+                and token.start[1] == 0
+                and (token.string == MARK.rstrip() or token.string.startswith(MARK))
+            ):
+                results.add(token.start[0])
+    except tokenize.TokenError as e:
+        message, (line, column) = e.args
+        raise SyntaxError(message, ("<script>", line, column + 1, None)) from e
+    kept = [(n, line) for n, line in enumerate(_lines(source), 1) if n not in results]
+    return "".join(line for _, line in kept), [n for n, _ in kept]
+
+
+def _file_line(file_lines: Sequence[int], line: int) -> int:
+    """The file's line for a line of the stripped source. A line past the
+    end, as a syntax error at the end can have, is past the file's."""
+    if 1 <= line <= len(file_lines):
+        return file_lines[line - 1]
+    return (file_lines[-1] if file_lines else 0) + line - len(file_lines)
+
+
+def _renumber(tree: ast.AST, file_lines: Sequence[int]) -> None:
+    """Give every node its line in the file."""
+    for node in ast.walk(tree):
+        for attribute in ("lineno", "end_lineno"):
+            line = getattr(node, attribute, None)
+            if isinstance(line, int):
+                setattr(node, attribute, _file_line(file_lines, line))
 
 
 def _execute(node: ast.stmt, filename: str, namespace: dict[str, object], flags: int) -> object:
@@ -113,9 +191,6 @@ def _execute(node: ast.stmt, filename: str, namespace: dict[str, object], flags:
     for an assignment, the value it bound, read back from its target.
     Anything else is None."""
     if isinstance(node, ast.Expr):
-        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
-            exec(_compile(ast.Module([node], []), filename, "exec", flags), namespace)
-            return None
         return eval(_compile(ast.Expression(node.value), filename, "eval", flags), namespace)
     exec(_compile(ast.Module([node], []), filename, "exec", flags), namespace)
     match node:
@@ -141,6 +216,14 @@ def _as_load(target: ast.expr) -> ast.expr:
         if isinstance(node, ast.Name | ast.Attribute | ast.Subscript | ast.Starred | ast.Tuple | ast.List):
             node.ctx = ast.Load()
     return target
+
+
+def _is_docstring(node: ast.stmt) -> bool:
+    return (
+        isinstance(node, ast.Expr)
+        and isinstance(node.value, ast.Constant)
+        and isinstance(node.value.value, str)
+    )
 
 
 def _hidden(node: ast.stmt, lines: list[str]) -> bool:
@@ -232,9 +315,13 @@ class TextPrinter:
 # Output
 
 
-def render(transcript: Transcript) -> str:
+def render(transcript: Transcript, color: bool = True, unrun: bool = False) -> str:
     """The source as written, with each statement's results after its
-    last line, marked `#> `."""
+    last line, marked `#> `.
+
+    Without `color`, the results have no ANSI color codes. With `unrun`,
+    the lines after an error, which didn't run, follow it.
+    """
     out: list[str] = []
     for entry in transcript.entries:
         out.append(entry.source)
@@ -243,9 +330,18 @@ def render(transcript: Transcript) -> str:
         printed = entry.printed.removesuffix("\n") if entry.printed else None
         for result in (printed, entry.value, entry.error):
             if result is not None:
-                out.extend(_marked(result))
-    out.append(transcript.rest)
+                out.extend(_marked(result if color else uncolored(result)))
+    if not transcript.failed or unrun:
+        out.append(transcript.rest)
     return "".join(out)
+
+
+ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+
+def uncolored(text: str) -> str:
+    """The text without ANSI escape codes, such as colors."""
+    return ANSI.sub("", text)
 
 
 def _marked(text: str) -> list[str]:
@@ -255,28 +351,127 @@ def _marked(text: str) -> list[str]:
 # Running a script or a module
 
 
+@dataclass(frozen=True)
+class Script:
+    """A script to run: its file, its package when it runs as a module,
+    and the folder first on the path while it runs."""
+
+    path: str
+    package: str | None
+    path_entry: str
+
+    @staticmethod
+    def file(path: str) -> Script:
+        """A script file, run as `python path` runs it, with its folder
+        first on the path."""
+        path = os.path.abspath(path)
+        return Script(path, None, os.path.dirname(path))
+
+    @staticmethod
+    def module(name: str) -> Script:
+        """A module, run as `python -m name` runs it, with the current
+        folder first on the path."""
+        with _path_first(os.getcwd()):
+            spec = importlib.util.find_spec(name)
+        if spec is None or spec.origin is None or not spec.origin.endswith(".py"):
+            raise SystemExit(f"transcript: no Python module named {name}")
+        return Script(spec.origin, name.rpartition(".")[0], os.getcwd())
+
+    def read(self) -> str:
+        with open(self.path, encoding="utf-8") as f:
+            return f.read()
+
+    def run(self, content: str, rule: Rule = "worksheet") -> Transcript:
+        """Run `content`, the file's, as this script, without the results
+        it has in it."""
+        source, file_lines = _stripped(content)
+        with _as_main(self.path, self.package, self.path_entry) as namespace:
+            return run(source, self.path, namespace, rule, file_lines)
+
+
 def run_path(path: str, rule: Rule = "worksheet") -> Transcript:
-    """Run a script file as `python path` would, with its folder first on
-    the path."""
-    path = os.path.abspath(path)
-    with open(path, encoding="utf-8") as f:
-        source = f.read()
-    with _as_main(path, package=None, path_entry=os.path.dirname(path)) as namespace:
-        return run(source, path, namespace, rule)
+    """Run a script file."""
+    script = Script.file(path)
+    return script.run(script.read(), rule)
 
 
 def run_module(name: str, rule: Rule = "worksheet") -> Transcript:
-    """Run a module as `python -m name` would, with the current folder
-    first on the path."""
-    with _path_first(os.getcwd()):
-        spec = importlib.util.find_spec(name)
-    if spec is None or spec.origin is None or not spec.origin.endswith(".py"):
-        raise SystemExit(f"transcript: no Python module named {name}")
-    with open(spec.origin, encoding="utf-8") as f:
-        source = f.read()
-    package = name.rpartition(".")[0]
-    with _as_main(spec.origin, package=package, path_entry=os.getcwd()) as namespace:
-        return run(source, spec.origin, namespace, rule)
+    """Run a module."""
+    script = Script.module(name)
+    return script.run(script.read(), rule)
+
+
+# In place, and on every save
+
+
+def in_place(script: Script, rule: Rule = "worksheet") -> tuple[int, str]:
+    """Run the script and write its results into it, without colors.
+
+    The file is left as it is when it doesn't parse, or when it changed
+    while the script ran. Returns the exit code, 1 after an error in the
+    script and 2 when it doesn't parse, and what happened.
+    """
+    name = os.path.basename(script.path)
+    before = script.read()
+    try:
+        transcript = script.run(before, rule)
+    except SyntaxError as e:
+        where = f"line {e.lineno}: " if e.lineno else ""
+        return 2, f"{name}: doesn't parse, left as it is: {where}{e.msg}"
+    after = render(transcript, color=False, unrun=True)
+    code = 1 if transcript.failed else 0
+    ran = "ran"
+    if transcript.failed:
+        error = transcript.entries[-1].error or ""
+        ran = f"stopped at an error, {uncolored(error).splitlines()[-1]}"
+    if script.read() != before:
+        return code, f"{name}: changed while it ran, left as it is"
+    if after == before:
+        return code, f"{name}: {ran}, no change"
+    with open(script.path, "w", encoding="utf-8") as f:
+        f.write(after)
+    return code, f"{name}: {ran}, results written"
+
+
+def watch(script: Script, target: list[str], rule: Rule = "worksheet", interval: float = 0.2) -> None:
+    """Write the script's results into it now, and again each time its
+    code changes, until interrupted.
+
+    Each run is a fresh `python -m equarium.transcript --in-place`, so
+    the modules it imports are loaded fresh. A change to the results
+    alone, such as the run's own writing, doesn't start another run.
+    """
+    command = [sys.executable, "-m", "equarium.transcript", "--in-place", *target]
+    if rule == "repl":
+        command.append("--repl")
+    shown = os.path.relpath(script.path)
+    if shown.startswith(".."):
+        shown = script.path
+    print(f"watching {shown}, Ctrl-C to stop", flush=True)
+    # The file is read every time: its timestamp can miss a save made
+    # right after the run's own write.
+    last_content: str | None = None
+    last_code: str | None = None
+    try:
+        while True:
+            try:
+                content = script.read()
+            except FileNotFoundError:
+                content = None  # an editor's save can replace the file
+            if content is not None and content != last_content:
+                last_content = content
+                try:
+                    code = strip_results(content)
+                except SyntaxError:
+                    code = content
+                if code != last_code:
+                    last_code = code
+                    result = subprocess.run(command, capture_output=True, text=True)
+                    stamp = time.strftime("%H:%M:%S")
+                    print(f"{stamp} {(result.stdout + result.stderr).strip()}", flush=True)
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        pass
 
 
 @contextlib.contextmanager
@@ -321,12 +516,33 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="show only bare expressions' values, as Python's REPL does",
     )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--in-place",
+        action="store_true",
+        help="write the results into the script, as #> comments",
+    )
+    mode.add_argument(
+        "--watch",
+        action="store_true",
+        help="write the results into the script now, and on every save",
+    )
     args = parser.parse_args(argv)
     rule: Rule = "repl" if args.repl else "worksheet"
     if args.module is not None:
-        transcript = run_module(args.module, rule)
+        script = Script.module(args.module)
+        target = ["-m", args.module]
     else:
-        transcript = run_path(args.path, rule)
+        script = Script.file(args.path)
+        target = [args.path]
+    if args.watch:
+        watch(script, target, rule)
+        return 0
+    if args.in_place:
+        code, report = in_place(script, rule)
+        print(report)
+        return code
+    transcript = script.run(script.read(), rule)
     sys.stdout.write(render(transcript))
     return 1 if transcript.failed else 0
 

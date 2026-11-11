@@ -1,7 +1,8 @@
 # Transcript mode (experiment)
 
-**Status:** first prototype, the terminal transcript (2026-11-11). This is
-an experiment, not a series. It takes a series number only if it's
+**Status:** a prototype (2026-11-11): the terminal transcript, then the
+results written into the script itself, on every save. This is an
+experiment, not a series. It takes a series number only if it's
 adopted.
 
 On paper, a student's worksheet keeps each step next to its result, and
@@ -31,28 +32,49 @@ display methods, which many libraries already have.
     shows its value and an assignment shows what its target holds, as in
     Mathematica. Under the REPL rule, `--repl`, only a bare expression
     does, as in Python's REPL and Jupyter. Either way a `;` ending the
-    line hides it, as in Mathematica and IPython, and `None` and bare
-    strings (docstrings) never show;
-  - an error's traceback, without the module's own frames. The
+    line hides it, as in Mathematica and IPython, and neither `None` nor
+    the script's docstring shows;
+  - an error's traceback, without the module's own frames. The terminal
     transcript ends there.
 
   A value prints as IPython prints it: by its class's `_repr_pretty_`,
   and otherwise by `repr`. The module imports nothing from equarium, and
   a test checks that, so it can move to a package of its own. It uses
   only the standard library.
+- **In place, and on every save.** The `#> ` lines are comments, so a
+  script with its results in it is still the script. `--in-place` runs
+  it and writes its results into it. `--watch` does that now and again
+  each time the file's code changes, until Ctrl-C: keep it running in a
+  terminal, and edit and save the script in VS Code. Every mode first
+  drops the `#> ` lines it finds (not ones inside a string), so old
+  results never run or pile up, and line numbers in tracebacks and
+  syntax errors are the file's.
+
+  In place, the script is written only when it's safe:
+  - not when it doesn't parse, as in the middle of an edit;
+  - not when it changed while it ran, so a save made meanwhile isn't
+    overwritten. The next save runs it again;
+  - after an error, with the lines that didn't run kept as they are.
+
+  The results have no colors in the file: color codes would show as
+  `\x1b[32m`. Each run under `--watch` is a fresh Python, so changes to
+  imported modules take effect too.
 - **`System._repr_pretty_` and `Solution._repr_pretty_`.** They print
   what `show()` prints: knowns green, wants red. IPython uses the same
   method, so a system or a solution also prints readably there.
 - **`basics.py`**, beside these notes: a plain Python script with no
   equarium in it.
-- **`tests/test_transcript.py`.** The rules on small scripts, and 2.4.
-  Without its `#> ` lines, a transcript is the script.
+- **`tests/test_transcript.py`.** The rules on small scripts, in place,
+  the watch, and 2.4. Without its `#> ` lines, a transcript is the script.
 
-Run it on a file, or on a module as `python -m` does:
+Run it on a file, or on a module as `python -m` does, and write the
+results into it, once or on every save:
 
 ```bash
 uv run python -m equarium.transcript docs/experiments/transcripts/basics.py
 uv run python -m equarium.transcript -m examples.up_15e.ch02.examples.n04.main
+uv run python -m equarium.transcript --in-place docs/experiments/transcripts/basics.py
+uv run python -m equarium.transcript --watch docs/experiments/transcripts/basics.py
 ```
 
 The `#> ` mark is the convention of R's `reprex`. It keeps a transcript
@@ -79,6 +101,15 @@ valid Python.
   statements.** All 53 result lines come from the `__main__` block's
   prints. Under that rule, an example would show a result with a bare
   name on its own line, `sol_a`, as in a notebook.
+- **Side by side, the transcript lost the syntax highlighting** the
+  editor gives the script. In place, it keeps it: the results are
+  comments, colored as comments, and the code around them is code.
+- **Rerunning on every save is cheap enough.** 2.4's whole transcript
+  takes 0.64 s, 0.44 s of it importing SymPy and equarium. On a scratch
+  copy of 2.4 under `--watch`, changing `m1.t` to 3 s rewrote the file
+  on save with `68.0*meter` and `27.0*meter/second`.
+- **A bare string other than the docstring shows,** as in the REPL:
+  `"abc"` then `#> 'abc'`. At first no bare string showed.
 
 ## Open questions
 
@@ -96,9 +127,16 @@ valid Python.
   could check that each committed transcript is what the script gives
   today, as `tests/test_sketch.py` does for `sketch.svg`. Its name
   mustn't look like `main_<slug>.py`, which the tests take as a version.
-- **A live view.** A watch mode that rewrites the Markdown or HTML on
-  every save, beside the editor in VS Code's preview, before any
-  extension.
+- **The editor.** VS Code reloads a file changed on disk when it has no
+  unsaved edits. Is that smooth enough, or does it want an extension that
+  runs the script on save and edits the buffer itself? An extension
+  could also color the results again, knowns green and wants red.
+- **Results that go stale.** A script with results in it can be edited
+  without being run, and then its results are old. `--watch` keeps them
+  current while it runs. For committed scripts, a test could check that
+  the results in them are what they give today.
+- **Slow scripts.** Every save runs the whole script. Running only from
+  the first statement that changed is where notebooks' complexity starts.
 - **Notebooks, for comparison.** Jupyter, and VS Code's Interactive
   window, which runs `# %%` cells of a plain `.py` file. Both use
   `_repr_pretty_` already. A `_repr_html_` would color them.
