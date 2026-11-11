@@ -211,6 +211,11 @@ class System:
         """Print the steps that made the system, from the first."""
         print(display.render_history(self))
 
+    def _repr_pretty_(self, p: display.TextPrinter, cycle: bool) -> None:
+        """The system as IPython, and transcript mode, print it: as `show`
+        prints it."""
+        p.text(display.render(self))
+
 
 def _number(sym: sp.Symbol, raw: object) -> sp.Expr | None:
     """A known's value: None, or an expression with no free symbols."""
