@@ -31,6 +31,7 @@ from equarium.physics import (
     X,
     Y,
 )
+from equarium.transcript import show
 from examples.up_15e.ch02.examples.n04.main import sol_a
 from examples.up_15e.ch02.examples.n05.main import sol as sol_2_5
 from old_names import old_str
@@ -654,3 +655,22 @@ def test_the_core_doesnt_import_the_physics_code() -> None:
         [sys.executable, "-c", check], capture_output=True, text=True, check=True
     )
     assert result.stdout.strip() == "False"
+
+
+# How the model prints, in IPython and transcript mode
+
+
+def test_the_model_prints_by_its_names() -> None:
+    m = Particle("m", 2, X)
+    assert show(m) == "particle m (x): m0, m1"
+    assert show(Particle("p", 3, XY)) == "particle p (x, y): p0, p1, p2"
+    assert show(m.states) == "(m0, m1)"
+    assert show(m.edge(0, 1)) == "m01: m0 → m1"
+    meet = Event("meet", m.states[1], Particle("q", 2, X).states[1])
+    assert show(meet) == "event meet: m1, q1"
+
+
+def test_the_model_keeps_its_repr() -> None:
+    assert repr(Particle("m", 2, X).states[0]) == (
+        "State(owner='m', index=0, axes=<class 'equarium.physics.axes.X'>)"
+    )

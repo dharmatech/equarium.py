@@ -166,6 +166,49 @@ def test_a_value_prints_by_its_repr_pretty() -> None:
     assert transcript.show("text") == "'text'"
 
 
+def test_a_container_shows_its_items_as_ipython_does() -> None:
+    class Pretty:
+        def _repr_pretty_(self, p: transcript.TextPrinter, cycle: bool) -> None:
+            p.text("pretty")
+
+    assert transcript.show([Pretty(), 1, "a"]) == "[pretty, 1, 'a']"
+    assert transcript.show((Pretty(),)) == "(pretty,)"
+    assert transcript.show({"k": Pretty()}) == "{'k': pretty}"
+    assert transcript.show({Pretty()}) == "{pretty}"
+    assert transcript.show(frozenset({1})) == "frozenset({1})"
+    empty: list[object] = [[], (), {}, set(), frozenset()]
+    assert transcript.show(empty) == "[[], (), {}, set(), frozenset()]"
+
+
+def test_a_long_container_shows_one_item_to_a_line() -> None:
+    words = ["a" * 30, "b" * 30, "c" * 30]
+    assert transcript.show(words) == f"['{words[0]}',\n '{words[1]}',\n '{words[2]}']"
+    assert transcript.show(("x\ny", 1)) == "('x\\ny', 1)"
+
+
+def test_a_multiline_item_is_indented() -> None:
+    class Lines:
+        def _repr_pretty_(self, p: transcript.TextPrinter, cycle: bool) -> None:
+            p.text("one\ntwo")
+
+    assert transcript.show([Lines(), Lines()]) == "[one\n two,\n one\n two]"
+
+
+def test_a_container_inside_itself_shows_as_repr_does() -> None:
+    a: list[object] = [1]
+    a.append(a)
+    d: dict[str, object] = {}
+    d["d"] = d
+    assert (transcript.show(a), transcript.show(d)) == (repr(a), repr(d))
+
+
+def test_a_subclass_of_a_container_shows_by_its_repr() -> None:
+    from collections import namedtuple
+
+    Point = namedtuple("Point", "x y")
+    assert transcript.show(Point(1, 2)) == "Point(x=1, y=2)"
+
+
 def test_without_its_results_a_transcript_is_the_script() -> None:
     source = strip_results(BASICS.read_text())  # basics.py has its results in it
     if not source.endswith("\n"):
@@ -341,6 +384,19 @@ def test_2_4_shows_its_solutions(n04: Transcript) -> None:
         "m1.pos.x = 43.0*meter",
         "m1.vel.x = m0.vel.x + m01.a.x*m1.t",
         "m1.vel.x = 23.0*meter/second",
+    ]
+
+
+def test_2_4_shows_its_model_and_its_book(n04: Transcript) -> None:
+    assert entry_value(n04, 'm = Particle("m", 2, X)  # the motorcyclist') == (
+        "particle m (x): m0, m1"
+    )
+    assert entry_value(n04, "m0, m1 = m.states") == "(m0, m1)"
+    book = entry_value(n04, "BOOK: list[Answer] = [  # University Physics, 15th ed.")
+    assert book.splitlines() == [
+        "[✓ m1.pos.x: book 43 meter, found 43.0*meter,",
+        " ✓ m1.vel.x: book 23 meter/second, found 23.0*meter/second,",
+        " ✓ m1.pos.x: book 55 meter, found 55.0*meter]",
     ]
 
 

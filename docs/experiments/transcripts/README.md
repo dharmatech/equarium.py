@@ -40,9 +40,11 @@ It merged into the physics branch, and with it into `master`, on
     transcript ends there.
 
   A value prints as IPython prints it: by its class's `_repr_pretty_`,
-  and otherwise by `repr`. The module imports nothing from equarium, and
-  a test checks that, so it can move to a package of its own. It uses
-  only the standard library.
+  and otherwise by `repr`. A list, tuple, set or dict shows each item
+  so, on one line when it fits in 79 characters, and otherwise one item
+  to a line. The module imports nothing from equarium, and a test checks
+  that, so it can move to a package of its own. It uses only the
+  standard library.
 - **In place, and on every save.** The `#> ` lines are comments, so a
   script with its results in it is still the script. `--in-place` runs
   it and writes its results into it. `--watch` does that now and again
@@ -64,6 +66,16 @@ It merged into the physics branch, and with it into `master`, on
 - **`System._repr_pretty_` and `Solution._repr_pretty_`.** They print
   what `show()` prints: knowns green, wants red. IPython uses the same
   method, so a system or a solution also prints readably there.
+- **Short displays for the model and the book** (branch
+  `2026-11-11-worksheet-displays`), by `_repr_pretty_` too, so `repr()`
+  and test messages don't change:
+  - `Particle` prints `particle m (x): m0, m1`, a `State` its name, `m0`,
+    an `Edge` `m01: m0 → m1`, and an `Event` `event meet: m1, q1`;
+  - an `Answer` prints its check, `✓ m1.pos.x: book 43 meter, found
+    43.0*meter`, or `✗` and what `mismatch()` says. A `Formula` prints
+    `✓ p1.t = …, as in the book` when it's found as the book prints it,
+    and both forms when it's an equivalent one. So `BOOK` reads as the
+    worksheet's answer check, one line to an answer.
 - **`basics.py`**, beside these notes: a plain Python script with no
   equarium in it.
 - **`tests/test_transcript.py`.** The rules on small scripts, in place,
@@ -99,6 +111,25 @@ valid Python.
 - **A worksheet-style copy** (a `;` after `m`, `m0, m1`, `m01` and
   `BOOK`, no `__main__` block, no result comments) is 66 lines, each
   result once. It's a scratch copy, not in the repo.
+- **With the short displays, 2.4's model and book read in a few lines:**
+
+  ```
+  m = Particle("m", 2, X)  # the motorcyclist
+  #> particle m (x): m0, m1
+  m0, m1 = m.states
+  #> (m0, m1)
+  m01 = m.edge(0, 1)  # the interval from state 0 to state 1
+  #> m01: m0 → m1
+  ...
+  BOOK: list[Answer] = [  # University Physics, 15th ed.
+      ...
+  ]
+  #> [✓ m1.pos.x: book 43 meter, found 43.0*meter,
+  #>  ✓ m1.vel.x: book 23 meter/second, found 23.0*meter/second,
+  #>  ✓ m1.pos.x: book 55 meter, found 55.0*meter]
+  ```
+
+  The `__main__` block and the result comments are still there.
 - **The REPL rule on 2.4's `main.py` shows nothing from its
   statements.** All 53 result lines come from the `__main__` block's
   prints. Under that rule, an example would show a result with a bare
@@ -117,9 +148,8 @@ valid Python.
 
 - **Which rule.** The worksheet rule shows 2.4's results with no change
   to the script. The REPL rule is what Python users know.
-- **Quiet objects.** A `;` after each, or short reprs for `Particle`,
-  `State`, `Edge` and `Answer`, such as `Particle m: 2 states, on x`?
-  Short reprs change the physics layer and `examples/answers.py`.
+- **Other objects.** `BookNotation` and a projectile's `Setup` still
+  print by `repr`. They get short displays when an example shows one.
 - **The examples' `__main__` blocks and result comments.** Drop them
   once a transcript is how an example's results are read?
 - **A committed transcript**, beside `main.py`, for reading on GitHub.
