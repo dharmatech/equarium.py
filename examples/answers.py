@@ -12,6 +12,7 @@ import sympy as sp
 from sympy.physics.units import Quantity
 
 from equarium import Solution, UsageError
+from equarium.display import TextPrinter
 from equarium.solve import is_unit
 from equarium.sympy_compat import free_symbols, safe_simplify
 
@@ -104,6 +105,19 @@ class Answer:
                 return f"{where}: {book} allows ±{tolerance}"
         return None
 
+    def _repr_pretty_(self, p: TextPrinter, cycle: bool) -> None:
+        """The answer as IPython, and transcript mode, print it: checked,
+        `✓ x1: book 43 meter, found 43.0*meter`, or `✗` and what differs."""
+        problem = self.mismatch()
+        if problem is not None:
+            p.text(f"✗ {problem}")
+            return
+        book = ", ".join(self.printed) + ("" if self.unit is None else f" {self.unit}")
+        found = ", ".join(
+            sp.sstr(root.number(self.symbol), full_prec=False) for root in self.solution.roots
+        )
+        p.text(f"✓ {self.symbol}: book {book}, found {found}")
+
 
 def _decimal(value: str) -> Decimal:
     try:
@@ -179,6 +193,21 @@ class Formula:
         if safe_simplify(formula - self.expr).is_zero is not True:
             return f"{where}, found {formula}"
         return None
+
+    def _repr_pretty_(self, p: TextPrinter, cycle: bool) -> None:
+        """The formula as IPython, and transcript mode, print it: checked,
+        `✓ y1 = v0**2/(2*g), as in the book`, or, when the formula found is
+        an equivalent form, `✓ R: book sin(2*a), found 2*sin(a)*cos(a)`.
+        When they differ, `✗` and what differs."""
+        problem = self.mismatch()
+        if problem is not None:
+            p.text(f"✗ {problem}")
+            return
+        book, found = str(self.expr), str(self.solution.formula(self.symbol))
+        if book == found:
+            p.text(f"✓ {self.symbol} = {book}, as in the book")
+        else:
+            p.text(f"✓ {self.symbol}: book {book}, found {found}")
 
 
 def _symbols(solution: Solution) -> frozenset[sp.Symbol]:

@@ -12,6 +12,7 @@ from typing import cast
 
 import sympy as sp
 
+from equarium.display import TextPrinter
 from equarium.errors import UsageError
 from equarium.physics.axes import Axes
 from equarium.physics.particles import State
@@ -69,6 +70,11 @@ class Event[A: Axes]:
         each axis of `axes`, each state's position equals the event's.
         `axes` defaults to the event's."""
         return event_equations(self, axes)
+
+    def _repr_pretty_(self, p: TextPrinter, cycle: bool) -> None:
+        """The event as IPython, and transcript mode, print it: its
+        states, `event meet: m1, p1`."""
+        p.text(f"event {self.name}: {', '.join(_name(state) for state in self.states)}")
 
 
 def event_equations[A: Axes](event: Event[A], axes: type[Axes] | None = None) -> list[sp.Eq]:

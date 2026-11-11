@@ -265,15 +265,61 @@ def _traceback(error: BaseException) -> str:
 # Values as text
 
 
+WIDTH = 79  # IPython's pretty printer's
+
+
 def show(value: object) -> str:
     """The value as IPython prints it: by its class's `_repr_pretty_`, when
-    it has one, and otherwise by `repr`."""
-    method = getattr(type(value), "_repr_pretty_", None)
+    it has one, and otherwise by `repr`. A list, tuple, set or dict
+    shows each item so, on one line when it fits in 79 characters, and
+    otherwise one item to a line."""
+    return _show(value, frozenset())
+
+
+def _show(value: object, seen: frozenset[int]) -> str:
+    kind = type(value)
+    if kind in (list, tuple, set, frozenset, dict):
+        return _container(value, seen)
+    method = getattr(kind, "_repr_pretty_", None)
     if method is None:
         return repr(value)
     printer = TextPrinter()
     method(value, printer, False)
     return printer.getvalue()
+
+
+def _container(value: object, seen: frozenset[int]) -> str:
+    """A builtin container, as IPython prints it. Only exact builtins:
+    a subclass, such as a named tuple, prints by its own `repr`."""
+    if id(value) in seen:  # a container inside itself, shown as repr shows it
+        return "{...}" if isinstance(value, dict) else "[...]"
+    seen = seen | {id(value)}
+    if isinstance(value, dict):
+        items = [f"{_show(k, seen)}: {_show(v, seen)}" for k, v in value.items()]
+        return _items("{", items, "}", "{}")
+    if isinstance(value, list):
+        return _items("[", [_show(item, seen) for item in value], "]", "[]")
+    if isinstance(value, tuple):
+        items = [_show(item, seen) for item in value]
+        if len(items) == 1:
+            return f"({items[0]},)"
+        return _items("(", items, ")", "()")
+    assert isinstance(value, set | frozenset)
+    items = [_show(item, seen) for item in value]
+    if isinstance(value, frozenset):
+        return "frozenset()" if not items else f"frozenset({_items('{', items, '}', '')})"
+    return _items("{", items, "}", "set()")
+
+
+def _items(open: str, items: list[str], close: str, empty: str) -> str:
+    if not items:
+        return empty
+    line = f"{open}{', '.join(items)}{close}"
+    if len(line) <= WIDTH and "\n" not in line:
+        return line
+    indent = " " * len(open)
+    lines = [item.replace("\n", "\n" + indent) for item in items]
+    return open + (",\n" + indent).join(lines) + close
 
 
 class TextPrinter:

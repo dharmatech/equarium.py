@@ -4,9 +4,11 @@ from typing import Any, cast
 
 import pytest
 import sympy as sp
+from sympy.physics.units import meter
 
 import examples
 from equarium import System, UsageError
+from equarium.transcript import show
 from examples.answers import Answer, Formula
 from examples.up_15e.ch02.examples.n04.main_handwritten import sol_a, v1, x1
 from slow_examples import SLOW_EXAMPLES
@@ -220,3 +222,31 @@ def test_formula_misuse() -> None:
         Formula(double, x, cast(Any, "sin(2*a)"))  # text
     with pytest.raises(UsageError, match="an expression"):
         Formula(double, x, cast(Any, a > 0))  # a relation
+
+
+# How answers print, in IPython and transcript mode
+
+
+def test_an_answer_prints_its_check() -> None:
+    assert show(Answer(sol_a, x1, "43")) == "✓ x1: book 43, found 43.0"
+    assert show(Answer(sol_a, x1, "44")) == "✗ x1: printed 44, found 43.0: 44 allows ±0.5"
+
+
+def test_an_answer_prints_its_unit() -> None:
+    sol = System().add(sp.Eq(x, a)).known(a, 3 * meter).want(x).solve()
+    assert show(Answer(sol, x, "3", unit=meter)) == "✓ x: book 3 meter, found 3.0*meter"
+
+
+def test_a_formula_prints_its_check() -> None:
+    verbatim = Formula(double, x, 2 * sp.sin(a) * sp.cos(a))
+    assert show(verbatim) == "✓ x = 2*sin(a)*cos(a), as in the book"
+    equivalent = Formula(double, x, sp.sin(2 * a))
+    assert show(equivalent) == "✓ x: book sin(2*a), found 2*sin(a)*cos(a)"
+    assert show(Formula(double, x, sp.cos(2 * a))).startswith("✗ x: printed cos(2*a)")
+
+
+def test_a_book_prints_one_check_to_a_line() -> None:
+    book = [Answer(sol_a, x1, "43"), Answer(sol_a, v1, "23"), Answer(sol_a, x1, "43.0")]
+    assert show(book) == (
+        "[✓ x1: book 43, found 43.0,\n ✓ v1: book 23, found 23.0,\n ✓ x1: book 43.0, found 43.0]"
+    )

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 import sympy as sp
 
+from equarium.display import TextPrinter
 from equarium.errors import UsageError
 from equarium.physics.axes import XY, Axes
 from equarium.physics.kinematics import kinematics_equations
@@ -46,6 +47,11 @@ class State[A: Axes]:
     @property
     def t(self) -> Var:
         return Var(self.owner, self.where, "t")
+
+    def _repr_pretty_(self, p: TextPrinter, cycle: bool) -> None:
+        """The state as IPython, and transcript mode, print it: `m0`, as
+        its symbols begin."""
+        p.text(self.owner + self.where)
 
 
 @dataclass(frozen=True)
@@ -92,6 +98,12 @@ class Edge[A: Axes]:
         """Newton's second law, ΣF = m a: for each axis, the forces' sum
         equals the particle's mass times this edge's acceleration."""
         return newton_equations(self, forces)
+
+    def _repr_pretty_(self, p: TextPrinter, cycle: bool) -> None:
+        """The edge as IPython, and transcript mode, print it:
+        `m01: m0 → m1`."""
+        start, end = self.start, self.end
+        p.text(f"{self.owner}{self.where}: {start.owner}{start.where} → {end.owner}{end.where}")
 
 
 @dataclass(frozen=True, init=False)
@@ -149,3 +161,10 @@ class Particle[A: Axes]:
         """Every edge's Δt, then the book's 2.2, 2.7 and 2.10 for each
         edge and axis."""
         return kinematics_equations(self)
+
+    def _repr_pretty_(self, p: TextPrinter, cycle: bool) -> None:
+        """The particle as IPython, and transcript mode, print it: its
+        axes and its states, `particle m (x): m0, m1`."""
+        axes = ", ".join(self.axes.names)
+        states = ", ".join(f"{self.name}{i}" for i in range(self.count))
+        p.text(f"particle {self.name} ({axes}): {states}")
