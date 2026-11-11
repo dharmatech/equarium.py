@@ -8,7 +8,7 @@ The rename is complete, polar is one way everywhere, 2.5 and 3.10 link
 through events, 3.6 to 3.10 use the projectile setup, and 4.4 and 4.5
 use Newton on the edge. The old physics code's copy is deleted, and the
 version is 0.2.0. The branch merged into `master` on 2026-11-11.
-Tagging `v0.2.0` and pushing are the user's calls.
+It's tagged `v0.2.0`, on the merge commit. Pushing is the user's call.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -72,9 +72,9 @@ All seven increments are done and reviewed, so no checkpoint comes
 next. The branch merged into `master` on 2026-11-11, with `--no-ff`,
 after the user's hands-on review. Two experiments merged into the
 branch before that, setup sketches and transcript mode, each with its
-notes in `docs/experiments/`. What is left is the user's two calls:
+notes in `docs/experiments/`. The merge commit is tagged `v0.2.0`
+(2026-11-11). What is left is the user's call:
 
-- **The tag** `v0.2.0`, on the merge commit.
 - **The push:** `master`, the tag `v0.2.0`, and the tag `v0.1.0` if it
   is still local.
 
