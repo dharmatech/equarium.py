@@ -19,37 +19,36 @@ import sympy as sp
 from sympy.physics.units import hour, kilometer, minute
 
 from equarium import System
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, X
 from examples.answers import Answer
 
-ca = make_states_model("ca", 2)  # the usual trip
-cb = make_states_model("cb", 2)  # the slow trip
+ca = Particle("ca", 2, X)  # the usual trip
+cb = Particle("cb", 2, X)  # the slow trip
 ca0, ca1 = ca.states
 cb0, cb1 = cb.states
-ca01 = ca.edges[0]
-cb01 = cb.edges[0]
-assert ca01.v_av is not None and cb01.v_av is not None  # included by default
+ca01 = ca.edge(0, 1)
+cb01 = cb.edge(0, 1)
 
 usual_time = 1 * hour + 50 / 60 * hour
 
 # Step 1: the usual trip's distance.
 usual = (
     System()
-    .add(*kinematics_fundamental(ca, axes=["x"]))
+    .add(*ca.kinematics())
     .known(ca0.t, 0 * hour)
     .known(ca1.t, usual_time)
     .known(ca0.pos.x, 0 * kilometer)
     .known(ca01.v_av.x, 105 * kilometer / hour)
 )
 distance = usual.solve(ca1.pos.x)
-# ca_1_x = -ca_0_t*v_av_x_ca_0_1 + ca_0_x + ca_1_t*v_av_x_ca_0_1   192.5*kilometer
+# ca1.pos.x = ca0.pos.x - ca0.t*ca01.v_av.x + ca01.v_av.x*ca1.t   192.5*kilometer
 
 # Step 2: the slow trip, over that distance.
 longer = sp.Symbol("longer")
 
 slow_trip = (
     System()
-    .add(*kinematics_fundamental(cb, axes=["x"]))
+    .add(*cb.kinematics())
     .add(sp.Eq(longer, cb1.t - ca1.t))  # added: how much longer the slow trip takes
     .known(cb0.t, 0 * hour)
     .known(cb0.pos.x, 0 * kilometer)
@@ -58,8 +57,8 @@ slow_trip = (
     .known(ca1.t, usual_time)
 )
 slow = slow_trip.solve(cb1.t, longer)
-# cb_1_t = (cb_0_t*v_av_x_cb_0_1 - cb_0_x + cb_1_x)/v_av_x_cb_0_1   2.75*hour
-# longer, in minutes                                                55
+# cb1.t = (-cb0.pos.x + cb0.t*cb01.v_av.x + cb1.pos.x)/cb01.v_av.x   2.75*hour
+# longer, in minutes                                               55
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(slow.in_units(minute), longer, "55", unit=minute),

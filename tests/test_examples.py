@@ -1,5 +1,6 @@
 import importlib
 import pkgutil
+from typing import Any, cast
 
 import pytest
 import sympy as sp
@@ -10,16 +11,25 @@ from examples.answers import Answer, Formula
 from examples.up_15e.ch02.examples.n04.main_handwritten import sol_a, v1, x1
 from slow_examples import SLOW_EXAMPLES
 
-x, D, a = sp.symbols("x D a")
+x, D, a, b = sp.symbols("x D a b")
+
+
+def is_version(name: str) -> bool:
+    """A version of a problem's solution is `main` or `main_<slug>`. Any
+    other module in a problem's folder, such as `sketch`, supports them."""
+    module = name.rsplit(".", 1)[-1]
+    return module == "main" or module.startswith("main_")
 
 
 def example_modules() -> list[str]:
-    """Every module in a problem's folder: in a chapter's `examples/` or
+    """Every version in a problem's folder: in a chapter's `examples/` or
     `exercises/`, such as `examples.up_15e.ch02.examples.n04.main`."""
     return sorted(
         info.name
         for info in pkgutil.walk_packages(examples.__path__, prefix="examples.")
-        if not info.ispkg and info.name.split(".")[-3:-2] in (["examples"], ["exercises"])
+        if not info.ispkg
+        and info.name.split(".")[-3:-2] in (["examples"], ["exercises"])
+        and is_version(info.name)
     )
 
 
@@ -73,6 +83,20 @@ def test_the_examples_are_found() -> None:
     assert SLOW_EXAMPLES <= set(example_modules())
     assert "examples.up_15e.ch02.tables.n05.main" not in example_modules()
     assert "examples.answers" not in example_modules()
+    assert "examples.up_15e.ch02.examples.n04.sketch" not in example_modules()
+
+
+@pytest.mark.parametrize(
+    ("name", "version"),
+    [
+        ("examples.up_15e.ch02.examples.n04.main", True),
+        ("examples.up_15e.ch02.examples.n04.main_handwritten", True),
+        ("examples.up_15e.ch02.examples.n04.sketch", False),
+        ("examples.up_15e.ch02.examples.n04.mainly", False),
+    ],
+)
+def test_a_version_is_main_or_main_with_a_slug(name: str, version: bool) -> None:
+    assert is_version(name) is version
 
 
 # Answer
@@ -156,49 +180,43 @@ double = System().add(sp.Eq(x, 2 * sp.sin(a) * sp.cos(a))).known(a).want(x).solv
 
 def test_formula_matches() -> None:
     assert str(double.formula(x)) == "2*sin(a)*cos(a)"
-    assert Formula(double, x, "2*sin(a)*cos(a)").mismatch() is None  # verbatim
-    assert Formula(double, x, "sin(2*a)").mismatch() is None  # equivalent
+    assert Formula(double, x, 2 * sp.sin(a) * sp.cos(a)).mismatch() is None  # verbatim
+    assert Formula(double, x, sp.sin(2 * a)).mismatch() is None  # equivalent
 
 
 def test_formula_differs() -> None:
-    message = Formula(double, x, "cos(2*a)").mismatch()
+    message = Formula(double, x, sp.cos(2 * a)).mismatch()
     assert message is not None
     assert "x" in message and "cos(2*a)" in message and "2*sin(a)*cos(a)" in message
 
 
 def test_formula_several_roots() -> None:
     solution = System().add(sp.Eq(x**2, a)).known(a).want(x).solve()
-    message = Formula(solution, x, "sqrt(a)").mismatch()
+    message = Formula(solution, x, sp.sqrt(a)).mismatch()
     assert message is not None
     assert "2 roots" in message and "-sqrt(a)" in message
 
 
 def test_formula_no_roots() -> None:
     solution = System().add(sp.Eq(x + D, 1), sp.Eq(x + D, 2)).want(x).solve()
-    message = Formula(solution, x, "1 - D").mismatch()
+    message = Formula(solution, x, 1 - D).mismatch()
     assert message is not None
     assert "no roots" in message
 
 
 def test_formula_a_printed_symbol_not_in_the_formula() -> None:
     solution = System().add(sp.Eq(x, 2 * a)).known(a).known(D).want(x).solve()
-    message = Formula(solution, x, "2*a*D").mismatch()
+    message = Formula(solution, x, 2 * a * D).mismatch()
     assert message is not None
     assert "has no D" in message
 
 
 def test_formula_misuse() -> None:
-    with pytest.raises(UsageError):
-        Formula(double, a, "a")  # a known, not a want
-    with pytest.raises(UsageError):
-        Formula(double, x, "sin(2*b)")  # b isn't a symbol of the solution
-    with pytest.raises(UsageError):
-        Formula(double, x, "sinn(2*a)")  # nor is sinn a SymPy function
-    with pytest.raises(UsageError):
-        Formula(double, x, 'sin(2*a) + Symbol("q")')  # nor a symbol it makes
-    with pytest.raises(UsageError):
-        Formula(double, x, "sin(2*a")  # doesn't parse
-    with pytest.raises(UsageError):
-        Formula(double, x, "sin(2*a) +")
-    with pytest.raises(UsageError):
-        Formula(double, x, "a > 0")  # not an expression
+    with pytest.raises(UsageError, match="isn't a want"):
+        Formula(double, a, a)  # a known, not a want
+    with pytest.raises(UsageError, match="has b, which isn't a symbol of the solution"):
+        Formula(double, x, sp.sin(2 * b))
+    with pytest.raises(UsageError, match="an expression"):
+        Formula(double, x, cast(Any, "sin(2*a)"))  # text
+    with pytest.raises(UsageError, match="an expression"):
+        Formula(double, x, cast(Any, a > 0))  # a relation

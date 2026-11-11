@@ -7,7 +7,7 @@ must it stop you?
 Ported from combine-equations.py's
 `examples/up/ch2/exercises/2.23/up-exercise-2.23-000.py`. Its zeros are
 values, so they are zero knowns here, never eliminated: the formula
-keeps `b_0_x` and `b_1_v_x`, as the old one does. The old script ends at
+keeps `b0.pos.x` and `b1.vel.x`, as the old one does. The old script ends at
 the unconverted number, and `in_units(meter, second)` converts it.
 
     uv run python -m examples.up_15e.ch02.exercises.n023.main
@@ -16,16 +16,16 @@ the unconverted number, and `in_units(meter, second)` converts it.
 from sympy.physics.units import hour, kilometer, meter, second
 
 from equarium import System
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, X
 from examples.answers import Answer
 
-b = make_states_model("b", 2)  # the body
+b = Particle("b", 2, X)  # the body
 b0, b1 = b.states
-b01 = b.edges[0]
+b01 = b.edge(0, 1)
 
 airbag = (
     System()
-    .add(*kinematics_fundamental(b, axes=["x"]))
+    .add(*b.kinematics())
     .known(b01.a.x, -250 * meter / second**2)
     .known(b0.vel.x, 105 * kilometer / hour)
     .known(b1.vel.x, 0 * meter / second)
@@ -34,8 +34,8 @@ airbag = (
 )
 
 sol = airbag.solve(b1.pos.x)
-# b_1_x = (2*a_x_b_0_1*b_0_x - b_0_v_x**2 + b_1_v_x**2)/(2*a_x_b_0_1)
-#         22.05*kilometer**2*second**2/(hour**2*meter), which is 1.70 m
+# b1.pos.x = (2*b0.pos.x*b01.a.x - b0.vel.x**2 + b1.vel.x**2)/(2*b01.a.x)
+#            22.05*kilometer**2*second**2/(hour**2*meter), which is 1.70 m
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol.in_units(meter, second), b1.pos.x, "1.70", unit=meter),

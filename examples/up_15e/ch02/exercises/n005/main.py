@@ -17,7 +17,7 @@ import sympy as sp
 from sympy.physics.units import meter, second
 
 from equarium import System, eq_flat
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, X
 from examples.answers import Answer
 
 dx_p_0_1 = sp.Symbol("dx_p_0_1")
@@ -26,14 +26,14 @@ dx_p_1_2 = sp.Symbol("dx_p_1_2")
 avg_speed_02 = sp.Symbol("avg_speed_02")
 avg_vel_02 = sp.Symbol("avg_vel_02")
 
-p = make_states_model("p", 3)  # the person: at the door, the windmill, the bench
+p = Particle("p", 3, X)  # the person: at the door, the windmill, the bench
 p0, p1, p2 = p.states
-p01 = p.edges[0]
-p12 = p.edges[1]
+p01 = p.edge(0, 1)
+p12 = p.edge(1, 2)
 
 walk = (
     System()
-    .add(*kinematics_fundamental(p, axes=["x"]))
+    .add(*p.kinematics())
     .add(*eq_flat(
         dx_p_0_1, p1.pos.x - p0.pos.x,
         dx_p_1_2, p2.pos.x - p1.pos.x,
@@ -51,8 +51,8 @@ walk = (
 )
 
 sol = walk.solve(avg_vel_02, avg_speed_02)
-# avg_vel_02 = (dx_p_0_1 + dx_p_1_2)/(dt_p_0_1 + dt_p_1_2)               0.3125*meter/second
-# avg_speed_02 = (Abs(dx_p_0_1) + Abs(dx_p_1_2))/(dt_p_0_1 + dt_p_1_2)   1.5625*meter/second
+# avg_vel_02 = (dx_p_0_1 + dx_p_1_2)/(p01.dt + p12.dt)               0.3125*meter/second
+# avg_speed_02 = (Abs(dx_p_0_1) + Abs(dx_p_1_2))/(p01.dt + p12.dt)   1.5625*meter/second
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol, avg_vel_02, "0.313", unit=meter/second),

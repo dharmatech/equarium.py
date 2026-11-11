@@ -16,24 +16,24 @@ the velocity is added as a want there, for the book's -20 m/s and
 """
 
 from equarium import System
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, Y
 from examples.answers import Answer
 
-c = make_states_model("c", 2, include_v_av=True)  # the coin
+c = Particle("c", 2, Y)  # the coin
 c0, c1 = c.states
-c01 = c.edges[0]
+c01 = c.edge(0, 1)
 
 coin = (
     System()
-    .add(*kinematics_fundamental(c, axes=("y",)))
+    .add(*c.kinematics())
     .known({c0.t: 0, c0.vel.y: 0, c0.pos.y: 0})  # dropped from rest, at the origin
     .eliminate_zeros()
     .known(c01.a.y, -9.8)  # m/s²
 )
 
 sol_1 = coin.known(c1.t, 1.0).solve(c1.pos.y, c1.vel.y)  # s
-# c_1_y = a_y_c_0_1*c_1_t**2/2   -4.9
-# c_1_v_y = a_y_c_0_1*c_1_t      -9.8
+# c1.pos.y = c01.a.y*c1.t**2/2   -4.9
+# c1.vel.y = c01.a.y*c1.t        -9.8
 sol_2 = coin.known(c1.t, 2.0).solve(c1.pos.y, c1.vel.y)  # s; -19.6 and -19.6
 sol_3 = coin.known(c1.t, 3.0).solve(c1.pos.y, c1.vel.y)  # s; -44.1 and -29.4
 

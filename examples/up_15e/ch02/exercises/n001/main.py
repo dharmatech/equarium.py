@@ -7,7 +7,7 @@ in those 4.00 s?
 Ported from combine-equations.py's
 `examples/up/ch2/exercises/2.1/up-exercise-2.1-000.py`. Its zeros are
 values, so they are zero knowns here, never eliminated: the formula
-keeps `c_0_t` and `c_0_x`, as the old one does.
+keeps `c0.t` and `c0.pos.x`, as the old one does.
 
     uv run python -m examples.up_15e.ch02.exercises.n001.main
 """
@@ -15,17 +15,16 @@ keeps `c_0_t` and `c_0_x`, as the old one does.
 from sympy.physics.units import meter, second
 
 from equarium import System
-from equarium.physics.kinematics_states import kinematics_fundamental, make_states_model
+from equarium.physics import Particle, X
 from examples.answers import Answer
 
-c = make_states_model("c", 2)  # the car
+c = Particle("c", 2, X)  # the car
 c0, c1 = c.states
-c01 = c.edges[0]
-assert c01.v_av is not None  # make_states_model includes v_av by default
+c01 = c.edge(0, 1)
 
 car = (
     System()
-    .add(*kinematics_fundamental(c, axes=["x"]))
+    .add(*c.kinematics())
     .known(c0.pos.x, 0 * meter)
     .known(c0.t, 0 * second)
     .known(c1.t, 4.0 * second)
@@ -33,7 +32,7 @@ car = (
 )
 
 sol = car.solve(c1.pos.x)
-# c_1_x = -c_0_t*v_av_x_c_0_1 + c_0_x + c_1_t*v_av_x_c_0_1   25.0*meter
+# c1.pos.x = c0.pos.x - c0.t*c01.v_av.x + c01.v_av.x*c1.t   25.0*meter
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol, c1.pos.x, "25.0", unit=meter),

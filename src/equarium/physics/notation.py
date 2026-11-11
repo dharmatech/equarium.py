@@ -1,0 +1,130 @@
+"""`BookNotation`, a display hook that prints the book's notation.
+
+The debug form is the symbol's name, `m0.pos.x`, with the core's default
+hook. The book's form is for reading: `x0`, `v0x`, `ax`, `Δt`, `v0`, `α0`,
+`α0°`, `F1x`, `θR`, an event's `t` and `x`, and a particle's mass, `m`.
+"""
+
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+
+import sympy as sp
+
+from equarium.analysis import Role
+from equarium.display import GREEN, RED, RESET
+from equarium.physics.symbols import Var
+
+AXES = ("x", "y")
+
+
+@dataclass(frozen=True)
+class BookNotation:
+    """The book's notation as plain text, glued, as the book's text reads,
+    in the book's order: letter, owner, state, axis.
+
+    - `owners` maps an owner's name to the book's subscript for it, such
+      as `{"m": "M", "p": "P"}`, so `p0.vel.x` prints `vP0x`. An owner
+      not in it gets none.
+    - `edge_index` prints an edge's states, `Δt01` and `a01x`, for
+      problems with several edges.
+    - `color` colors knowns green and wants red, as the core's
+      `display.terminal` does.
+
+    A state's position and velocity have polar parts: `m0.pos.mag` prints
+    `r0`, `m0.vel.mag` `v0`, `m0.vel.angle` `α0` and `m0.pos.angle` `θ0`.
+    A lone vector's name is its own, and `owners` doesn't apply to it:
+    `F1.x` prints `F1x`, `F1.mag` `F1` and `R.angle` `θR`. An angle in
+    degrees is its angle, then `°`: `m0.vel.angle_deg` prints `α0°`,
+    `m0.pos.angle_deg` `θ0°` and `R.angle_deg` `θR°`.
+
+    An event's time and position are the book's plain `t`, `x` and `y`:
+    `meet.t` prints `t` and `meet.pos.x` `x`. `owners` doesn't apply to
+    an event either.
+
+    A particle's mass is the book's `m`: `b.mass` prints `m`, and `mP`
+    with the owner's subscript.
+
+    A plain symbol, and a `Var` the notation doesn't know, print their
+    names: an edge's polar parts, such as `m01.a.mag` and
+    `m01.a.angle_deg`, and an event's, such as `hit.pos.mag`.
+    The book's form can be ambiguous: two owners without subscripts both
+    print `x0`.
+    """
+
+    owners: Mapping[str, str] = field(default_factory=dict[str, str])
+    edge_index: bool = False
+    color: bool = True
+
+    def text(self, symbol: sp.Symbol) -> str:
+        """The book's form, without color."""
+        if not isinstance(symbol, Var):
+            return symbol.name
+        if symbol.where == "":  # an event's, a particle's mass, then a lone vector's
+            match symbol.path:
+                case ("t",):  # an event's time
+                    return "t"
+                case ("pos", axis) if axis in AXES:  # an event's position
+                    return axis
+                case ("mass",):  # a particle's mass
+                    return f"m{self.owners.get(symbol.owner, '')}"
+                case (axis,) if axis in AXES:
+                    return f"{symbol.owner}{axis}"
+                case ("mag",):
+                    return symbol.owner
+                case ("angle",):
+                    return f"θ{symbol.owner}"
+                case ("angle_deg",):
+                    return f"θ{symbol.owner}°"
+                case _:
+                    return symbol.name
+        if not symbol.where.isdigit():
+            return symbol.name
+        who = self.owners.get(symbol.owner, "")
+        where = symbol.where
+        if len(where) == 1:  # a state
+            match symbol.path:
+                case ("pos", axis) if axis in AXES:
+                    return f"{axis}{who}{where}"
+                case ("pos", "mag"):
+                    return f"r{who}{where}"
+                case ("pos", "angle"):
+                    return f"θ{who}{where}"
+                case ("pos", "angle_deg"):
+                    return f"θ{who}{where}°"
+                case ("vel", axis) if axis in AXES:
+                    return f"v{who}{where}{axis}"
+                case ("vel", "mag"):
+                    return f"v{who}{where}"
+                case ("vel", "angle"):
+                    return f"α{who}{where}"
+                case ("vel", "angle_deg"):
+                    return f"α{who}{where}°"
+                case ("t",):
+                    return f"t{who}{where}"
+                case _:
+                    pass
+        elif len(where) == 2:  # an edge
+            index = where if self.edge_index else ""
+            match symbol.path:
+                case ("dt",):
+                    return f"Δt{who}{index}"
+                case ("a", axis) if axis in AXES:
+                    return f"a{who}{index}{axis}"
+                case ("v_av", axis) if axis in AXES:
+                    return f"vav{who}{index}{axis}"
+                case _:
+                    pass
+        return symbol.name
+
+    def __call__(self, symbol: sp.Symbol, role: Role) -> str:
+        """The book's form, knowns green, wants red, other unknowns plain."""
+        text = self.text(symbol)
+        if not self.color:
+            return text
+        match role:
+            case Role.KNOWN:
+                return f"{GREEN}{text}{RESET}"
+            case Role.WANT:
+                return f"{RED}{text}{RESET}"
+            case Role.UNKNOWN:
+                return text

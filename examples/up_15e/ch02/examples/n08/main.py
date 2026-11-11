@@ -17,8 +17,8 @@ from examples.up_15e.ch02.examples.n07.main import b1, ball
 
 below = ball.known(b1.pos.y, -5.0).want(b1.t)  # m
 sol = below.solve()
-# b_1_t = (-b_0_v_y - sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2))/a_y_b_0_1   3.36
-# b_1_t = (-b_0_v_y + sqrt(2*a_y_b_0_1*b_1_y + b_0_v_y**2))/a_y_b_0_1   -0.30
+# b1.t = (-b0.vel.y - sqrt(b0.vel.y**2 + 2*b01.a.y*b1.pos.y))/b01.a.y   3.36
+# b1.t = (-b0.vel.y + sqrt(b0.vel.y**2 + 2*b01.a.y*b1.pos.y))/b01.a.y   -0.30
 
 BOOK: list[Answer] = [  # University Physics, 15th ed.
     Answer(sol, b1.t, "-0.30", "3.36"),  # s, both roots
