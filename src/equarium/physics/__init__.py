@@ -19,11 +19,17 @@ An `Event` is two or more states at the same time and place,
 `meet.pos`. `meet.equations()` writes the links, and `hit.equations(Y)`
 links the positions on y only.
 
+`m.kinematics()` writes the definitions, which hold for any motion:
+every edge's Δt, then the book's 2.2 and 2.4, the average velocity and
+the average acceleration. `m01.constant_acceleration()` adds the book's
+2.10 for an edge whose acceleration is constant.
+
 An `XY` edge has the projectile setup, `d01.projectile(g)`: a `Setup` of
 equations, `d01.a.y = -g` and `d0.vel.x = d1.vel.x`, and knowns,
 `d01.a.x` zero. The example adds both,
 `.add(*flight.equations).known(flight.knowns)`, and sets its own origin
-and clock.
+and clock. The setup doesn't include 2.10: a projectile's edge calls
+`constant_acceleration()` too, right after the kinematics.
 
 An edge has Newton's second law, `b01.newton(n, w, f)`: ΣF = m a, one
 equation per axis, `f.x + n.x + w.x = b.mass*b01.a.x`. The mass is the

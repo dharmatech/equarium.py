@@ -1,8 +1,8 @@
 """The physics layer: `Var`'s identity, the names, the misuses, the
-kinematics equations, vectors and their equations, polar, events and
-their links, the projectile setup, Newton's second law and the mass, and
-the book's notation. Also the kinematics equations against the old
-physics code's output, and the layers."""
+kinematics equations and constant acceleration, vectors and their
+equations, polar, events and their links, the projectile setup, Newton's
+second law and the mass, and the book's notation. Also the kinematics
+equations against the old physics code's output, and the layers."""
 
 import pickle
 import re
@@ -12,6 +12,7 @@ from typing import Any, cast
 
 import pytest
 import sympy as sp
+from sympy.physics.units import meter, second
 
 from equarium import System, UsageError
 from equarium.analysis import Role
@@ -203,7 +204,7 @@ def test_vector_misuses_raise() -> None:
         _ = F1 * cast(Any, F2)
 
 
-# The kinematics
+# The kinematics, and constant acceleration
 
 
 def test_kinematics_of_two_states() -> None:
@@ -211,7 +212,6 @@ def test_kinematics_of_two_states() -> None:
         "Eq(m01.dt, -m0.t + m1.t)",
         "Eq(m01.v_av.x, (-m0.pos.x + m1.pos.x)/m01.dt)",
         "Eq(m01.a.x, (-m0.vel.x + m1.vel.x)/m01.dt)",
-        "Eq(m01.v_av.x, m0.vel.x/2 + m1.vel.x/2)",
     ]
 
 
@@ -223,30 +223,52 @@ def test_kinematics_of_three_states_in_the_old_order() -> None:
         "Eq(p12.v_av.x, (-p1.pos.x + p2.pos.x)/p12.dt)",
         "Eq(p01.a.x, (-p0.vel.x + p1.vel.x)/p01.dt)",
         "Eq(p12.a.x, (-p1.vel.x + p2.vel.x)/p12.dt)",
-        "Eq(p01.v_av.x, p0.vel.x/2 + p1.vel.x/2)",
+    ]
+
+
+def test_constant_acceleration_of_an_edge() -> None:
+    assert [str(eq) for eq in m01.constant_acceleration()] == [
+        "Eq(m01.v_av.x, m0.vel.x/2 + m1.vel.x/2)",
+    ]
+    p12 = Particle("p", 3, X).edge(1, 2)
+    assert [str(eq) for eq in p12.constant_acceleration()] == [
         "Eq(p12.v_av.x, p1.vel.x/2 + p2.vel.x/2)",
+    ]
+    # One per axis, x then y.
+    assert [str(eq) for eq in Particle("d", 2, XY).edge(0, 1).constant_acceleration()] == [
+        "Eq(d01.v_av.x, d0.vel.x/2 + d1.vel.x/2)",
+        "Eq(d01.v_av.y, d0.vel.y/2 + d1.vel.y/2)",
     ]
 
 
 def test_kinematics_renamed_back_are_the_old_codes() -> None:
+    def with_constant_acceleration(particle: Particle[Any]) -> list[sp.Eq]:
+        """The particle's kinematics, then each edge's 2.10, in edge order."""
+        edges = particle.edges
+        return particle.kinematics() + [eq for e in edges for eq in e.constant_acceleration()]
+
     # The old physics code's output, written out: equarium's copy of that
     # code went in increment 007 of the 004 series. The first four strings
     # are the old library's own, from its venv in combine-equations.py
-    # (2026-11-08). The rest are the copy's, printed before it went.
-    assert [old_str(eq) for eq in m.kinematics()] == [
+    # (2026-11-08). The rest are the copy's, printed before it went. The
+    # old kinematics ended with every edge's 2.10, which is now each edge's
+    # `constant_acceleration()`. Added after the kinematics, in edge order,
+    # they give the old equations in the old order, so the strings didn't
+    # change.
+    assert [old_str(eq) for eq in with_constant_acceleration(m)] == [
         "Eq(dt_m_0_1, -m_0_t + m_1_t)",
         "Eq(v_av_x_m_0_1, (-m_0_x + m_1_x)/dt_m_0_1)",
         "Eq(a_x_m_0_1, (-m_0_v_x + m_1_v_x)/dt_m_0_1)",
         "Eq(v_av_x_m_0_1, m_0_v_x/2 + m_1_v_x/2)",
     ]
-    assert [old_str(eq) for eq in Particle("m", 2, Y).kinematics()] == [
+    assert [old_str(eq) for eq in with_constant_acceleration(Particle("m", 2, Y))] == [
         "Eq(dt_m_0_1, -m_0_t + m_1_t)",
         "Eq(v_av_y_m_0_1, (-m_0_y + m_1_y)/dt_m_0_1)",
         "Eq(a_y_m_0_1, (-m_0_v_y + m_1_v_y)/dt_m_0_1)",
         "Eq(v_av_y_m_0_1, m_0_v_y/2 + m_1_v_y/2)",
     ]
     # Three states in XY, which no example has: for each edge, x then y.
-    assert [old_str(eq) for eq in Particle("m", 3, XY).kinematics()] == [
+    assert [old_str(eq) for eq in with_constant_acceleration(Particle("m", 3, XY))] == [
         "Eq(dt_m_0_1, -m_0_t + m_1_t)",
         "Eq(dt_m_1_2, -m_1_t + m_2_t)",
         "Eq(v_av_x_m_0_1, (-m_0_x + m_1_x)/dt_m_0_1)",
@@ -262,6 +284,30 @@ def test_kinematics_renamed_back_are_the_old_codes() -> None:
         "Eq(v_av_x_m_1_2, m_1_v_x/2 + m_2_v_x/2)",
         "Eq(v_av_y_m_1_2, m_1_v_y/2 + m_2_v_y/2)",
     ]
+
+
+def test_the_kinematics_alone_leave_2_4s_position_open() -> None:
+    # Example 2.4's part (a) without `m01.constant_acceleration()`: the
+    # book's 2.4, the average acceleration, gives the velocity, but only
+    # its 2.10, constant acceleration, gives the position.
+    part_a = (
+        System()
+        .add(*m.kinematics())
+        .known(m0.t, 0 * second)
+        .known(m01.a.x, 4 * meter / second**2)
+        .known(m0.pos.x, 5 * meter)
+        .known(m0.vel.x, 15 * meter / second)
+        .eliminate_zeros()
+        .known(m1.t, 2 * second)
+        .want(m1.pos.x, m1.vel.x)
+    )
+    analysis = part_a.analyze()
+    assert analysis.connected == {m01.dt, m01.v_av.x, m1.pos.x, m1.vel.x}
+    assert analysis.connected_labels == ("1", "2", "3")  # 4 unknowns in 3 equations
+    assert str(part_a.solve(m1.vel.x).number(m1.vel.x)) == "23.0*meter/second"
+    position = part_a.solve(m1.pos.x)
+    assert position.roots == ()
+    assert position.reason == "sp.solve left m1.pos.x undetermined"
 
 
 # Vectors: the arithmetic, `.eq` and polar
@@ -400,7 +446,13 @@ def test_the_projectile_setup_goes_into_a_system() -> None:
     d = Particle("d", 2, XY)
     d01 = d.edge(0, 1)
     flight = d01.projectile(g)
-    system = System().add(*d.kinematics()).add(*flight.equations).known(flight.knowns)
+    system = (
+        System()
+        .add(*d.kinematics())
+        .add(*d01.constant_acceleration())
+        .add(*flight.equations)
+        .known(flight.knowns)
+    )
     assert [e.label for e in system.equations[-2:]] == ["8", "9"]
     assert dict(system.knowns) == {d01.a.x: 0}
     # The zero goes into (4): 0 = (v1x - v0x)/Δt.
@@ -461,13 +513,13 @@ def test_newton_of_a_later_edge_and_of_a_vector_expression() -> None:
 
 
 def test_newton_with_the_kinematics_needs_no_link() -> None:
-    # 4.5's shape: (3), the book's 2.7, and (5), Newton's second law, have
+    # 4.5's shape: (3), the book's 2.4, and (5), Newton's second law, have
     # the same acceleration, so f.x comes out with no equation to link them.
     b = Particle("b", 2, X)
     b0, b1 = b.states
     b01 = b.edge(0, 1)
     f = Vector("f", X)
-    system = System().add(*b.kinematics()).add(*b01.newton(f))
+    system = System().add(*b.kinematics()).add(*b01.constant_acceleration()).add(*b01.newton(f))
     assert [e.label for e in system.equations] == ["1", "2", "3", "4", "5"]
     assert str(system.equation("3").eq) == "Eq(b01.a.x, (-b0.vel.x + b1.vel.x)/b01.dt)"
     assert str(system.equation("5").eq) == "Eq(f.x, b.mass*b01.a.x)"

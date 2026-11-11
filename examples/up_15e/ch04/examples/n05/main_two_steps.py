@@ -33,7 +33,8 @@ b01 = b.edge(0, 1)
 # Step 1: the acceleration, from the kinematics.
 slide = (
     System()
-    .add(*b.kinematics())  # (1) to (4)
+    .add(*b.kinematics())  # (1) to (3)
+    .add(*b01.constant_acceleration())  # (4): a constant friction force
     .known(b0.t, 0)  # s
     .known(b0.pos.x, 0)  # m
     .known(b1.pos.x, 1.0)  # m

@@ -47,7 +47,8 @@ flight = m01.projectile(g)
 
 cliff = (
     System()
-    .add(*m.kinematics())  # (1) to (7)
+    .add(*m.kinematics())  # (1) to (5)
+    .add(*m01.constant_acceleration())  # (6), (7): projectile motion, only gravity
     .add(*flight.equations)  # (8), (9): projectile motion
     .known(flight.knowns)  # m01.a.x = 0
     .known({m0.pos.x: 0, m0.pos.y: 0, m0.t: 0})  # from the edge, at t = 0

@@ -33,7 +33,7 @@ p12 = p.edge(1, 2)
 
 walk = (
     System()
-    .add(*p.kinematics())
+    .add(*p.kinematics())  # averages only: no constant acceleration
     .add(*eq_flat(
         dx_p_0_1, p1.pos.x - p0.pos.x,
         dx_p_1_2, p2.pos.x - p1.pos.x,

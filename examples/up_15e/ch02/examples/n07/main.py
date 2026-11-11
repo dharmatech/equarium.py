@@ -28,6 +28,7 @@ b01 = b.edge(0, 1)
 ball = (
     System()
     .add(*b.kinematics())
+    .add(*b01.constant_acceleration())  # free fall: a constant g
     .known({b0.t: 0, b0.pos.y: 0})  # thrown at t = 0, from the railing
     .eliminate_zeros()
     .known(b0.vel.y, 15.0)  # m/s

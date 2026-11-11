@@ -37,8 +37,11 @@ m_v = sp.Symbol("m_v")
 
 setup = (
     System()
-    .add(*m.kinematics())  # (1) to (4)
-    .add(*p.kinematics())  # (5) to (8)
+    .add(*m.kinematics())  # (1) to (3)
+    # The motorist at a constant 15 m/s: a constant zero acceleration.
+    .add(*m01.constant_acceleration())  # (4)
+    .add(*p.kinematics())  # (5) to (7)
+    .add(*p01.constant_acceleration())  # (8): a constant 3.0 m/s²
     # The motorist's speed is constant: (9) and (10).
     .add(sp.Eq(m0.vel.x, m_v), sp.Eq(m1.vel.x, m_v))
     .known(m_v, 15)  # m/s
