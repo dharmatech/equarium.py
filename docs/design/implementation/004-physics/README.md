@@ -7,8 +7,8 @@ seven increments are done and reviewed: 001, symbols and chapter 2,
 The rename is complete, polar is one way everywhere, 2.5 and 3.10 link
 through events, 3.6 to 3.10 use the projectile setup, and 4.4 and 4.5
 use Newton on the edge. The old physics code's copy is deleted, and the
-version is 0.2.0. Merging into `master`, tagging `v0.2.0` and pushing
-are the user's calls.
+version is 0.2.0. The branch merged into `master` on 2026-11-11.
+Tagging `v0.2.0` and pushing are the user's calls.
 
 The physics layer's redesign: structured symbols that keep their
 meaning, one naming rule, the dimension set once, and helpers for
@@ -25,8 +25,8 @@ doesn't change. It runs as a charter, a spec and checkpoints.
 
 **Where:** branch `2026-11-08-physics-redesign`, from tag `v0.1.0`
 (`3370e5d`), which is the core with the old physics code. Every commit
-of this series goes on the branch. It merges into `master` at the end,
-as version 0.2.0, when the user chooses.
+of this series goes on the branch. It merged into `master` on
+2026-11-11, as version 0.2.0.
 
 The spec was designed from the charter in its own conversation. To
 implement a checkpoint, give a new conversation this, with the
@@ -69,12 +69,12 @@ The spec has them all. The ones the user settled (2026-11-08):
 ## What's next
 
 All seven increments are done and reviewed, so no checkpoint comes
-next. What is left is the user's three calls:
+next. The branch merged into `master` on 2026-11-11, with `--no-ff`,
+after the user's hands-on review. Two experiments merged into the
+branch before that, setup sketches and transcript mode, each with its
+notes in `docs/experiments/`. What is left is the user's two calls:
 
-- **The merge** of the branch `2026-11-08-physics-redesign` into
-  `master`. `master` is at `v0.1.0` (`3370e5d`), an ancestor of the
-  branch, so the merge can be a fast-forward.
-- **The tag** `v0.2.0`, on the merged commit.
+- **The tag** `v0.2.0`, on the merge commit.
 - **The push:** `master`, the tag `v0.2.0`, and the tag `v0.1.0` if it
   is still local.
 

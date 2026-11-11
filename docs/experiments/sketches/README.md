@@ -16,7 +16,8 @@ agrees with the code.
 **Where:** it began on its own branch, `2026-11-09-generated-sketches`,
 from `2026-11-08-physics-redesign` at `107a670`, in its own worktree so
 the physics branch's review wasn't disturbed. It merged into the
-physics branch on 2026-11-10, and goes to master with it.
+physics branch on 2026-11-10, and into `master` with it on
+2026-11-11.
 
 ## What there is
 

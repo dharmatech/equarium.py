@@ -19,7 +19,9 @@ display methods, which many libraries already have.
 
 **Where:** branch `2026-11-11-transcript-mode`, from
 `2026-11-08-physics-redesign` at `0d0949a`, in its own worktree,
-`equarium-transcript/`, so the physics branch's review isn't disturbed.
+`equarium-transcript/`, so the physics branch's review wasn't disturbed.
+It merged into the physics branch, and with it into `master`, on
+2026-11-11.
 
 ## What there is
 
