@@ -1,7 +1,8 @@
 # 005 constant acceleration
 
 **Status:** Checkpoint 001 done at `3788772` (2026-11-11). Checkpoint
-002, the audit, written (2026-11-11), not built.
+002, the audit, built at this commit (2026-11-11), not yet reviewed.
+The series' work is done once 002 is reviewed.
 
 The physics layer's kinematics equations assume constant acceleration
 on every edge, without saying so. This series makes the assumption a
@@ -101,6 +102,28 @@ on every edge, whether its problem has it or not.
    checkpoint is built in a fresh conversation and reviewed by the user
    before the next is written.
 
+## The audit
+
+Checkpoint 002's table has each problem, what the book says about its
+acceleration, and the verdict. Each kept
+`constant_acceleration()` has the problem's reason in a comment next to
+it, such as "a constant 4.0 m/s²", "free fall" or "projectile motion".
+
+- **Three exercises lost the call: Exercises 2.1, 2.3 and 2.5,** 7
+  calls in 4 modules. They're about average velocities and speeds, and
+  say nothing about the acceleration, so their edges have only their
+  averages. Each of their `kinematics()` lines says so in a comment.
+  The other 13 problems keep theirs: 18 calls in 15 modules.
+- **No result changed.** Those exercises only ever used the averages,
+  the book's 2.2. Every `BOOK` answer still matches, and the record's
+  rows for those modules have the same formulas and numbers. Their
+  equations after the kinematics have lower labels now, but nothing
+  refers to those labels.
+- **Exercise 2.23 keeps the call without saying "constant".** It asks
+  for the minimum stopping distance with the deceleration never over
+  250 m/s², and the shortest stop is the one that decelerates at
+  250 m/s² all the way: the assumption is implied by the question.
+
 ## Not in this series
 
 - **The written-out versions and the core's tests**, such as
@@ -129,7 +152,7 @@ separate, and not merged yet.
 | # | Checkpoint | Status |
 |---|---|---|
 | 001 | [explicit constant acceleration](checkpoints/001-explicit-constant-acceleration.md) | Done at `3788772` (2026-11-11) |
-| 002 | [the audit](checkpoints/002-the-audit.md) | Written (2026-11-11) |
+| 002 | [the audit](checkpoints/002-the-audit.md) | Built (2026-11-11), not yet reviewed |
 
 The 19 modules that call `kinematics()` today, which 002 audits, are
 listed in checkpoint 001.

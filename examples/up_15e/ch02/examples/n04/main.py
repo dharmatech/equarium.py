@@ -31,7 +31,7 @@ m01 = m.edge(0, 1)  # the interval from state 0 to state 1
 motorcycle = (
     System()
     .add(*m.kinematics())
-    .add(*m01.constant_acceleration())
+    .add(*m01.constant_acceleration())  # a constant 4.0 m/s²
     .known(m0.t,      0 * second)
     .known(m01.a.x,   4 * meter / second**2)
     .known(m0.pos.x,  5 * meter)

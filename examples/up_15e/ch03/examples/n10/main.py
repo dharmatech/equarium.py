@@ -55,7 +55,7 @@ flight = d01.projectile(g)
 dart_start = (
     System()
     .add(*d.kinematics())  # (1) to (5)
-    .add(*d01.constant_acceleration())  # (6), (7)
+    .add(*d01.constant_acceleration())  # (6), (7): projectile motion, only gravity
     .add(*d0.vel.from_polar())  # (8), (9)
     .add(*flight.equations)  # (10), (11): projectile motion
     .known(flight.knowns)  # d01.a.x = 0
@@ -82,7 +82,7 @@ fall = m01.projectile(g)
 monkey_start = (
     System()
     .add(*m.kinematics())  # (1) to (5)
-    .add(*m01.constant_acceleration())  # (6), (7)
+    .add(*m01.constant_acceleration())  # (6), (7): projectile motion, only gravity
     .add(*eq_flat(m0.pos.x, D, m0.pos.y, D * sp.tan(d0.vel.angle)))  # (8), (9)
     .add(*fall.equations)  # (10), (11): projectile motion
     .known(D)

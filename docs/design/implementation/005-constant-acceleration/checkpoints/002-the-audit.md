@@ -1,6 +1,6 @@
 # constant acceleration 002: the audit
 
-**Status:** Written (2026-11-11), not built.
+**Status:** Built at this commit (2026-11-11), not yet reviewed.
 
 If you've been told to read this file, this is the whole assignment.
 Build it, check it, commit it, report, and stop.

@@ -26,7 +26,7 @@ c01 = c.edge(0, 1)
 coin = (
     System()
     .add(*c.kinematics())
-    .add(*c01.constant_acceleration())
+    .add(*c01.constant_acceleration())  # free fall: a constant g
     .known({c0.t: 0, c0.vel.y: 0, c0.pos.y: 0})  # dropped from rest, at the origin
     .eliminate_zeros()
     .known(c01.a.y, -9.8)  # m/s²

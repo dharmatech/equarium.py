@@ -37,9 +37,10 @@ m_v = sp.Symbol("m_v")
 start = (
     System()
     .add(*m.kinematics())  # (1) to (3)
+    # The motorist at a constant 15 m/s: a constant zero acceleration.
     .add(*m01.constant_acceleration())  # (4)
     .add(*p.kinematics())  # (5) to (7)
-    .add(*p01.constant_acceleration())  # (8)
+    .add(*p01.constant_acceleration())  # (8): a constant 3.0 m/s²
 )
 
 links = (

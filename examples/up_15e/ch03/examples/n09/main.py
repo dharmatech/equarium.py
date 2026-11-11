@@ -40,7 +40,7 @@ flight = b01.projectile(g)
 window = (
     System()
     .add(*b.kinematics())  # (1) to (5)
-    .add(*b01.constant_acceleration())  # (6), (7)
+    .add(*b01.constant_acceleration())  # (6), (7): projectile motion, only gravity
     .add(*flight.equations)  # (8), (9): projectile motion
     .known(flight.knowns)  # b01.a.x = 0
     .known({b0.pos.x: 0, b0.t: 0, b1.pos.y: 0})  # b1.pos.y: it hits the ground

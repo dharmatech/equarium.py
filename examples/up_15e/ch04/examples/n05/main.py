@@ -37,7 +37,7 @@ f = Vector("f", X)  # the friction force
 counter = (
     System()
     .add(*b.kinematics())  # (1) to (3)
-    .add(*b01.constant_acceleration())  # (4)
+    .add(*b01.constant_acceleration())  # (4): a constant friction force
     .known(b0.t, 0)  # s
     .known(b0.pos.x, 0)  # m
     .known(b1.pos.x, 1.0)  # m
