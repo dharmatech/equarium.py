@@ -37,8 +37,6 @@ What we drew on knowingly while designing it, in November 2026:
 
 ## Related work
 
-Found after transcript mode was built, in a search on 2026-11-11:
-
 - **[reprexlite](https://jayqi.github.io/reprexlite/stable/)**, the
   closest. It runs Python code and shows its results as `#>` comments
   below the lines that made them, so the output can be pasted and run
