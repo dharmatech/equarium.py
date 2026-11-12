@@ -44,10 +44,6 @@ What we drew on knowingly while designing it, in November 2026:
   Overflow, so it takes code from your text editor, a string, or an
   IPython or Jupyter cell, and in its examples an assignment shows
   nothing, as in Python's REPL. To share a snippet, use reprexlite.
-
-  We found it after building transcript mode. But transcript mode was
-  designed together with an AI assistant, whose training data may well
-  include reprexlite, so reprexlite may have shaped it too, indirectly.
 - **[reprexpy](https://github.com/crew102/reprexpy)**, a Python port of
   reprex closer to the original's workflow: it runs the code in a
   Jupyter kernel and works through the clipboard.
