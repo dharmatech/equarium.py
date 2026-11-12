@@ -71,8 +71,9 @@ The spec has them all. The ones the user settled (2026-11-08):
 All seven increments are done and reviewed, so no checkpoint comes
 next. The branch merged into `master` on 2026-11-11, with `--no-ff`,
 after the user's hands-on review. Two experiments merged into the
-branch before that, setup sketches and transcript mode, each with its
-notes in `docs/experiments/`. The merge commit is tagged `v0.2.0`
+branch before that: setup sketches, with its notes in
+`docs/experiments/sketches/`, and transcript mode, kept as a feature
+since, with its docs in `docs/transcripts/`. The merge commit is tagged `v0.2.0`
 (2026-11-11). What is left is the user's call:
 
 - **The push:** `master`, the tag `v0.2.0`, and the tag `v0.1.0` if it

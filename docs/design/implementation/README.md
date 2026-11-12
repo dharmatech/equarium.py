@@ -55,8 +55,9 @@ long enough to be compacted.
   the old physics code. Done: every example runs on the new layer, the
   old physics code's copy is deleted, and the version is 0.2.0. The
   branch merged into `master` on 2026-11-11, with two experiments
-  merged into it first: setup sketches and transcript mode, each with
-  its notes in `docs/experiments/`.
+  merged into it first: setup sketches, with its notes in
+  `docs/experiments/sketches/`, and transcript mode, kept as a feature
+  since, with its docs in `docs/transcripts/`.
 - **005 constant acceleration:** `m.kinematics()` assumed constant
   acceleration on every edge, through the book's 2.10, without saying
   so. It gives only the definitions, which hold for any motion, and

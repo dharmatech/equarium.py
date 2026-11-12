@@ -83,6 +83,8 @@ uv run python -m examples.up_15e.ch02.examples.n04.main
   numbered folder per series of changes, from the
   [project setup](docs/design/implementation/000-project-setup/README.md)
   on.
+- Transcript mode: [how it works](docs/transcripts/README.md),
+  and its [influences and related work](docs/transcripts/related-work.md).
 
 ## Development
 

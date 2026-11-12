@@ -1,6 +1,6 @@
 """A plain Python script, for transcript mode:
 
-    uv run python -m equarium.transcript docs/experiments/transcripts/basics.py
+    uv run python -m equarium.transcript docs/transcripts/basics.py
 """
 
 # A value, and an expression with it.

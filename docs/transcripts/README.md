@@ -1,11 +1,12 @@
-# Transcript mode (experiment)
+# Transcript mode
 
-**Status:** a prototype (2026-11-11): the terminal transcript, then the
-results written into the script itself, on every save, then three ways
-to show a step: only what it changed, the whole value, or the whole
-value with its changes marked. This is an
-experiment, not a series. It takes a series number only if it's
-adopted.
+**Status:** a feature of equarium, kept (2026-11-12). It began as an
+experiment on 2026-11-11: the terminal transcript, then the results
+written into the script itself, on every save, then three ways to show
+a step: only what it changed, the whole value, or the whole value with
+its changes marked. Its notes moved here from `docs/experiments/` when
+it was kept. Where its ideas came from, and similar tools:
+[influences and related work](related-work.md).
 
 On paper, a student's worksheet keeps each step next to its result, and
 they can read it back later. A script keeps only the steps: its results
@@ -19,7 +20,7 @@ It should work for any Python script, not only equarium's. So the engine
 knows nothing about equarium. A library takes part through IPython's
 display methods, which many libraries already have.
 
-**Where:** branch `2026-11-11-transcript-mode`, from
+**History:** it began on its own branch, `2026-11-11-transcript-mode`, from
 `2026-11-08-physics-redesign` at `0d0949a`, in its own worktree,
 `equarium-transcript/`, so the physics branch's review wasn't disturbed.
 It merged into the physics branch, and with it into `master`, on
@@ -118,10 +119,10 @@ Run it on a file, or on a module as `python -m` does, and write the
 results into it, once or on every save:
 
 ```bash
-uv run python -m equarium.transcript docs/experiments/transcripts/basics.py
+uv run python -m equarium.transcript docs/transcripts/basics.py
 uv run python -m equarium.transcript -m examples.up_15e.ch02.examples.n04.main
-uv run python -m equarium.transcript --in-place docs/experiments/transcripts/basics.py
-uv run python -m equarium.transcript --watch docs/experiments/transcripts/basics.py
+uv run python -m equarium.transcript --in-place docs/transcripts/basics.py
+uv run python -m equarium.transcript --watch docs/transcripts/basics.py
 ```
 
 The `#> ` mark is the convention of R's `reprex`. It keeps a transcript

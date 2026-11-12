@@ -27,7 +27,7 @@ from equarium.transcript import (
 )
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
-BASICS = Path("docs/experiments/transcripts/basics.py")
+BASICS = Path("docs/transcripts/basics.py")
 N04 = Path("examples/up_15e/ch02/examples/n04/main.py")
 N04_WATCH = Path("examples/up_15e/ch02/examples/n04/main_incremental_watch.py")
 
