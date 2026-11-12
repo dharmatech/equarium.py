@@ -29,6 +29,7 @@ long enough to be compacted.
 | 003 | [example layout](003-example-layout/README.md) | README | Done (2026-11-08) |
 | 004 | [physics](004-physics/README.md) | charter, spec, checkpoints | Done (2026-11-09): 7 of 7 increments done; merged into `master` (2026-11-11) as version 0.2.0 |
 | 005 | [constant acceleration](005-constant-acceleration/README.md) | README, checkpoints | Done (2026-11-11): 2 of 2 checkpoints reviewed; merged into `master` |
+| 006 | [transcript mode](006-transcript-mode/README.md) | README | Done (2026-11-12): kept as a feature, with a [user guide](../../transcripts/README.md) |
 
 - **001 example catalog:** every example and exercise in
   combine-equations.py, with the problem, the textbook's answers, the
@@ -69,3 +70,9 @@ long enough to be compacted.
   with no result changed, and the 13 other problems keep theirs, each
   with the problem's reason in a comment. Merged into `master` on
   2026-11-11.
+- **006 transcript mode:** runs any Python script and writes each
+  statement's results under it as `#> ` comments, in the terminal or in
+  the script itself, on every save. Built on 2026-11-11 as an
+  experiment, over several conversations, and kept on 2026-11-12. Its
+  README is the design record; how to use it is in
+  [`docs/transcripts/`](../../transcripts/README.md).

@@ -2,9 +2,8 @@
 
 Transcript mode runs a Python script and writes each statement's results
 under it as `#> ` comments, once or on every save. The
-[transcript notes](README.md) say how it works. Few of its ideas are
-new, and this page credits where they came from and points to similar
-tools.
+[guide](README.md) says how to use it. Few of its ideas are new, and
+this page credits where they came from and points to similar tools.
 
 ## Influences
 

@@ -10,7 +10,8 @@ and print its source as written, with each statement's results under it.
 and `--watch` does that again every time the script is saved, so that
 the script is its own transcript in the editor.
 
-Its docs are in `docs/transcripts/`. This module imports
+Its guide is in `docs/transcripts/`, and its design record in
+`docs/design/implementation/006-transcript-mode/`. This module imports
 nothing from equarium, so it works for any Python script, and can move to
 a package of its own.
 
