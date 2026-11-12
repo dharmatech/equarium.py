@@ -25,9 +25,15 @@ What we drew on knowingly while designing it, in November 2026:
   good in IPython looks good in a transcript. equarium's systems and
   solutions take part that way.
 - **[seeing_is_believing](https://github.com/JoshCheek/seeing_is_believing)**,
-  for Ruby. It runs a file and annotates each line with its result, as a
-  comment. Writing the results into the script itself, `--in-place` and
-  `--watch`, comes from there.
+  for Ruby. It runs a program and
+  [prints it back](https://github.com/JoshCheek/seeing_is_believing/wiki/Command-Line-Usage)
+  with each line's result as a `# =>` comment at the end of the line.
+  It doesn't write the file: its
+  [editor integrations](https://github.com/JoshCheek/seeing_is_believing/wiki/Editor-Integration)
+  replace the text being edited with that output, and `--clean` takes
+  the comments out again. Results that live in the code itself come
+  from there. `--in-place` and `--watch` go one step further and write
+  them into the file.
 
 ## Related work
 
