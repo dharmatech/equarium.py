@@ -30,6 +30,7 @@ ANSI = re.compile(r"\x1b\[[0-9;]*m")
 BASICS = Path("docs/transcripts/basics.py")
 N04 = Path("examples/up_15e/ch02/examples/n04/main.py")
 N04_WATCH = Path("examples/up_15e/ch02/examples/n04/main_incremental_watch.py")
+N05_WATCH = Path("examples/up_15e/ch02/examples/n05/main_inc_watch.py")
 
 
 def transcribe(source: str, rule: transcript.Rule = "worksheet") -> str:
@@ -223,12 +224,29 @@ def test_basics_has_its_current_results_in_it() -> None:
     assert render(run_path(str(BASICS)), color=False, unrun=True) == BASICS.read_text()
 
 
-def test_2_4_built_up_has_its_current_results_in_it() -> None:
+def has_results(path: Path) -> bool:
+    """Whether the file has a transcript's results written into it."""
+    text = path.read_text()
+    return without_results(text) != text
+
+
+def worksheets() -> list[Path]:
+    """Every example with its results written into it, by `--watch` or
+    `--in-place`, whatever the file is called."""
+    return sorted(path for path in Path("examples").rglob("*.py") if has_results(path))
+
+
+@pytest.mark.parametrize("path", worksheets(), ids=str)
+def test_a_worksheet_has_its_current_results_in_it(path: Path) -> None:
     # Written by `--watch`, as the default, marked display. A change to
     # the code, or to how a result shows, without rerunning it fails here:
     # rerun `--in-place` on it.
-    written = N04_WATCH.read_text()
-    assert render(run_path(str(N04_WATCH)), color=False, unrun=True) == written
+    assert render(run_path(str(path)), color=False, unrun=True) == path.read_text()
+
+
+def test_the_worksheets_are_found() -> None:
+    assert {N04_WATCH, N05_WATCH} <= set(worksheets())
+    assert N04 not in worksheets()  # its results are hand-written comments
 
 
 def test_the_transcript_module_imports_nothing_from_equarium() -> None:

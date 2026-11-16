@@ -96,6 +96,10 @@ readability, without leaving a plain `.py` file and the editor.
   pairs like lines. A step that changes nothing shows `(no change)`.
   Anything else shows whole, and so does a name alone on a line. A step
   hidden by `;` isn't seen, so the next shows both.
+- **Written results are checked.** A test runs every example with `#> `
+  lines in it, whatever the file is called, and `basics.py`, and checks
+  that their results are what they give today. When it fails, rerun the
+  file `--in-place`.
 - **The engine imports nothing from equarium,** and a test checks that,
   so it can become a package of its own. It uses only the standard
   library.
@@ -108,7 +112,7 @@ readability, without leaving a plain `.py` file and the editor.
 - `tests/test_transcript.py`: the rules on small scripts, in place, the
   watch, the step effects, and 2.4. Without its `#> ` lines, a
   transcript is the script, and `docs/transcripts/basics.py` holds its
-  current results.
+  current results, as does every example with results written into it.
 - `docs/transcripts/`: the guide, `basics.py` and the related work.
 
 ## What the work found
@@ -154,8 +158,11 @@ readability, without leaving a plain `.py` file and the editor.
   to the script. The REPL rule is what Python users know.
 - **Other objects.** `BookNotation` and a projectile's `Setup` still
   print by `repr`. They get short displays when an example shows one.
-- **The examples' `__main__` blocks and result comments.** Drop them
-  once a transcript is how an example's results are read?
+- **The examples' `__main__` blocks and result comments.** A worksheet
+  version has neither, and stays in the code's notation, without the
+  book's (the user, 2026-11-15): a `__main__` block would run in the
+  transcript too, and print what's already there. Should `main.py` drop
+  them as well?
 - **A committed transcript** beside `main.py`, for reading on GitHub:
   Markdown, since GitHub renders it and shows an `.html` file as source.
   Colors could come from GitHub's math, `\color{green}{x_0}`, which would
@@ -165,9 +172,6 @@ readability, without leaving a plain `.py` file and the editor.
 - **The editor.** Is VS Code's reload on change smooth enough, or does
   it want an extension that runs the script on save and edits the buffer
   itself? An extension could also color the results again.
-- **Results that go stale.** A script with results in it can be edited
-  without being run. A test could check that a committed script's
-  results are what it gives today, as one does for `basics.py`.
 - **Slow scripts.** Every save runs the whole script. Running only from
   the first statement that changed is where notebooks' complexity
   starts.
@@ -195,3 +199,5 @@ All on 2026-11-11 unless dated:
 - 2026-11-12: kept, with its docs moved from `docs/experiments/` to
   `docs/transcripts/` and the related work written, `3958237`; then
   split into the guide and this record.
+- 2026-11-16: systems lined up and wrapped, `4029ca6`; then 2.5's
+  worksheet, with one test for every example's written results.
