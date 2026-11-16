@@ -30,7 +30,9 @@ So a library can make its objects read well in a transcript by giving
 them `_repr_pretty_`, the same method IPython uses. equarium does:
 
 - **A `System`** prints what `show()` prints: its equations, knowns,
-  wants, connected unknowns and ready equations.
+  wants, connected unknowns and ready equations. The equation labels
+  are right-aligned and the `=` signs line up, and a long list wraps
+  to fit 79 columns in the file.
 - **A `Solution`** prints each want's formula, then its number:
 
   ```

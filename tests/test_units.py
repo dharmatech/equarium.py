@@ -52,9 +52,11 @@ stopped = airbag.want(b1x).solve()
 
 def test_2_23_render() -> None:
     lines = render(airbag, symbol=plain).splitlines()
-    assert [line for line in lines if line.startswith("knowns: ")] == [
-        "knowns: b_a_x = -250*meter/second**2, b0vx = 105*kilometer/hour,"
-        " b1vx = 0, b0t = 0, b0x = 0"
+    start = next(i for i, line in enumerate(lines) if line.startswith("knowns: "))
+    end = next(i for i, line in enumerate(lines) if line.startswith("wants: "))
+    assert lines[start:end] == [
+        "knowns: b_a_x = -250*meter/second**2, b0vx = 105*kilometer/hour, b1vx = 0,",
+        "        b0t = 0, b0x = 0",
     ]
 
 

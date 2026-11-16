@@ -3,7 +3,7 @@ import re
 import sympy as sp
 
 from equarium import Solution, System
-from equarium.display import plain, render, render_history, render_solution
+from equarium.display import WIDTH, plain, render, render_history, render_solution, wrapped
 from examples.up_15e.ch02.examples.n04.main_handwritten import sol_a
 from examples.up_15e.ch02.examples.n05.main_handwritten_step_by_step import m_a, speeds
 
@@ -13,8 +13,8 @@ from kinematics_005 import derived
 D, g = sp.symbols("D g")
 
 PART_A = """\
-(2.2)  v_av = (-x0 + x1)/t1
-(2.7)  a = (-v0 + v1)/t1
+ (2.2)  v_av = (-x0 + x1)/t1
+ (2.7)  a    = (-v0 + v1)/t1
 (2.10)  v_av = v0/2 + v1/2
 knowns: t0 = 0, x0 = 5, v0 = 15, a = 4, t1 = 2
 wants: x1, v1
@@ -49,14 +49,14 @@ def test_render_part_a() -> None:
 def test_render_terminal() -> None:
     rendered = render(part_a)
     assert rendered.splitlines()[0] == (
-        "(2.2)  v_av = (-\x1b[32mx0\x1b[0m + \x1b[31mx1\x1b[0m)/\x1b[32mt1\x1b[0m"
+        " (2.2)  v_av = (-\x1b[32mx0\x1b[0m + \x1b[31mx1\x1b[0m)/\x1b[32mt1\x1b[0m"
     )
     assert uncolored(rendered) == PART_A
 
 
 def test_render_before_eliminate_zeros() -> None:
     lines = render(pre, symbol=plain).splitlines()
-    assert lines[0] == "(2.2)  v_av = (-x0 + x1)/(-t0 + t1)"
+    assert lines[0] == " (2.2)  v_av = (-x0 + x1)/(-t0 + t1)"
     assert lines[3] == "knowns: t0 = 0, x0 = 5, v0 = 15, a = 4"
 
 
@@ -72,6 +72,39 @@ def test_render_knowns_with_no_number() -> None:
     assert render(System().known(D).known(g, 9.8), symbol=plain) == (
         "knowns: D, g = 9.8\nwants: none\nconnected: none\nready: none"
     )
+
+
+def test_the_equals_signs_line_up_up_to_the_limit() -> None:
+    # A left side wider than ALIGN_LIMIT, 16, isn't padded, and doesn't
+    # push the others' `=` to the right.
+    wide, ab_cd = sp.symbols("v_average_over_01 ab_cd")
+    system = System().add(sp.Eq(x1, x0), sp.Eq(wide, v0), sp.Eq(ab_cd, t1))
+    assert render(system, symbol=plain).splitlines()[:3] == [
+        "(1)  x1    = x0",
+        "(2)  v_average_over_01 = v0",
+        "(3)  ab_cd = t1",
+    ]
+
+
+def test_a_long_list_wraps_under_its_first_item() -> None:
+    syms = [sp.Symbol(f"k{i:02}") for i in range(20)]
+    knowns = render(System().known(dict.fromkeys(syms, 100)), symbol=plain).splitlines()[:-3]
+    assert knowns == [
+        "knowns: k00 = 100, k01 = 100, k02 = 100, k03 = 100, k04 = 100, k05 = 100,",
+        "        k06 = 100, k07 = 100, k08 = 100, k09 = 100, k10 = 100, k11 = 100,",
+        "        k12 = 100, k13 = 100, k14 = 100, k15 = 100, k16 = 100, k17 = 100,",
+        "        k18 = 100, k19 = 100",
+    ]
+    assert all(len(line) <= WIDTH for line in knowns)
+
+
+def test_an_item_too_wide_for_a_line_gets_its_own() -> None:
+    wide = "w" * WIDTH
+    assert wrapped("ready: ", ["(1)", wide, "(2)"]) == [
+        "ready: (1),",
+        f"       {wide},",
+        "       (2)",
+    ]
 
 
 def test_render_history_part_a() -> None:
@@ -120,8 +153,8 @@ def test_render_history_forms() -> None:
 def test_render_origins_after_eliminating() -> None:
     lines = render(derived, symbol=plain, origins=True).splitlines()
     assert lines[:3] == [
-        "(2.2)  v_av_x = a_x*(x_1 - x_2)/(v_1x - v_2x)",
-        "  (2.2) ← (2.2) + (2.7), eliminate dt",
+        " (2.2)  v_av_x = a_x*(x_1 - x_2)/(v_1x - v_2x)",
+        "        (2.2) ← (2.2) + (2.7), eliminate dt",
         "(2.10)  v_av_x = v_1x/2 + v_2x/2",
     ]
     assert lines[3] == "knowns: none"  # nothing under (2.10)
@@ -130,20 +163,21 @@ def test_render_origins_after_eliminating() -> None:
 def test_render_origins_after_eliminating_zeros() -> None:
     lines = render(base, symbol=plain, origins=True).splitlines()
     assert lines[:5] == [
-        "(2.2)  v_av = (-x0 + x1)/t1",
-        "  (2.2) ← (2.2), t0 = 0",
-        "(2.7)  a = (-v0 + v1)/t1",
-        "  (2.7) ← (2.7), t0 = 0",
+        " (2.2)  v_av = (-x0 + x1)/t1",
+        "        (2.2) ← (2.2), t0 = 0",
+        " (2.7)  a    = (-v0 + v1)/t1",
+        "        (2.7) ← (2.7), t0 = 0",
         "(2.10)  v_av = v0/2 + v1/2",
     ]
     # The symbols go through the hook: t0 is a known.
-    assert render(base, origins=True).splitlines()[1] == "  (2.2) ← (2.2), \x1b[32mt0\x1b[0m = 0"
+    origin = render(base, origins=True).splitlines()[1]
+    assert origin == "        (2.2) ← (2.2), \x1b[32mt0\x1b[0m = 0"
 
 
 def test_render_origins_after_isolating() -> None:
     isolated = base.isolate(v1, "2.7")
     lines = render(isolated, symbol=plain, origins=True).splitlines()
-    assert lines[2:4] == ["(2.7)  v1 = a*t1 + v0", "  (2.7) ← (2.7), isolate v1"]
+    assert lines[2:4] == [" (2.7)  v1   = a*t1 + v0", "        (2.7) ← (2.7), isolate v1"]
 
 
 def test_render_without_origins_is_unchanged() -> None:
@@ -151,7 +185,7 @@ def test_render_without_origins_is_unchanged() -> None:
     for system in (derived, base, base.isolate(v1, "2.7")):
         with_origins = render(system, symbol=plain, origins=True).splitlines()
         assert render(system, symbol=plain) == "\n".join(
-            line for line in with_origins if not line.startswith("  ")
+            line for line in with_origins if "←" not in line
         )
 
 

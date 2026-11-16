@@ -32,6 +32,10 @@ readability, without leaving a plain `.py` file and the editor.
 - **The marked display is the default** for a step's effect: the whole
   value, with its changes starred. Of the three displays, the user liked
   it best.
+- **A system lines up** (2026-11-16), as the user laid out 2.5's output
+  by hand: the equation labels right-aligned, so the equations start in
+  one column, the `=` signs in one column too, and a long list of
+  knowns wrapped.
 - **Kept, not an experiment** (2026-11-12), with a user guide in
   `docs/transcripts/` and this record.
 
@@ -60,6 +64,13 @@ readability, without leaving a plain `.py` file and the editor.
   `Particle` `particle m (x): m0, m1`, a `State` its name, an `Edge`
   `m01: m0 → m1`, an `Event` `event meet: m1, q1`, and an `Answer` or a
   `Formula` its check against the book, `✓` or `✗`.
+- **How a system lines up:** the `=` signs line up after left sides up
+  to 16 characters, `ALIGN_LIMIT`. A wider one isn't padded and doesn't
+  move the others, so one long left side doesn't push every equation to
+  the right. The lists wrap at 74 characters, `WIDTH`, so a line fits
+  79 after `#> ` and a mark, and their later lines start under the
+  first item. Widths are counted without colors. An equation's origin
+  starts under the equation.
 - **An error stops the run.** Its traceback, without the engine's own
   frames, is the statement's last result. The terminal transcript ends
   there, and in place, the lines that didn't run stay as they are.
@@ -77,8 +88,11 @@ readability, without leaving a plain `.py` file and the editor.
   calls, attributes and subscripts, and whose new value is of the same
   type and takes more than one line, shows each line marked `* ` new or
   different, `  ` the same, or `- ` gone, in its place. Lines are
-  compared without their colors. Where a run of lines is replaced by as
-  many, each changed in place; where the counts differ, `difflib.ndiff`
+  compared without their colors or their spacing, so a line that only
+  moved, as when (10) widens the labels, isn't marked. Where a run of
+  lines is replaced by as many, each changed in place; where the counts
+  differ, lines that start with the same word pair first, so a list that
+  wraps onto more lines is changed, not gone, and then `difflib.ndiff`
   pairs like lines. A step that changes nothing shows `(no change)`.
   Anything else shows whole, and so does a name alone on a line. A step
   hidden by `;` isn't seen, so the next shows both.
@@ -160,6 +174,9 @@ readability, without leaving a plain `.py` file and the editor.
 - **Notebooks, for comparison.** Jupyter, and VS Code's Interactive
   window, which runs `# %%` cells of a plain `.py` file. Both use
   `_repr_pretty_` already. A `_repr_html_` would color them.
+- **Knowns grouped by owner.** A wrapped list of knowns could give
+  each owner a line, all of `p0`'s together, when they fit. That
+  reorders them from the order they were given in.
 - **Long values.** A value prints whole, on as many lines as it has.
   Shorten long ones, as `reprlib` does?
 - **Where it ends up.** A package of its own, which equarium doesn't

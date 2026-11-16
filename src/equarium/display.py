@@ -5,6 +5,7 @@ calls it from `_print_Symbol`, so symbol names never change and neither
 does SymPy's order of terms.
 """
 
+import re
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Protocol, assert_never
 
@@ -40,6 +41,15 @@ class TextPrinter(Protocol):
 GREEN = "\x1b[32m"
 RED = "\x1b[31m"
 RESET = "\x1b[0m"
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+WIDTH = 74
+"""The widest a system's lists, such as its knowns, run before they wrap:
+79 columns in a transcript, after its `#> ` and a two-character mark."""
+
+ALIGN_LIMIT = 16
+"""The widest left side that the `=` signs line up after. A wider one
+isn't padded, and doesn't push the others' `=` to the right."""
 
 
 def plain(symbol: sp.Symbol, role: Role) -> str:
@@ -85,32 +95,63 @@ def render(system: System, symbol: SymbolHook = terminal, origins: bool = False)
     """One line per equation, then the knowns, the wants, the connected
     unknowns and the equations ready to solve.
 
+    The labels are right-aligned, so the equations start in one column,
+    and their `=` signs line up, for left sides up to `ALIGN_LIMIT` wide.
+    Each list wraps to stay within `WIDTH`, its later lines under its
+    first item.
+
     With `origins`, each derived equation's line is followed by its
-    origin, indented: `  (2.2) ← (2.2) + (2.7), eliminate dt`. Only the
-    origin itself is shown, not its parents' origins.
+    origin, starting under the equation: `(2.2) ← (2.2) + (2.7),
+    eliminate dt`. Only the origin itself is shown, not its parents'
+    origins.
     """
     analysis = analyze(system)
     p = Printer(symbol, analysis)
     lines: list[str] = []
-    for e in system.equations:
-        lines.append(f"({e.label})  {p.equation(e.eq)}")
+    tags = [f"({e.label})" for e in system.equations]
+    tag_width = max(map(len, tags), default=0)
+    sides = [(p.doprint(e.eq.lhs), p.doprint(e.eq.rhs)) for e in system.equations]
+    column = max((w for lhs, _ in sides if (w := width(lhs)) <= ALIGN_LIMIT), default=0)
+    for e, tag, (lhs, rhs) in zip(system.equations, tags, sides, strict=True):
+        pad = " " * max(column - width(lhs), 0)
+        lines.append(f"{tag.rjust(tag_width)}  {lhs}{pad} = {rhs}")
         if origins and isinstance(e.origin, Derived):
-            lines.append("  " + render_origin(e, e.origin, p))
-    lines.append(
-        "knowns: " + listing(p.known(sym, value) for sym, value in system.knowns.items())
-    )
-    lines.append("wants: " + p.symbols(system.wants))
+            lines.append(" " * (tag_width + 2) + render_origin(e, e.origin, p))
+    lines += wrapped("knowns: ", [p.known(sym, value) for sym, value in system.knowns.items()])
+    lines += wrapped("wants: ", [p.doprint(sym) for sym in system.wants])
     connected = sorted(analysis.connected, key=lambda sym: sym.name)
     if connected:
         counts = (
-            f"{plural(len(connected), 'unknown')} in"
-            f" {plural(len(analysis.connected_labels), 'equation')}"
+            f" ({plural(len(connected), 'unknown')} in"
+            f" {plural(len(analysis.connected_labels), 'equation')})"
         )
-        lines.append(f"connected: {p.symbols(connected)} ({counts})")
+        lines += wrapped("connected: ", [p.doprint(sym) for sym in connected], counts)
     else:
         lines.append("connected: none")
-    lines.append("ready: " + labels(analysis.ready))
+    lines += wrapped("ready: ", [f"({label})" for label in analysis.ready])
     return "\n".join(lines)
+
+
+def width(text: str) -> int:
+    """How many columns the text takes, without its colors."""
+    return len(ANSI.sub("", text))
+
+
+def wrapped(head: str, items: list[str], tail: str = "") -> list[str]:
+    """`head`, then the items, separated by commas, over as many lines as
+    keep each within `WIDTH`, the later ones indented under the first
+    item. `tail` follows the last item. No items: `head` and `none`.
+    An item too wide for any line gets one of its own."""
+    if not items:
+        return [f"{head}none"]
+    pieces = [f"{item}," for item in items[:-1]] + [items[-1] + tail]
+    lines = [head + pieces[0]]
+    for piece in pieces[1:]:
+        if width(lines[-1]) + 1 + width(piece) <= WIDTH:
+            lines[-1] += " " + piece
+        else:
+            lines.append(" " * len(head) + piece)
+    return lines
 
 
 def render_origin(equation: Equation, origin: Derived, p: Printer) -> str:

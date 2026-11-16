@@ -13,9 +13,9 @@ marked `* `:
 ```
 # from 5.0 m east of a signpost
 motorcycle = motorcycle.known(m0.pos.x, 5 * meter)
-#>   (1)  m01.dt = -m0.t + m1.t
+#>   (1)  m01.dt     = -m0.t + m1.t
 #>   (2)  m01.v_av.x = (-m0.pos.x + m1.pos.x)/m01.dt
-#>   (3)  m01.a.x = (-m0.vel.x + m1.vel.x)/m01.dt
+#>   (3)  m01.a.x    = (-m0.vel.x + m1.vel.x)/m01.dt
 #>   (4)  m01.v_av.x = m0.vel.x/2 + m1.vel.x/2
 #> * knowns: m0.t = 0, m0.pos.x = 5*meter
 #>   wants: none
@@ -34,6 +34,11 @@ The marks:
 - `- `: a line that's gone, shown where it was.
 
 A step that changes nothing shows `(no change)`.
+
+Lines are compared without their colors or their spacing. When
+equation (10) arrives, the labels widen and (1) to (9) move right, but
+only (10) is marked. A line that wraps onto more lines, as a long list
+of knowns does, is marked as changed, not gone.
 
 ## When a step is marked
 

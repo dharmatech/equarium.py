@@ -243,7 +243,8 @@ def line_marks(before: str, after: str) -> list[tuple[str, str]]:
     """Each line of `after`, in order, with the lines of `before` that are
     gone in their place: `("* ", line)` new or different, `("  ", line)`
     the same, `("- ", line)` gone. Lines are compared without their
-    colors.
+    colors or their spacing, so a line that only moved, as when it's
+    aligned with a new, wider one, is the same.
 
     Where a run of lines is replaced by as many, each changed in place.
     Where the counts differ, a line changed in place when it's like one
@@ -251,7 +252,7 @@ def line_marks(before: str, after: str) -> list[tuple[str, str]]:
     otherwise: eliminating `dt` gives `- (1)  dt = t1` and the new (2)
     and (3), not all three gone and two new."""
     old, new = before.split("\n"), after.split("\n")
-    old_plain, new_plain = [uncolored(line) for line in old], [uncolored(line) for line in new]
+    old_plain, new_plain = [_compared(line) for line in old], [_compared(line) for line in new]
     matcher = difflib.SequenceMatcher(a=old_plain, b=new_plain, autojunk=False)
     marks: list[tuple[str, str]] = []
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
@@ -266,12 +267,47 @@ def line_marks(before: str, after: str) -> list[tuple[str, str]]:
     return marks
 
 
+def _compared(line: str) -> str:
+    """The line as `line_marks` compares it: without its colors, and with
+    each run of spaces as one, none at its ends."""
+    return " ".join(uncolored(line).split())
+
+
 def _paired(
     old: list[str], new: list[str], old_plain: list[str], new_plain: list[str]
 ) -> list[tuple[str, str]]:
-    """A replaced run of lines of a different length: `ndiff` pairs each
-    old line with a like new one, if any. A paired line is changed in
-    place; an unpaired old line is gone; an unpaired new one is new."""
+    """A replaced run of lines of a different length. First, in order, an
+    old line pairs with a new one that starts with the same word: `wants:
+    none` with `wants: x1`, even when the new one has wrapped onto more
+    lines. The lines left pair as `_like_paired` pairs them. A paired
+    line is changed in place; an unpaired old line is gone; an unpaired
+    new one is new."""
+    matcher = difflib.SequenceMatcher(
+        a=[line.split(" ", 1)[0] for line in old_plain],
+        b=[line.split(" ", 1)[0] for line in new_plain],
+        autojunk=False,
+    )
+    marks: list[tuple[str, str]] = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            marks.extend(("* ", line) for line in new[j1:j2])
+        elif tag == "delete":
+            marks.extend(("- ", line) for line in old[i1:i2])
+        elif tag == "insert":
+            marks.extend(("* ", line) for line in new[j1:j2])
+        else:
+            marks.extend(
+                _like_paired(old[i1:i2], new[j1:j2], old_plain[i1:i2], new_plain[j1:j2])
+            )
+    return marks
+
+
+def _like_paired(
+    old: list[str], new: list[str], old_plain: list[str], new_plain: list[str]
+) -> list[tuple[str, str]]:
+    """Lines replaced by others: `ndiff` pairs each old line with a like
+    new one, if any. A paired line is changed in place; an unpaired old
+    line is gone; an unpaired new one is new."""
     marks: list[tuple[str, str]] = []
     diff = list(difflib.ndiff(old_plain, new_plain))
     i = j = 0

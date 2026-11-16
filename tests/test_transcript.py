@@ -402,6 +402,24 @@ def test_a_shorter_run_pairs_like_lines() -> None:
     assert changed_lines(before, after) == "- (1)  dt = t1\n(2)  v = x/t1\n(3)  a = v/t1"
 
 
+def test_changes_are_judged_without_spacing() -> None:
+    # (10) widens the labels, so (9) moves right; only (10) is new.
+    before = "(9)  x = 1\nknowns: none"
+    after = " (9)  x = 1\n(10)  y = 2\nknowns: none"
+    assert changed_lines(before, after) == "(10)  y = 2"
+    assert changed_lines("x = 1\ny = 2", "x  = 1\ny  = 3") == "y  = 3"
+
+
+def test_a_line_that_wraps_is_changed_not_gone() -> None:
+    # `connected: none` becomes a list on two lines: it changed, and the
+    # second line is new. Nothing is gone.
+    before = "wants: none\nconnected: none\nready: none"
+    after = "wants: x\nconnected: a, b,\n           c (3 unknowns)\nready: none"
+    assert changed_lines(before, after) == (
+        "wants: x\nconnected: a, b,\n           c (3 unknowns)"
+    )
+
+
 def test_a_system_built_step_by_step_shows_each_steps_effect() -> None:
     script = dedent(
         """\
@@ -420,19 +438,24 @@ def test_a_system_built_step_by_step_shows_each_steps_effect() -> None:
     )
     text = render(run(script, display="changes"))
     after = uncolored(text.split("s = s.add(*m01.constant_acceleration())\n", 1)[1])
-    *steps, connected = after.splitlines()
+    lines = after.splitlines()
+    wants = lines.index("#> wants: m1.pos.x")
+    steps, connected = lines[: wants + 1], lines[wants + 1 :]
     assert steps == [
         "#> (4)  m01.v_av.x = m0.vel.x/2 + m1.vel.x/2",
         "s = s.known(m0.t, 0 * second)",
         "#> knowns: m0.t = 0",
         "s = s.eliminate_zeros()",
-        "#> (1)  m01.dt = m1.t",
+        "#> (1)  m01.dt     = m1.t",
         "a = s.want(m1.pos.x)",
         "#> wants: m1.pos.x",
     ]
     # Only m0.t is known, so everything else in the four equations isn't.
-    assert connected.startswith("#> connected: m0.pos.x, m0.vel.x, m01.a.x, m01.dt,")
-    assert connected.endswith("(8 unknowns in 4 equations)")
+    # The list wraps, and its second line is part of the change, not new.
+    assert connected == [
+        "#> connected: m0.pos.x, m0.vel.x, m01.a.x, m01.dt, m01.v_av.x, m1.pos.x,",
+        "#>            m1.t, m1.vel.x (8 unknowns in 4 equations)",
+    ]
 
 
 # Results in the script
