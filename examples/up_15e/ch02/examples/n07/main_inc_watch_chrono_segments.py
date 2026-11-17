@@ -29,6 +29,8 @@ Each segment's 2.2 and 2.4 come from `edge_kinematics`, since
     uv run python -m equarium.transcript --watch examples/up_15e/ch02/examples/n07/main_inc_watch_chrono_segments.py
 """
 
+from typing import cast
+
 import sympy as sp
 from sympy.physics.units import meter, second
 
@@ -40,9 +42,9 @@ from examples.answers import Answer
 def edge_kinematics(e: Edge[Y]) -> list[sp.Eq]:
     """2.2 and 2.4 for one edge."""
     return [
-        sp.Eq(e.dt, e.end.t - e.start.t),
-        sp.Eq(e.v_av.y, (e.end.pos.y - e.start.pos.y) / e.dt),
-        sp.Eq(e.a.y, (e.end.vel.y - e.start.vel.y) / e.dt),
+        cast(sp.Eq, sp.Eq(e.dt, e.end.t - e.start.t)),
+        cast(sp.Eq, sp.Eq(e.v_av.y, (e.end.pos.y - e.start.pos.y) / e.dt)),
+        cast(sp.Eq, sp.Eq(e.a.y, (e.end.vel.y - e.start.vel.y) / e.dt)),
     ]
 
 
